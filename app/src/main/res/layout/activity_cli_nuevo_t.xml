@@ -1,0 +1,810 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@layout/back"
+    tools:context=".CliNuevoT">
+
+    <RelativeLayout
+        android:id="@+id/relRoad"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        tools:ignore="MissingConstraints">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_centerVertical="true"
+            android:background="#9A999E"></RelativeLayout>
+
+        <TextView
+            android:id="@+id/txtRoadTit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="5dp"
+            android:layout_toRightOf="@+id/imgRoadTit"
+            android:text="Nuevo Cliente"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#1A8AC6" />
+
+        <ImageView
+            android:id="@+id/imgTitLogo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="5dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/logo_nuevo" />
+
+        <ImageView
+            android:id="@+id/imgRoadTit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:adjustViewBounds="true"
+            android:padding="5dp"
+            android:src="@drawable/clientes" />
+
+    </RelativeLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/relRoad"
+        android:layout_marginTop="-1dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+
+            <RelativeLayout
+                android:id="@+id/relCanal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/rlContacto"
+                android:layout_alignStart="@+id/rlContacto"
+                android:layout_alignEnd="@+id/rlContacto"
+                android:layout_marginStart="-1dp"
+                android:layout_marginTop="-1dp"
+                android:layout_marginEnd="1dp">
+
+                <TextView
+                    android:id="@+id/textView113"
+                    android:layout_width="90dp"
+                    android:layout_height="35dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginTop="10dp"
+                    android:text="Canal"
+                    android:textSize="18sp" />
+
+                <EditText
+                    android:id="@+id/txtCliCanal"
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@+id/textView113"
+                    android:layout_alignBottom="@+id/textView113"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="1dp"
+                    android:layout_marginBottom="0dp"
+                    android:layout_toStartOf="@+id/imgBuscarCanal"
+                    android:layout_toEndOf="@+id/textView113"
+                    android:ems="10"
+                    android:focusable="false"
+                    android:inputType="textPersonName" />
+
+                <ImageView
+                    android:id="@+id/imgBuscarCanal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@+id/textView113"
+                    android:layout_alignBottom="@+id/textView113"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginBottom="0dp"
+                    android:src="@drawable/search32" />
+
+                <TextView
+                    android:id="@+id/textView114"
+                    android:layout_width="120sp"
+                    android:layout_height="35dp"
+                    android:layout_below="@+id/textView113"
+                    android:layout_alignEnd="@+id/textView113"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="0dp"
+                    android:text="Subcanal"
+                    android:textSize="18sp" />
+
+                <EditText
+                    android:id="@+id/txtCliSubCanal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignStart="@+id/txtCliCanal"
+                    android:layout_alignTop="@+id/textView114"
+                    android:layout_alignBottom="@+id/textView114"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginBottom="0dp"
+                    android:ems="10"
+                    android:focusable="false"
+                    android:inputType="textPersonName" />
+
+                <TextView
+                    android:id="@+id/textView99"
+                    android:layout_width="120sp"
+                    android:layout_height="30dp"
+                    android:layout_below="@+id/textView114"
+                    android:layout_alignEnd="@+id/textView114"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="0dp"
+                    android:text="Precio"
+                    android:textSize="18sp" />
+
+                <Spinner
+                    android:id="@+id/spinnerPrecio"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignStart="@+id/txtCliSubCanal"
+                    android:layout_alignTop="@+id/textView99"
+                    android:layout_alignBottom="@+id/textView99"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginBottom="0dp"
+                    android:background="@layout/spinner_style" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/relProvincia"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/rlGps"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginEnd="10dp">
+
+                <TextView
+                    android:id="@+id/textView105"
+                    android:layout_width="90dp"
+                    android:layout_height="35dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginTop="10dp"
+                    android:text="Provincia"
+                    android:textSize="16sp" />
+
+                <EditText
+                    android:id="@+id/txtProvincia"
+                    android:layout_width="186dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@+id/textView105"
+                    android:layout_alignBottom="@+id/textView105"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="5dp"
+                    android:layout_marginBottom="0dp"
+                    android:layout_toStartOf="@+id/imgBuscarPro"
+                    android:layout_toEndOf="@+id/textView105"
+                    android:ems="10"
+                    android:focusable="false"
+                    android:inputType="textPersonName" />
+
+                <ImageView
+                    android:id="@+id/imgBuscarPro"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@+id/textView105"
+                    android:layout_alignBottom="@+id/textView105"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginBottom="0dp"
+                    android:src="@drawable/search32" />
+
+                <TextView
+                    android:id="@+id/textView106"
+                    android:layout_width="120dp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/textView105"
+                    android:layout_alignEnd="@+id/textView105"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="0dp"
+                    android:text="Distrito / Corregimiento"
+                    android:textSize="13sp" />
+
+                <EditText
+                    android:id="@+id/txtDistrito"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/textView105"
+                    android:layout_alignStart="@+id/txtProvincia"
+                    android:layout_alignBottom="@+id/textView106"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginBottom="0dp"
+                    android:ems="10"
+                    android:focusable="false"
+                    android:inputType="textPersonName" />
+
+                <TextView
+                    android:id="@+id/textView109"
+                    android:layout_width="120dp"
+                    android:layout_height="35dp"
+                    android:layout_below="@+id/textView106"
+                    android:layout_alignEnd="@+id/textView106"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="0dp"
+                    android:text="Ciudad"
+                    android:textSize="16sp" />
+
+                <EditText
+                    android:id="@+id/txtCiudad"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignStart="@+id/txtDistrito"
+                    android:layout_alignTop="@+id/textView109"
+                    android:layout_alignBottom="@+id/textView109"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginBottom="0dp"
+                    android:ems="10"
+                    android:inputType="textPersonName" />
+
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rlNombreC"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+
+                <TextView
+                    android:id="@+id/textView98"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
+                    android:text="Nombre / Razón Social *"
+                    android:textSize="18sp" />
+
+                <EditText
+                    android:id="@+id/txtCliNombre"
+                    android:layout_width="330sp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/textView98"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="5dp"
+                    android:layout_toStartOf="@+id/imgGuardar"
+                    android:ems="10"
+                    android:inputType="textPersonName" />
+
+                <ImageView
+                    android:id="@+id/imgGuardar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginEnd="11dp"
+                    android:onClick="doSave"
+                    android:src="@drawable/next48" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rlDirRcu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/rlNombreC"
+                android:layout_alignParentStart="true"
+                android:layout_marginStart="0dp"
+                android:layout_marginTop="0dp">
+
+                <TextView
+                    android:id="@+id/textView102"
+                    android:layout_width="330sp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="0dp"
+                    android:text="RUC / Cédula *"
+                    android:textSize="18sp" />
+
+                <EditText
+                    android:id="@+id/txtCliNit"
+                    android:layout_width="312dp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/textView102"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="5dp"
+                    android:layout_toStartOf="@+id/imageView33"
+                    android:ems="10"
+                    android:inputType="textPersonName" />
+
+                <ImageView
+                    android:id="@+id/imageView33"
+                    android:layout_width="46dp"
+                    android:layout_height="53dp"
+                    android:layout_below="@+id/textView102"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginTop="-18dp"
+                    android:layout_marginEnd="11dp"
+                    android:onClick="CapturarFoto"
+                    android:src="@drawable/camara" />
+
+                <TextView
+                    android:id="@+id/textView103"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/txtCliNit"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="10dp"
+                    android:text="Dirección *"
+                    android:textSize="18sp" />
+
+                <EditText
+                    android:id="@+id/txtCliDireccion"
+                    android:layout_width="391dp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/textView103"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="10dp"
+                    android:ems="10"
+                    android:inputType="textMultiLine"
+                    android:maxLength="100" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rlGps"
+                android:layout_width="220dp"
+                android:layout_height="39dp"
+                android:layout_below="@+id/rlDirRcu"
+                android:layout_alignParentStart="true"
+                android:layout_marginStart="10dp"
+                android:onClick="setGPS">
+
+                <ImageView
+                    android:id="@+id/imageView3"
+                    android:layout_width="33dp"
+                    android:layout_height="25dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginLeft="0dp"
+                    android:layout_marginTop="5dp"
+                    android:src="@drawable/iconoubicacion" />
+
+                <TextView
+                    android:id="@+id/lbCoor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginBottom="-1dp"
+                    android:layout_toRightOf="@+id/imageView3"
+                    android:gravity="left|center_vertical"
+                    android:text="0.0000 , 0.0000"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textSize="12sp" />
+
+            </RelativeLayout>
+
+
+            <RelativeLayout
+                android:id="@+id/rlContacto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/relProvincia"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp">
+
+                <TextView
+                    android:id="@+id/textView110"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginTop="0dp"
+                    android:text="Teléfono / Celular *"
+                    android:textSize="18sp" />
+
+                <EditText
+                    android:id="@+id/txtCliTelefono"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/textView110"
+                    android:layout_marginTop="0dp"
+                    android:ems="10"
+                    android:inputType="phone"
+                    tools:ignore="DuplicateIds" />
+
+                <TextView
+                    android:id="@+id/textView111"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/txtCliTelefono"
+                    android:layout_marginTop="0dp"
+                    android:text="Correo Electrónico *"
+                    android:textSize="18sp" />
+
+                <EditText
+                    android:id="@+id/txtCliEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/textView111"
+                    android:layout_marginTop="0dp"
+                    android:ems="10"
+                    android:inputType="textEmailAddress" />
+
+                <TextView
+                    android:id="@+id/textView112"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/txtCliEmail"
+                    android:layout_marginTop="0dp"
+                    android:text="Contacto *"
+                    android:textSize="18sp" />
+
+                <EditText
+                    android:id="@+id/txtCliContacto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/textView112"
+                    android:layout_marginTop="0dp"
+                    android:ems="10"
+                    android:inputType="textPersonName" />
+            </RelativeLayout>
+
+
+            <RelativeLayout
+                android:id="@+id/rlVendedor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/relCanal"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginEnd="10dp">
+
+                <TextView
+                    android:id="@+id/textView115"
+                    android:layout_width="350sp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginTop="0dp"
+                    android:text="Código de Vendedor *"
+                    android:textSize="18sp" />
+
+                <EditText
+                    android:id="@+id/txtCodVendedor"
+                    android:layout_width="350sp"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/textView115"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_toStartOf="@+id/imgBuscarVen"
+                    android:ems="10"
+                    android:focusable="false"
+                    android:inputType="textPersonName" />
+
+                <ImageView
+                    android:id="@+id/imgBuscarVen"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_below="@+id/textView115"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginBottom="0dp"
+                    android:src="@drawable/search32" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rlTitulo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/rlVendedor"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp">
+
+                <TextView
+                    android:id="@+id/txtvTituloDias"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Días de Visita *"
+                    android:textSize="18sp" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rlDiasVisita"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/rlTitulo"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="9dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginEnd="11dp">
+
+                <CheckBox
+                    android:id="@+id/checkBox1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:text="Lu " />
+
+                <CheckBox
+                    android:id="@+id/checkBox2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_toRightOf="@+id/checkBox1"
+                    android:text="Ma" />
+
+                <CheckBox
+                    android:id="@+id/checkBox3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_toRightOf="@+id/checkBox2"
+                    android:text="Mi" />
+
+                <CheckBox
+                    android:id="@+id/checkBox4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_toRightOf="@+id/checkBox3"
+                    android:text="Ju" />
+
+                <CheckBox
+                    android:id="@+id/checkBox5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_toRightOf="@+id/checkBox4"
+                    android:text="Vi" />
+
+                <CheckBox
+                    android:id="@+id/checkBox6"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/checkBox1"
+                    android:layout_alignParentLeft="true"
+                    android:text="Sa" />
+
+                <CheckBox
+                    android:id="@+id/checkBox7"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/checkBox1"
+                    android:layout_alignTop="@+id/checkBox6"
+                    android:layout_alignBottom="@+id/checkBox6"
+                    android:layout_toRightOf="@+id/checkBox1"
+                    android:text="Do" />
+
+            </RelativeLayout>
+
+
+            <RelativeLayout
+                android:id="@+id/rlEncuesta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/rlDiasVisita"
+                android:layout_marginTop="0dp">
+
+                <TextView
+                    android:id="@+id/textView118"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:text="Encuesta Potencial de Compra"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/textView118"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="10dp"
+                    android:orientation="vertical">
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="42dp">
+
+                        <TextView
+                            android:id="@+id/txtvPollo"
+                            android:layout_width="140sp"
+                            android:layout_height="match_parent"
+                            android:text="Compra Semanal Pollo (USD)" />
+
+                        <EditText
+                            android:id="@+id/txtPollo"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ems="10"
+                            android:inputType="numberDecimal" />
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="42dp">
+
+                        <TextView
+                            android:id="@+id/txtvEmbutidos"
+                            android:layout_width="140sp"
+                            android:layout_height="match_parent"
+                            android:text="Compra Semanal Embutidos (USD)" />
+
+                        <EditText
+                            android:id="@+id/txtEmbutidos"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ems="10"
+                            android:inputType="numberDecimal" />
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="42dp">
+
+                        <TextView
+                            android:id="@+id/txtvHuevos"
+                            android:layout_width="140sp"
+                            android:layout_height="match_parent"
+                            android:text="Compra Semanal Huevos (USD)" />
+
+                        <EditText
+                            android:id="@+id/txtHuevos"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ems="10"
+                            android:inputType="numberDecimal" />
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="42dp">
+
+                        <TextView
+                            android:id="@+id/txtvRes"
+                            android:layout_width="140sp"
+                            android:layout_height="match_parent"
+                            android:text="Compra Semanal   Res (USD)" />
+
+                        <EditText
+                            android:id="@+id/txtRes"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ems="10"
+                            android:inputType="numberDecimal" />
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="42dp">
+
+                        <TextView
+                            android:id="@+id/txtvCerdo"
+                            android:layout_width="140sp"
+                            android:layout_height="match_parent"
+                            android:text="Compra Semanal Cerdo (USD)" />
+
+                        <EditText
+                            android:id="@+id/txtCerdo"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ems="10"
+                            android:inputType="numberDecimal" />
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="42dp">
+
+                        <TextView
+                            android:id="@+id/txtvCongelados"
+                            android:layout_width="140sp"
+                            android:layout_height="match_parent"
+                            android:text="Compra Semanal Congelados (USD)" />
+
+                        <EditText
+                            android:id="@+id/txtCongelados"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ems="10"
+                            android:inputType="numberDecimal" />
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="42dp">
+
+                        <TextView
+                            android:id="@+id/txtvSalsas"
+                            android:layout_width="140dp"
+                            android:layout_height="match_parent"
+                            android:text="Compra Semanal Salsas (USD)" />
+
+                        <EditText
+                            android:id="@+id/txtSalsas"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ems="10"
+                            android:inputType="numberDecimal" />
+                    </TableRow>
+
+                </LinearLayout>
+            </RelativeLayout>
+
+        </RelativeLayout>
+    </ScrollView>
+
+</RelativeLayout>

@@ -1,0 +1,318 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rl_facturares"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@layout/back"
+    tools:context=".PedidoRes">
+
+    <ImageView
+        android:id="@+id/imgPFoto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:clickable="true"
+        android:onClick="askSave"
+        android:paddingTop="10dp"
+        android:paddingRight="10dp"
+        android:src="@drawable/next48"
+        android:visibility="invisible" />
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:layout_above="@+id/lblFact"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="0dp"
+        android:paddingBottom="5dp">
+
+        <ImageView
+            android:id="@+id/imageView12"
+            android:layout_width="128dp"
+            android:layout_height="48dp"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="-5dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_toStartOf="@+id/imageView2"
+            android:layout_toEndOf="@+id/imageView1"
+            android:clickable="true"
+            android:contentDescription="TODO"
+            android:onClick="pendientePago"
+            android:src="@drawable/pago_pend"
+            tools:ignore="OnClick" />
+
+        <TextView
+            android:id="@+id/lblCVence2"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/imageView1"
+            android:layout_alignLeft="@id/imageView12"
+            android:layout_alignRight="@id/imageView12"
+            android:layout_alignParentLeft="false"
+            android:layout_alignParentRight="false"
+            android:layout_marginStart="13dp"
+            android:layout_marginTop="0dp"
+            android:layout_toEndOf="@+id/lblCVence"
+            android:clickable="true"
+            android:gravity="center"
+            android:onClick="pendientePago"
+            android:text="Pago Pendiente"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="15sp"
+            tools:ignore="OnClick" />
+
+        <ImageView
+            android:id="@+id/imageView1"
+            android:layout_width="128dp"
+            android:layout_height="48dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="5dp"
+            android:clickable="true"
+            android:onClick="paySelect"
+            android:src="@drawable/cobro"
+            tools:ignore="OnClick" />
+
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="128dp"
+            android:layout_height="48dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="4dp"
+            android:layout_marginRight="0dp"
+            android:clickable="true"
+            android:contentDescription="TODO"
+            android:onClick="payCash"
+            android:src="@drawable/pago_efectivo" />
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="121dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/imageView2"
+            android:layout_alignLeft="@+id/imageView2"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="0dp"
+            android:layout_marginRight="7dp"
+            android:clickable="true"
+            android:gravity="center"
+            android:onClick="payCash"
+            android:text="Pago Efectivo"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textSize="15sp" />
+
+        <ImageView
+            android:id="@+id/imageView3"
+            android:layout_width="128dp"
+            android:layout_height="48dp"
+            android:layout_below="@+id/textView4"
+            android:layout_alignLeft="@+id/textView4"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="20dp"
+            android:clickable="true"
+            android:onClick="payCred"
+            android:src="@drawable/pago"
+            tools:ignore="OnClick" />
+
+        <TextView
+            android:id="@+id/lblPend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/imageView3"
+            android:layout_alignLeft="@+id/imageView3"
+            android:layout_alignParentRight="true"
+            android:clickable="true"
+            android:gravity="center"
+            android:onClick="payCred"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:text="Pago Crédito"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/lblCanastas"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/imgCanastas"
+            android:layout_alignLeft="@id/imageView3"
+            android:layout_alignRight="@id/imageView6"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="false"
+            android:clickable="true"
+            android:gravity="center"
+            android:onClick="showCanastas"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:text="Canastas"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textSize="15sp"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/lblCVence"
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/imageView1"
+            android:layout_alignRight="@+id/imageView1"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginStart="0dp"
+            android:clickable="true"
+            android:gravity="center"
+            android:onClick="paySelect"
+            android:text="Pago"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="15sp" />
+
+        <ImageView
+            android:id="@+id/imageView6"
+            android:layout_width="128dp"
+            android:layout_height="48dp"
+            android:layout_alignTop="@+id/imageView3"
+            android:layout_alignRight="@+id/lblCVence"
+            android:layout_alignParentLeft="true"
+            android:clickable="true"
+            android:onClick="showBon"
+            android:src="@drawable/regalo" />
+
+        <CheckBox
+            android:id="@+id/checkContado"
+            android:layout_width="126dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="97dp"
+            android:layout_marginEnd="119dp"
+            android:checked="false"
+            android:clickable="true"
+            android:onClick="checkedBox"
+            android:text="Pagar Al Contado" />
+
+        <ImageView
+            android:id="@+id/imgCanastas"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_below="@+id/imageView6"
+            android:layout_alignEnd="@+id/imageView6"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="18dp"
+            android:onClick="showCanastas"
+            android:src="@drawable/canasta_redonda" />
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/TextView01"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/imgPFoto"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/imgPFoto"
+        android:layout_toRightOf="@+id/imageView5"
+        android:gravity="center"
+        android:paddingLeft="10dp"
+        android:paddingBottom="3dp"
+        android:text="Pago incompleto"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textSize="18sp" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="@android:style/Widget.Holo.ProgressBar.Large"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/relativeLayout1"
+        android:layout_alignParentStart="false"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="139dp"
+        android:layout_marginBottom="15dp" />
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imageView4"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:background="@layout/blue_strip">
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/lblTalon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:gravity="center_horizontal"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:text="Medium Text"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#FFFFFF" />
+
+    <TextView
+        android:id="@+id/lblFact"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/lblTalon"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:gravity="center_horizontal"
+        android:paddingTop="10dp"
+        android:paddingBottom="5dp"
+        android:text="Medium Text"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#FFFFFF" />
+
+    <ImageView
+        android:id="@+id/imageView4"
+        android:layout_width="wrap_content"
+        android:layout_height="2dp"
+        android:layout_alignTop="@+id/lblFact"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:scaleType="fitXY"
+        android:src="@drawable/sepgray" />
+
+    <ImageView
+        android:id="@+id/imageView5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="0dp"
+        android:clickable="true"
+        android:onClick="prevScreen"
+        android:paddingLeft="10dp"
+        android:paddingTop="10dp"
+        android:src="@drawable/prev48" />
+
+    <ListView
+        android:id="@+id/listView1"
+        android:layout_width="260dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/relativeLayout1"
+        android:layout_below="@+id/imgPFoto"
+        android:layout_alignParentLeft="false"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginBottom="5dp">
+
+    </ListView>
+
+</RelativeLayout>

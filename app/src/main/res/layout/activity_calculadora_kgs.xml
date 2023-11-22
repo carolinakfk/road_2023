@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    tools:context=".CalculadoraKgs">
+
+    <RelativeLayout
+        android:id="@+id/relRoad"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:background="#FFFFFF">
+
+        <RelativeLayout
+            android:id="@+id/relRoadbar"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_centerVertical="true"
+            android:background="#9A999E"></RelativeLayout>
+
+        <ImageView
+            android:id="@+id/imgTitLogo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="5dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/logo_nuevo" />
+
+        <ImageView
+            android:id="@+id/imgRoadTit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/relRoadbar"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:adjustViewBounds="true"
+            android:padding="5dp"
+            android:src="@drawable/calc" />
+
+        <TextView
+            android:id="@+id/txtRoadTit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/imgRoadTit"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:text="Calculadora KGS"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#1A8AC6" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/relContenido"
+        android:layout_width="wrap_content"
+        android:layout_height="250dp"
+        android:layout_below="@+id/relRoad"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/frame_rect">
+
+        <ImageView
+            android:id="@+id/btnAccion"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="15dp"
+            android:padding="3dp"
+            android:src="@drawable/comunicacion_blanco_gris" />
+
+        <TextView
+            android:id="@+id/lblTitulo"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:layout_alignTop="@+id/btnAccion"
+            android:layout_alignBottom="@+id/btnAccion"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="0dp"
+            android:layout_toEndOf="@+id/btnAccion"
+            android:gravity="center|center_vertical"
+            android:paddingLeft="10dp"
+            android:text="Título"
+            android:textSize="19sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/lblUnidad"
+            android:layout_width="45dp"
+            android:layout_height="35dp"
+            android:layout_below="@+id/lblTitulo"
+            android:layout_alignEnd="@+id/lblTitulo"
+            android:layout_marginTop="15dp"
+            android:layout_marginEnd="0dp"
+            android:gravity="center|center_vertical"
+            android:padding="5dp"
+            android:text="UN"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/txtCantidad"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/btnAccion"
+            android:layout_alignTop="@+id/lblUnidad"
+            android:layout_alignBottom="@+id/lblUnidad"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="0dp"
+            android:layout_toStartOf="@+id/lblUnidad"
+            android:background="@drawable/frame_btn"
+            android:ems="10"
+            android:gravity="center_vertical"
+            android:inputType="numberDecimal"
+            android:paddingLeft="5dp"
+            android:textSize="18sp" />
+
+        <RelativeLayout
+            android:id="@+id/relResultado"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/txtCantidad"
+            android:layout_alignStart="@+id/txtCantidad"
+            android:layout_alignEnd="@+id/lblUnidad"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginEnd="0dp"
+            android:visibility="visible">
+
+            <TextView
+                android:id="@+id/lblResultado"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/lblUnidadR"
+                android:layout_alignBottom="@+id/lblUnidadR"
+                android:layout_alignParentStart="true"
+                android:layout_marginStart="0dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginEnd="5dp"
+                android:layout_marginBottom="0dp"
+                android:layout_toStartOf="@+id/lblUnidadR"
+                android:background="#BDE2F3"
+                android:gravity="center_vertical"
+                android:paddingLeft="5dp"
+                android:text="0.000"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/lblUnidadR"
+                android:layout_width="45dp"
+                android:layout_height="35dp"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="0dp"
+                android:layout_marginEnd="0dp"
+                android:gravity="center|center_vertical"
+                android:padding="5dp"
+                android:text="UN"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+
+        </RelativeLayout>
+
+        <ImageView
+            android:id="@+id/btnRegresar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_below="@+id/relResultado"
+            android:layout_alignStart="@+id/relResultado"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="20dp"
+            android:src="@drawable/prev48" />
+
+        <TextView
+            android:id="@+id/btnConvertir"
+            android:layout_width="97dp"
+            android:layout_height="34dp"
+            android:layout_alignTop="@+id/btnRegresar"
+            android:layout_alignEnd="@+id/relResultado"
+            android:layout_marginTop="-2dp"
+            android:layout_marginEnd="146dp"
+            android:background="@drawable/frame_btn"
+            android:gravity="center|center_vertical"
+            android:text="Aplicar"
+            android:textSize="17dp"
+            android:textStyle="bold" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/relbotpan"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="false"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginBottom="1dp"
+        android:background="@layout/blue_strip">
+
+        <TextView
+            android:id="@+id/textView9"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="5dp"
+            android:gravity="center_horizontal"
+            android:paddingRight="10dp"
+            android:text="DTSolutions"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp" />
+
+    </RelativeLayout>
+
+</RelativeLayout>

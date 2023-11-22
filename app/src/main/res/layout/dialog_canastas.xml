@@ -1,0 +1,83 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout3"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <EditText
+            android:id="@+id/txtCanastasRec"
+            android:layout_width="0dp"
+            android:layout_height="35dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="15dp"
+            android:ems="10"
+            android:inputType="number"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtCanastasEnt"
+            app:layout_constraintVertical_bias="0.069" />
+
+        <EditText
+            android:id="@+id/txtCanastasEnt"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="15dp"
+            android:ems="10"
+            android:inputType="number"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.089">
+
+            <requestFocus />
+        </EditText>
+
+        <TextView
+            android:id="@+id/textView92"
+            android:layout_width="100dp"
+            android:layout_height="19dp"
+            android:layout_marginStart="10dp"
+            android:text="ENTREGADAS"
+            app:layout_constraintBottom_toTopOf="@+id/txtCanastasEnt"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.016"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/textView93"
+            android:layout_width="100dp"
+            android:layout_height="19dp"
+            android:layout_marginStart="10dp"
+            android:text="RECIBIDAS"
+            app:layout_constraintBottom_toTopOf="@+id/txtCanastasRec"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.017"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/lblCanastaStock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Existencia: 0"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.935"
+            app:layout_constraintStart_toEndOf="@+id/textView92"
+            tools:layout_editor_absoluteY="62dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

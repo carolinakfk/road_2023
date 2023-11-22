@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="2dp"
+    tools:context=".editar_cliente">
+
+    <RelativeLayout
+        android:id="@+id/relRoad"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        tools:ignore="MissingConstraints">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_centerVertical="true"
+            android:background="#9A999E"></RelativeLayout>
+
+        <TextView
+            android:id="@+id/txtRoadTit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="5dp"
+            android:layout_toRightOf="@+id/imgRoadTit"
+            android:text="Editar Cliente"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#1A8AC6" />
+
+        <ImageView
+            android:id="@+id/imgTitLogo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="5dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/logo_nuevo" />
+
+        <ImageView
+            android:id="@+id/imgRoadTit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:adjustViewBounds="true"
+            android:padding="5dp"
+            android:src="@drawable/cliente" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/rellaydn"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="1dp"
+        android:background="@layout/blue_strip" >
+
+        <TextView
+            android:id="@+id/textView9"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="5dp"
+            android:gravity="center_horizontal"
+            android:paddingRight="10dp"
+            android:text="DTSolutions"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp" />
+
+    </RelativeLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/rellaydn"
+        android:layout_below="@+id/relRoad"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="0dp">
+
+
+        <RelativeLayout
+            android:id="@+id/relContenido"
+            android:layout_width="wrap_content"
+            android:layout_height="500dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp">
+
+            <LinearLayout
+                android:id="@+id/Formulario"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                android:orientation="vertical">
+
+                <TableRow
+                    android:id="@+id/RowNombre"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/textView116"
+                        android:layout_width="90dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginRight="10dp"
+                        android:gravity="center_vertical"
+                        android:text="Nombre"
+                        android:textSize="18sp" />
+
+                    <EditText
+                        android:id="@+id/txtNombreCliente"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:ems="10"
+                        android:inputType="textPersonName" />
+
+                </TableRow>
+
+                <TableRow
+                    android:id="@+id/RowRuc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5sp">
+
+                    <TextView
+                        android:id="@+id/textView117"
+                        android:layout_width="90dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginRight="10dp"
+                        android:gravity="center_vertical"
+                        android:text="RUC"
+                        android:textSize="18sp" />
+
+                    <EditText
+                        android:id="@+id/txtNitCliente"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:inputType="textPersonName" />
+
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5sp">
+
+                    <TextView
+                        android:id="@+id/textView119"
+                        android:layout_width="90dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginRight="10dp"
+                        android:gravity="center_vertical"
+                        android:text="Dirección *"
+                        android:textSize="18sp" />
+
+                    <EditText
+                        android:id="@+id/txtDireccion"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:inputType="textPersonName" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5sp">
+
+                    <TextView
+                        android:id="@+id/textView120"
+                        android:layout_width="90dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginRight="10dp"
+                        android:gravity="center_vertical"
+                        android:text="Contacto"
+                        android:textSize="18sp" />
+
+                    <EditText
+                        android:id="@+id/txtContacto"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:inputType="textPersonName" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5sp">
+
+                    <TextView
+                        android:id="@+id/textView121"
+                        android:layout_width="90dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginRight="10dp"
+                        android:gravity="center_vertical"
+                        android:text="Correo Electrónico"
+                        android:textSize="14sp" />
+
+                    <EditText
+                        android:id="@+id/txtEmail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:inputType="textEmailAddress" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5sp">
+
+                    <TextView
+                        android:id="@+id/textView122"
+                        android:layout_width="90dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginRight="10dp"
+                        android:gravity="center_vertical"
+                        android:text="Teléfono / Celular *"
+                        android:textSize="14sp" />
+
+                    <EditText
+                        android:id="@+id/txtTelefono"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:inputType="number" />
+
+                </TableRow>
+            </LinearLayout>
+
+            <RelativeLayout
+                android:id="@+id/relCanal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/Formulario"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="0dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="0dp">
+
+
+                <TextView
+                    android:id="@+id/lblCanal"
+                    android:layout_width="90dp"
+                    android:layout_height="35dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="0dp"
+                    android:gravity="center_vertical"
+                    android:text="Canal"
+                    android:textSize="18sp" />
+
+                <EditText
+                    android:id="@+id/txtCanalCliente"
+                    android:layout_width="220sp"
+                    android:layout_height="match_parent"
+                    android:layout_alignTop="@+id/lblCanal"
+                    android:layout_alignBottom="@+id/lblCanal"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="5dp"
+                    android:layout_marginBottom="0dp"
+                    android:layout_toStartOf="@+id/btnBuscarCanal"
+                    android:layout_toEndOf="@+id/lblCanal"
+                    android:ems="10"
+                    android:focusable="false"
+                    android:inputType="textPersonName" />
+
+                <ImageView
+                    android:id="@+id/btnBuscarCanal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@+id/lblCanal"
+                    android:layout_alignBottom="@+id/lblCanal"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="0dp"
+                    android:src="@drawable/search32" />
+
+                <TextView
+                    android:id="@+id/lblSubcanal"
+                    android:layout_width="100sp"
+                    android:layout_height="35dp"
+                    android:layout_below="@+id/lblCanal"
+                    android:layout_alignStart="@+id/lblCanal"
+                    android:layout_alignEnd="@+id/lblCanal"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="0dp"
+                    android:text="Subcanal"
+                    android:textSize="18sp" />
+
+                <EditText
+                    android:id="@+id/txtSubCanalCliente"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignStart="@+id/txtCanalCliente"
+                    android:layout_alignTop="@+id/lblSubcanal"
+                    android:layout_alignEnd="@+id/btnBuscarCanal"
+                    android:layout_alignBottom="@+id/lblSubcanal"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginBottom="0dp"
+                    android:ems="10"
+                    android:focusable="false"
+                    android:inputType="textPersonName" />
+
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/relProvincia"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/relCanal"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="0dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="0dp">
+
+
+                <TextView
+                    android:id="@+id/lblProvincia"
+                    android:layout_width="90dp"
+                    android:layout_height="35dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="0dp"
+                    android:gravity="center_vertical"
+                    android:text="Provincia"
+                    android:textSize="18sp" />
+
+                <EditText
+                    android:id="@+id/txtProvincia"
+                    android:layout_width="220sp"
+                    android:layout_height="match_parent"
+                    android:layout_alignTop="@+id/lblProvincia"
+                    android:layout_alignBottom="@+id/lblProvincia"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="5dp"
+                    android:layout_marginBottom="0dp"
+                    android:layout_toStartOf="@+id/btnBuscarProv"
+                    android:layout_toEndOf="@+id/lblProvincia"
+                    android:ems="10"
+                    android:focusable="false"
+                    android:inputType="textPersonName" />
+
+                <ImageView
+                    android:id="@+id/btnBuscarProv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@+id/lblProvincia"
+                    android:layout_alignBottom="@+id/lblProvincia"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="0dp"
+                    android:src="@drawable/search32" />
+
+                <TextView
+                    android:id="@+id/lblCorregimiento"
+                    android:layout_width="100sp"
+                    android:layout_height="35dp"
+                    android:layout_below="@+id/lblProvincia"
+                    android:layout_alignStart="@+id/lblProvincia"
+                    android:layout_alignEnd="@+id/lblProvincia"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="0dp"
+                    android:text="Distrito / Corregimiento"
+                    android:textSize="14sp" />
+
+                <EditText
+                    android:id="@+id/txtCorregimiento"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignStart="@+id/txtProvincia"
+                    android:layout_alignTop="@+id/lblCorregimiento"
+                    android:layout_alignEnd="@+id/btnBuscarProv"
+                    android:layout_alignBottom="@+id/lblCorregimiento"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginBottom="0dp"
+                    android:ems="10"
+                    android:focusable="false"
+                    android:inputType="textPersonName" />
+
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rlGps"
+                android:layout_width="220dp"
+                android:layout_height="39dp"
+                android:layout_below="@+id/relProvincia"
+                android:layout_alignParentStart="true"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="20dp"
+                android:onClick="setGPS">
+
+                <ImageView
+                    android:id="@+id/imageView3"
+                    android:layout_width="33dp"
+                    android:layout_height="25dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginLeft="0dp"
+                    android:layout_marginTop="5dp"
+                    android:src="@drawable/iconoubicacion" />
+
+                <TextView
+                    android:id="@+id/lbCoor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginBottom="0dp"
+                    android:layout_toRightOf="@+id/imageView3"
+                    android:gravity="left|center_vertical"
+                    android:text="0.0000 , 0.0000"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textSize="12sp" />
+
+            </RelativeLayout>
+
+            <ImageView
+                android:id="@+id/imgGuardar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/rlGps"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="15dp"
+                android:src="@drawable/next48" />
+
+        </RelativeLayout>
+    </ScrollView>
+
+</RelativeLayout>

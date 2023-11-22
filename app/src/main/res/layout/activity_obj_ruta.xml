@@ -1,0 +1,110 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@layout/back"
+    tools:context=".ObjRuta" >
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:background="@layout/frame_rect" >
+
+        <TextView
+            android:id="@+id/lblFecha"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:padding="10dp"
+            android:text="META"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:id="@+id/lblRFin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="52dp"
+            android:padding="10dp"
+            android:text="ACUMULADO"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:id="@+id/lblMC"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/lblRFin"
+            android:padding="10dp"
+            android:text="FALTA"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:id="@+id/lblGC"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/lblMC"
+            android:padding="10dp"
+            android:text="[ % ]"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:id="@+id/lblpSaldo"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/lblRFin"
+            android:layout_below="@+id/lblFecha"
+            android:layout_toRightOf="@+id/lblRFin"
+            android:gravity="right|center_vertical"
+            android:paddingRight="10dp"
+            android:text="999,999"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/lblMeta"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/lblpSaldo"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/lblRFin"
+            android:gravity="right|center_vertical"
+            android:paddingRight="10dp"
+            android:text="999,999"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/lblFalta"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/lblMC"
+            android:layout_alignLeft="@+id/lblpSaldo"
+            android:layout_below="@+id/lblpSaldo"
+            android:gravity="right|center_vertical"
+            android:paddingRight="10dp"
+            android:text="999,999"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/lblPerc"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/lblGC"
+            android:layout_below="@+id/lblFalta"
+            android:layout_toRightOf="@+id/lblRFin"
+            android:gravity="right|center_vertical"
+            android:paddingRight="10dp"
+            android:text="99.9 %"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+</RelativeLayout>

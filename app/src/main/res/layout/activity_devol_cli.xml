@@ -1,0 +1,224 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@layout/back"
+    tools:context=".DevolCli" >
+
+    <RelativeLayout
+        android:id="@+id/relRoad"
+        android:layout_width="match_parent"
+        android:layout_height="48dp" >
+
+        <RelativeLayout
+            android:id="@+id/relRoadbar"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:background="#9A999E" >
+        </RelativeLayout>
+
+        <ImageView
+            android:id="@+id/imgTitLogo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="5dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/logo_nuevo" />
+
+        <ImageView
+            android:id="@+id/imgRoadTit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/relRoadbar"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:adjustViewBounds="true"
+            android:padding="5dp"
+            android:src="@drawable/devolucion_blanco_y_gris" />
+
+        <TextView
+            android:id="@+id/txtRoadTit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/imgRoadTit"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:text="Devolución"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#1A8AC6" />
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/imgNext"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/relbotpan"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="false"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:clickable="true"
+        android:onClick="finishDevol"
+        android:src="@drawable/next48" />
+
+    <ListView
+        android:id="@+id/listView1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/imgNext"
+        android:layout_below="@+id/imgImg"
+        android:layout_alignParentLeft="true"
+        android:paddingLeft="5dp"
+        android:paddingTop="10dp"
+        android:paddingRight="5dp"
+        android:paddingBottom="10dp">
+
+    </ListView>
+
+    <RelativeLayout
+        android:id="@+id/relbotpan"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="false"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginBottom="1dp"
+        android:background="@layout/blue_strip">
+
+        <TextView
+            android:id="@+id/textView9"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="5dp"
+            android:gravity="center_horizontal"
+            android:paddingRight="10dp"
+            android:text="DTSolutions"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp" />
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/imgImg"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_below="@+id/relRoad"
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:clickable="true"
+        android:onClick="showProd"
+        android:src="@drawable/mas" />
+
+    <TextView
+        android:id="@+id/lblProdutos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/imgNext"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="17dp"
+        android:layout_marginTop="0dp"
+        android:text="Productos"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/lblbUnidades"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/lblProdutos"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="105dp"
+        android:layout_marginTop="0dp"
+        android:text="Unidades"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/lblkilogramos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/lblProdutos"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="0dp"
+        android:layout_marginEnd="67dp"
+        android:text="Kilogramos"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/lblCantProds"
+        android:layout_width="61dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/lblProdutos"
+        android:layout_alignStart="@+id/lblProdutos"
+        android:layout_marginTop="1dp"
+        android:gravity="center_horizontal"
+        android:text="0"
+        android:textAlignment="textStart"
+        android:textSize="10sp" />
+
+    <TextView
+        android:id="@+id/lblCantUnd"
+        android:layout_width="52dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/lblbUnidades"
+        android:layout_alignStart="@+id/lblbUnidades"
+        android:layout_marginTop="1dp"
+        android:gravity="center_horizontal"
+        android:text="0"
+        android:textAlignment="textStart"
+        android:textSize="10sp" />
+
+    <TextView
+        android:id="@+id/lblCantKgs"
+        android:layout_width="62dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/lblkilogramos"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="67dp"
+        android:gravity="center_horizontal"
+        android:text="0"
+        android:textAlignment="textStart"
+        android:textSize="10sp" />
+
+    <TextView
+        android:id="@+id/lblTl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/lblCantProds"
+        android:layout_alignStart="@+id/lblProdutos"
+        android:layout_marginTop="4dp"
+        android:lineSpacingExtra="12sp"
+        android:text="Total:"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/lblCantTotal"
+        android:layout_width="95dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/lblCantProds"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="4dp"
+        android:layout_toEndOf="@+id/lblTl"
+        android:text="00.0" />
+
+</RelativeLayout>

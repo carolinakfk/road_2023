@@ -1,0 +1,340 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@layout/back"
+    android:clickable="true"
+    tools:context=".Venta">
+
+    <RelativeLayout
+        android:id="@+id/relRoad"
+        android:layout_width="match_parent"
+        android:layout_height="48dp">
+
+        <RelativeLayout
+            android:id="@+id/relRoadbar"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_centerVertical="true"
+            android:background="#9A999E">
+
+        </RelativeLayout>
+
+        <ImageView
+            android:id="@+id/imgTitLogo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="15dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/logo_nuevo" />
+
+        <ImageView
+            android:id="@+id/imgRoadTit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/relRoadbar"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginBottom="2dp"
+            android:adjustViewBounds="true"
+            android:padding="5dp"
+            android:src="@drawable/pedidos_1_gray" />
+
+        <TextView
+            android:id="@+id/txtRoadTit"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="10dp"
+            android:layout_toStartOf="@+id/imgTitLogo"
+            android:layout_toRightOf="@+id/imgRoadTit"
+            android:gravity="center"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:text="ROAD"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#1A8AC6" />
+
+        <TextView
+            android:id="@+id/textView96"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginEnd="0dp"
+            android:layout_marginBottom="0dp"
+            android:paddingBottom="3dp"
+            android:text="TextView"
+            android:textColor="#1A8AC6"
+            android:textSize="10sp" />
+
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/imgNext"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/relbotpan"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="false"
+        android:layout_marginLeft="5dp"
+        android:clickable="true"
+        android:onClick="finishOrder"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:paddingBottom="5dp"
+        android:src="@drawable/next48" />
+
+    <ImageView
+        android:id="@+id/imgPFoto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:clickable="true"
+        android:onClick="showPromo"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:paddingBottom="5dp"
+        android:src="@drawable/bonus"
+        android:visibility="invisible" />
+
+    <RelativeLayout
+        android:id="@+id/rellaytot"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_above="@+id/relbotpan"
+        android:layout_alignParentBottom="false"
+        android:layout_marginBottom="5dp"
+        android:layout_toLeftOf="@+id/imgNext"
+        android:layout_toRightOf="@+id/imgPFoto"
+        android:background="@layout/blue_strip"
+        android:clickable="true"
+        android:onClick="doFocus">
+
+        <TextView
+            android:id="@+id/lblTot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:gravity="center_vertical"
+            android:paddingRight="10dp"
+            android:text="0.00"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/lblDir"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:paddingLeft="10dp"
+            android:text="Total"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/reylayprod"
+        android:layout_width="100dp"
+        android:layout_height="52dp"
+        android:layout_below="@+id/relRoad"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="false"
+        android:layout_marginLeft="2dp"
+        android:layout_marginTop="2dp"
+        android:layout_toLeftOf="@+id/imgImg"
+        android:background="@layout/frame_rect">
+
+        <TextView
+            android:id="@+id/lblProd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:paddingLeft="10dp"
+            android:paddingTop="3dp"
+            android:paddingRight="3dp"
+            android:text="Producto"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/lblPNum"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/lblProd"
+            android:layout_alignBottom="@+id/lblPres"
+            android:layout_alignParentRight="true"
+            android:gravity="center_vertical"
+            android:paddingRight="10dp"
+            android:text="0.00"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/lblCant"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/lblPNum"
+            android:layout_alignBottom="@+id/lblPres"
+            android:layout_alignParentLeft="true"
+            android:gravity="center_vertical"
+            android:paddingLeft="10dp"
+            android:paddingRight="5dp"
+            android:text="0"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/lblPres"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/lblProd"
+            android:layout_alignParentBottom="true"
+            android:layout_toLeftOf="@+id/lblPNum"
+            android:gravity="center_vertical"
+            android:paddingLeft="2dp"
+            android:paddingRight="3dp"
+            android:text="UNID"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textSize="14sp" />
+
+    </RelativeLayout>
+
+    <ListView
+        android:id="@+id/listView1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/rellaytot"
+        android:layout_below="@+id/reylayprod"
+        android:layout_alignLeft="@+id/reylayprod"
+        android:layout_marginLeft="3dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginRight="3dp"
+        android:layout_marginBottom="5dp"
+        android:clickable="true">
+
+    </ListView>
+
+    <ImageView
+        android:id="@+id/imgImg"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:layout_above="@+id/listView1"
+        android:layout_alignTop="@+id/reylayprod"
+        android:layout_alignParentRight="true"
+        android:clickable="true"
+        android:onClick="showProd"
+        android:paddingLeft="10dp"
+        android:paddingRight="5dp"
+        android:src="@drawable/mas" />
+
+    <RelativeLayout
+        android:id="@+id/relbotpan"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="false"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginBottom="1dp"
+        android:background="@layout/blue_strip"
+        android:clickable="true"
+        android:onClick="doFocus">
+
+        <TextView
+            android:id="@+id/textView9"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="5dp"
+            android:gravity="center_horizontal"
+            android:paddingRight="10dp"
+            android:text="DTSolutions"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp" />
+
+        <CheckBox
+            android:id="@+id/checkBox1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerVertical="false"
+            android:layout_marginLeft="10dp"
+            android:layout_marginBottom="9dp"
+            android:background="#C2E4F4"
+            android:paddingRight="10dp"
+            android:text="Borrar"
+            android:textColor="#000000" />
+
+        <EditText
+            android:id="@+id/editText6"
+            android:layout_width="100dp"
+            android:layout_height="15dp"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="13dp"
+            android:layout_marginEnd="15dp"
+            android:background="#1A8AC6"
+            android:ems="10"
+            android:focusable="auto"
+            android:inputType="textPersonName"
+            android:textColor="#FFFFFF"
+            android:textSize="10sp" />
+
+        <Button
+            android:id="@+id/cmdBarrasDespacho"
+            android:layout_width="182dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="5dp"
+            android:layout_toStartOf="@+id/textView9"
+            android:layout_toEndOf="@+id/checkBox1"
+            android:background="#CEEBEF"
+            android:onClick="muestraProdBarraDespacho"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:text="Barras pendientes"
+            android:textSize="16sp"
+            tools:visibility="visible" />
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/imageView13"
+        android:layout_width="57dp"
+        android:layout_height="49dp"
+        android:layout_alignTop="@+id/imgNext"
+        android:layout_alignParentStart="true"
+        android:clickable="true"
+        android:onClick="doSoftScan"
+        android:src="@drawable/scan2" />
+
+</RelativeLayout>

@@ -1,0 +1,80 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@layout/back"
+    tools:context=".DeposDoc" >
+
+    <ImageView
+        android:id="@+id/imageView11"
+        android:layout_width="54dp"
+        android:layout_height="47dp"
+        android:layout_alignTop="@+id/imageView1"
+        android:layout_marginStart="-11dp"
+        android:layout_toEndOf="@+id/lblCPago"
+        android:adjustViewBounds="false"
+        android:clickable="true"
+        android:onClick="selectNone"
+        android:src="@drawable/sel_none" />
+
+    <ImageView
+        android:id="@+id/imageView10"
+        android:layout_width="58dp"
+        android:layout_height="48dp"
+        android:layout_alignTop="@+id/imageView1"
+        android:layout_marginEnd="-11dp"
+        android:layout_toStartOf="@+id/lblCPago"
+        android:clickable="true"
+        android:onClick="selectAll"
+        android:src="@drawable/sel_all" />
+
+    <TextView
+        android:id="@+id/lblCPago"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:text="TextView"
+        android:visibility="invisible" />
+
+    <ListView
+        android:id="@+id/listView1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/imageView1"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="10dp" >
+
+    </ListView>
+
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_margin="10dp"
+        android:src="@drawable/prev48" />
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="10dp"
+        android:src="@drawable/next48" />
+
+    <TextView
+        android:id="@+id/textView16"
+        android:layout_width="20dp"
+        android:layout_height="53dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:text="TextView"
+        android:visibility="invisible" />
+
+</RelativeLayout>

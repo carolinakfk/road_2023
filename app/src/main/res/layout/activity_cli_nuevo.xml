@@ -1,0 +1,206 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@layout/back"
+    tools:context=".CliNuevo" >
+
+    <RelativeLayout
+        android:id="@+id/relCliN"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_margin="10dp"
+        android:layout_toLeftOf="@+id/imageView1" >
+
+        <TextView
+            android:id="@+id/lblFact"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:text="Nombre"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/txtCNNom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/lblFact"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/lblFact"
+            android:ems="10"
+            android:maxLength="49" >
+
+            <requestFocus />
+        </EditText>
+    </RelativeLayout>
+
+    <EditText
+        android:id="@+id/txtCNDir"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/lblDVTot"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/lblDVTot"
+        android:ems="10"
+        android:maxLength="99"
+        android:paddingRight="10dp" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/txtCNDir"
+        android:layout_alignLeft="@+id/txtCNDir"
+        android:paddingTop="5dp"
+        android:text="Teléfono"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <EditText
+        android:id="@+id/txtCNTel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/textView3"
+        android:layout_toLeftOf="@+id/imageView1"
+        android:layout_toRightOf="@+id/lblDVTot"
+        android:ems="10"
+        android:maxLength="24" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView3"
+        android:layout_below="@+id/txtCNTel"
+        android:paddingTop="5dp"
+        android:text="NIT"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <EditText
+        android:id="@+id/txtCNNit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/txtCNTel"
+        android:layout_alignTop="@+id/textView4"
+        android:layout_toLeftOf="@+id/imageView1"
+        android:ems="10"
+        android:maxLength="24" />
+
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/txtCNNit"
+        android:layout_alignLeft="@+id/textView4"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="10dp"
+        android:paddingTop="5dp"
+        android:text="Precio"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <Spinner
+        android:id="@+id/spinner1"
+        android:layout_width="200dp"
+        android:layout_height="36dp"
+        android:layout_alignLeft="@+id/txtCNNit"
+        android:layout_alignTop="@+id/textView5"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="0dp"
+        android:background="@layout/spinner_style"
+        android:paddingRight="10dp" />
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="80dp"
+        android:layout_below="@+id/spinner1"
+        android:layout_alignLeft="@+id/textView5"
+        android:layout_alignRight="@+id/txtCNDir"
+        android:layout_marginLeft="-1dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="2dp">
+
+        <CheckBox
+            android:id="@+id/checkBox1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:text="Lu " />
+
+        <CheckBox
+            android:id="@+id/checkBox2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/checkBox1"
+            android:text="Ma" />
+
+        <CheckBox
+            android:id="@+id/checkBox3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/checkBox2"
+            android:text="Mi" />
+
+        <CheckBox
+            android:id="@+id/checkBox4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/checkBox3"
+            android:text="Ju" />
+
+        <CheckBox
+            android:id="@+id/checkBox5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/checkBox4"
+            android:text="Vi" />
+
+        <CheckBox
+            android:id="@+id/checkBox6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/checkBox1"
+            android:layout_alignParentLeft="true"
+            android:text="Sa" />
+
+        <CheckBox
+            android:id="@+id/checkBox7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/checkBox1"
+            android:layout_alignTop="@+id/checkBox6"
+            android:layout_alignBottom="@+id/checkBox6"
+            android:layout_toRightOf="@+id/checkBox1"
+            android:text="Do" />
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/lblDVTot"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/relCliN"
+        android:layout_alignTop="@+id/relCliN"
+        android:layout_marginTop="51dp"
+        android:paddingTop="10dp"
+        android:text="Dirección"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:clickable="true"
+        android:onClick="doSave"
+        android:paddingTop="10dp"
+        android:paddingRight="10dp"
+        android:src="@drawable/next48" />
+
+</RelativeLayout>

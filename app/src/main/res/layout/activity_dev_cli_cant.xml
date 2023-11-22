@@ -1,0 +1,361 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@layout/back"
+    tools:context=".DevCliCant" >
+
+    <TextView
+        android:id="@+id/lblFecha"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/relRoad"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="false"
+        android:layout_toLeftOf="@+id/imgNext"
+        android:paddingLeft="5dp"
+        android:paddingTop="3dp"
+        android:text="Producto"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <RelativeLayout
+        android:id="@+id/rlCant"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/spinner1"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="5dp"
+        android:background="@layout/frame_rect">
+
+        <RelativeLayout
+            android:id="@+id/rlun"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="1dp">
+
+            <TextView
+                android:id="@+id/lblBU"
+                android:layout_width="125dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="3dp"
+                android:gravity="center_horizontal|left|center_vertical"
+                android:text="Cant a cambiar"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <EditText
+                android:id="@+id/txtMonto"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginEnd="3dp"
+                android:layout_toEndOf="@+id/lblBU"
+                android:inputType="number"
+                android:text="0"
+                android:textSize="18sp"
+                android:textStyle="bold">
+
+                <requestFocus />
+            </EditText>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rlUmcamb"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_below="@+id/rlun"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="false"
+            android:layout_marginTop="2dp">
+
+            <TextView
+                android:id="@+id/lblUM"
+                android:layout_width="125dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="3dp"
+                android:gravity="center_horizontal|left"
+                android:text="UM a cambiar:"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <Spinner
+                android:id="@+id/cmbUM"
+                android:layout_width="231dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="3dp"
+                android:layout_toEndOf="@+id/lblUM"
+                android:background="@layout/spinner_style"
+                android:spinnerMode="dropdown" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rlUMprecio"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_below="@+id/rlUmcamb"
+            android:layout_alignParentStart="false"
+            android:layout_alignParentBottom="false"
+            android:layout_marginTop="2dp">
+
+            <TextView
+                android:id="@+id/textView75"
+                android:layout_width="125dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+                android:layout_marginStart="3dp"
+                android:gravity="center_horizontal|left|center_vertical"
+                android:text="UM precio de venta:"
+                android:textAppearance="@android:style/TextAppearance.Holo.Medium" />
+
+            <TextView
+                android:id="@+id/lblPrecioVenta"
+                android:layout_width="249dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="0dp"
+                android:layout_marginEnd="3dp"
+                android:layout_marginBottom="1dp"
+                android:layout_toEndOf="@+id/textView75"
+                android:gravity="fill_vertical"
+                android:paddingLeft="5dp"
+                android:paddingBottom="5dp"
+                android:text="--"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rlPrecioventa"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_below="@+id/rlkgs"
+            android:layout_alignParentStart="false"
+            android:layout_alignParentTop="false"
+            android:layout_marginTop="2dp">
+
+            <TextView
+                android:id="@+id/textView74"
+                android:layout_width="125dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="3dp"
+                android:gravity="center_horizontal|left|center_vertical"
+                android:text="Precio de venta: "
+                android:textAlignment="textStart"
+                android:textAppearance="@android:style/TextAppearance.Holo.Medium" />
+
+            <EditText
+                android:id="@+id/txtPrecio"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="0dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginEnd="3dp"
+                android:layout_toEndOf="@+id/textView74"
+                android:enabled="false"
+                android:inputType="number"
+                android:text="0"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rllote"
+            android:layout_width="match_parent"
+            android:layout_height="75dp"
+            android:layout_below="@+id/rlPrecioventa"
+            android:layout_alignParentStart="false"
+            android:layout_alignParentBottom="false"
+            android:layout_marginTop="2dp">
+
+            <TextView
+                android:id="@+id/textView76"
+                android:layout_width="125dp"
+                android:layout_height="43dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="3dp"
+                android:layout_marginTop="0dp"
+                android:gravity="center_horizontal|left|center_vertical"
+                android:text="Lote:"
+                android:textAppearance="@android:style/TextAppearance.Holo.Medium" />
+
+            <EditText
+                android:id="@+id/txtLote"
+                android:layout_width="249dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="0dp"
+                android:layout_toEndOf="@+id/textView76"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:text="999999" />
+
+            <CheckBox
+                android:id="@+id/chkTieneLote"
+                android:layout_width="144dp"
+                android:layout_height="21dp"
+                android:layout_below="@+id/txtLote"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="2dp"
+                android:layout_marginEnd="9dp"
+                android:layout_marginBottom="2dp"
+                android:checked="true"
+                android:text="No tiene lote" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rlkgs"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_below="@+id/rlUMprecio"
+            android:layout_alignParentStart="false"
+            android:layout_alignParentTop="false"
+            android:layout_marginTop="2dp">
+
+            <TextView
+                android:id="@+id/textView73"
+                android:layout_width="125dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="3dp"
+                android:gravity="center_horizontal|left|center_vertical"
+                android:text="Kgs. a cambiar:"
+                android:textAlignment="viewStart"
+                android:textAppearance="@android:style/TextAppearance.Holo.Medium"
+                android:textStyle="normal" />
+
+            <EditText
+                android:id="@+id/txtkgs"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="3dp"
+                android:layout_marginBottom="1dp"
+                android:layout_toEndOf="@+id/textView73"
+                android:inputType="number"
+                android:text="0"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+    <Spinner
+        android:id="@+id/spinner1"
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:layout_below="@+id/imgNext"
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@+id/textView77"
+        android:background="@layout/spinner_style" />
+
+    <RelativeLayout
+        android:id="@+id/relbotpan"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="false"
+        android:layout_margin="1dp"
+        android:background="@layout/blue_strip" >
+
+        <TextView
+            android:id="@+id/textView9"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="5dp"
+            android:gravity="center_horizontal"
+            android:paddingRight="10dp"
+            android:text="DTSolutions"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/relRoad"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true" >
+
+        <RelativeLayout
+            android:id="@+id/relRoadbar"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:background="#9A999E" >
+        </RelativeLayout>
+
+        <ImageView
+            android:id="@+id/imgTitLogo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="5dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/logo_nuevo" />
+
+        <ImageView
+            android:id="@+id/imgRoadTit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/relRoadbar"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:adjustViewBounds="true"
+            android:padding="5dp"
+            android:src="@drawable/cantidad" />
+
+        <TextView
+            android:id="@+id/txtRoadTit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/imgRoadTit"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:text="Devolución"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#1A8AC6" />
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/imgNext"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_below="@+id/relRoad"
+        android:layout_alignRight="@+id/relbotpan"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:clickable="true"
+        android:onClick="sendCant"
+        android:src="@drawable/next48" />
+
+    <TextView
+        android:id="@+id/textView77"
+        android:layout_width="105dp"
+        android:layout_height="35dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="3dp"
+        android:layout_marginTop="113dp"
+        android:text="Razón: "
+        android:textAppearance="@android:style/TextAppearance.Holo.Medium" />
+
+</RelativeLayout>

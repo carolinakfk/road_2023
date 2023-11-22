@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+
+    <RelativeLayout
+        android:id="@+id/relEncabezado"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#BDE2F3">
+
+        <TextView
+            android:id="@+id/lbCodigo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:paddingLeft="5dp"
+            android:text="Codigo"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/lbNombre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/lbCodigo"
+            android:layout_marginTop="0dp"
+            android:gravity="center_vertical"
+            android:paddingLeft="5dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:text="Nombre"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/relEncabezado"
+        android:layout_marginTop="5dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:orientation="horizontal"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp">
+
+            <TextView
+                android:id="@+id/lblCant"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:paddingLeft="5dp"
+                android:text="Cantidad"
+                android:textAlignment="textEnd"
+                android:textSize="17sp" />
+
+            <TextView
+                android:id="@+id/lblPeso"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:text="Peso"
+                android:textAlignment="textEnd"
+                android:textSize="17sp" />
+        </LinearLayout>
+    </RelativeLayout>
+</RelativeLayout>

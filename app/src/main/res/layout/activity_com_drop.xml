@@ -1,0 +1,226 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@layout/back"
+    tools:context=".ComDrop" >
+
+    <RelativeLayout
+        android:id="@+id/relRoad"
+        android:layout_width="match_parent"
+        android:layout_height="48dp" >
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_centerVertical="true"
+            android:background="#9A999E"></RelativeLayout>
+
+        <TextView
+            android:id="@+id/txtRoadTit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/imageView4"
+            android:paddingLeft="5dp"
+            android:text="Comunicación Manual"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#1A8AC6" />
+
+        <ImageView
+            android:id="@+id/ImageView01"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="5dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/logo_nuevo" />
+
+        <ImageView
+            android:id="@+id/imageView4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:adjustViewBounds="true"
+            android:padding="5dp"
+            android:src="@drawable/comunicacion_blanco_gris" />
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/lblETipo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/relRoad"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="10dp"
+        android:text="Procesado"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/lblProd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/lblETipo"
+        android:layout_centerHorizontal="true"
+        android:paddingTop="5dp"
+        android:paddingBottom="15dp"
+        android:text="Archivo de parámetros"
+        android:textSize="15sp" />
+
+    <RelativeLayout
+        android:id="@+id/relbotpan"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="false"
+        android:layout_margin="1dp"
+        android:background="@layout/blue_strip" >
+
+        <TextView
+            android:id="@+id/textView9"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="5dp"
+            android:gravity="center_horizontal"
+            android:paddingRight="10dp"
+            android:text="DTSolutions"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp" />
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/relbotpan"
+        android:layout_alignParentRight="true"
+        android:clickable="true"
+        android:onClick="callPhone"
+        android:padding="10dp"
+        android:src="@drawable/phonecall"
+        android:visibility="invisible" />
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignTop="@+id/imageView2"
+        android:clickable="true"
+        android:onClick="sendSMS"
+        android:padding="10dp"
+        android:src="@drawable/phonesms"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/btnSend"
+        android:layout_width="96dp"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/textView1"
+        android:background="@layout/back"
+        android:gravity="center_vertical|center_horizontal"
+        android:minHeight="48dp"
+        android:minWidth="64dp"
+        android:onClick="askSend"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:text=" Enviar datos"
+        android:textSize="15sp" />
+
+    <ProgressBar
+        android:id="@+id/progressBar2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/lblProd"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="21dp" />
+
+    <Button
+        android:id="@+id/btnRec"
+        android:layout_width="96dp"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@+id/textView1"
+        android:background="@layout/back"
+        android:minHeight="48dp"
+        android:minWidth="64dp"
+        android:onClick="askRec"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:text=" Recibir datos"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="20dp"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:text="Small Text"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:visibility="invisible" />
+
+    <ImageView
+        android:id="@+id/imageView5"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_above="@+id/btnRec"
+        android:layout_alignLeft="@+id/btnRec"
+        android:layout_toLeftOf="@+id/textView1"
+        android:adjustViewBounds="true"
+        android:clickable="true"
+        android:onClick="askRec"
+        android:src="@drawable/recibir_archivos" />
+
+    <ImageView
+        android:id="@+id/imageView6"
+        android:layout_width="wrap_content"
+        android:layout_height="64dp"
+        android:layout_above="@+id/btnSend"
+        android:layout_alignLeft="@+id/btnSend"
+        android:layout_alignRight="@+id/btnSend"
+        android:layout_alignTop="@+id/imageView5"
+        android:adjustViewBounds="true"
+        android:clickable="true"
+        android:onClick="askSend"
+        android:src="@drawable/enviar_archivos" />
+
+    <TextView
+        android:id="@+id/lblCPago"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/relbotpan"
+        android:layout_alignLeft="@+id/imageView1"
+        android:layout_alignParentRight="true"
+        android:gravity="center_horizontal"
+        android:paddingBottom="3dp"
+        android:text="Sincronizar DropBox"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="10sp" />
+
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="64dp"
+        android:layout_height="48dp"
+        android:layout_above="@+id/lblCPago"
+        android:layout_alignParentRight="true"
+        android:clickable="true"
+        android:onClick="syncDropBox"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:paddingTop="5dp"
+        android:src="@drawable/dropbox" />
+
+</RelativeLayout>

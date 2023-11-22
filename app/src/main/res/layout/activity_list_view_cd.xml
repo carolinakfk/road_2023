@@ -1,0 +1,51 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Img_view_list" >
+
+    <TextView
+        android:id="@+id/lblETipo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:gravity="center_vertical"
+        android:paddingBottom="5dp"
+        android:paddingLeft="5dp"
+        android:text="Fecha"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/lblPNum"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/lblETipo"
+        android:layout_weight="1"
+        android:maxLines="100"
+        android:paddingBottom="5dp"
+        android:paddingLeft="5dp"
+        android:scrollHorizontally="false"
+        android:text="Nombre"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="18sp"
+        android:textStyle="normal"
+        android:width="0dip" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="5dp"
+        android:text="Medium Text"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+</RelativeLayout>

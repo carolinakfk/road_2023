@@ -1,0 +1,133 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Img_view_list" >
+
+    <TextView
+        android:id="@+id/lblETipo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:gravity="center_vertical"
+        android:paddingLeft="5dp"
+        android:paddingBottom="5dp"
+        android:text="Código"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="16sp"
+        android:textStyle="normal" />
+
+    <TextView
+        android:id="@+id/lblPNum"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/lblETipo"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginEnd="36dp"
+        android:layout_weight="1"
+        android:width="0dip"
+        android:maxLines="2"
+        android:paddingLeft="5dp"
+        android:paddingBottom="5dp"
+        android:scrollHorizontally="false"
+        android:text="Descripción"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="16sp"
+        android:textStyle="normal" />
+
+    <TextView
+        android:id="@+id/lblPValor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/lblPNum"
+        android:layout_alignParentRight="true"
+        android:gravity="center_vertical"
+        android:paddingRight="5dp"
+        android:paddingBottom="5dp"
+        android:text="Código"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="#000000"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <ImageView
+        android:id="@+id/imageView27"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_below="@+id/lblPValor"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="0dp"
+        android:layout_marginEnd="10dp"
+        android:padding="3dp"
+        android:src="@drawable/standby" />
+
+    <TextView
+        android:id="@+id/lblCufe"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/lblPNum"
+        android:layout_marginTop="6dp"
+        android:text="CUFE: "
+        android:textColor="#000000"
+        android:textStyle="bold"
+        tools:visibility="gone" />
+
+    <TextView
+        android:id="@+id/textCufe"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/lblPNum"
+        android:layout_alignTop="@id/lblCufe"
+        android:layout_marginLeft="5dp"
+        android:layout_toEndOf="@+id/lblCufe"
+        android:text="TextView"
+        tools:visibility="gone" />
+
+    <TextView
+        android:id="@+id/lblCertificada"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textCufe"
+        android:layout_marginTop="6dp"
+        android:text="Certificada: "
+        android:textColor="#000000"
+        android:textStyle="bold"
+        tools:visibility="gone" />
+
+    <TextView
+        android:id="@+id/textCertificada"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textCufe"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="6dp"
+        android:layout_toEndOf="@id/lblCertificada"
+        android:text="TextView"
+        tools:visibility="gone" />
+
+    <TextView
+        android:id="@+id/lblEstadoDGI"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textCertificada"
+        android:layout_marginTop="6dp"
+        android:text="Estado: "
+        android:textColor="#000000"
+        android:textStyle="bold"
+        tools:visibility="gone" />
+
+    <TextView
+        android:id="@+id/txtEstado"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textCertificada"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="6dp"
+        android:layout_toEndOf="@id/lblEstadoDGI"
+        android:text="TextView"
+        tools:visibility="gone" />
+
+</RelativeLayout>

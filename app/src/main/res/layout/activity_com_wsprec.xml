@@ -1,0 +1,245 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:background="@layout/back"
+tools:context=".ComWSPrec" >
+
+<RelativeLayout
+    android:id="@+id/relRoad"
+    android:layout_width="match_parent"
+    android:layout_height="48dp" >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:background="#9A999E" >
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/txtRoadTit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/imageView4"
+        android:paddingLeft="5dp"
+        android:text="Precios"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#1A8AC6" />
+
+    <ImageView
+        android:id="@+id/imageView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:adjustViewBounds="true"
+        android:padding="5dp"
+        android:src="@drawable/act_stock" />
+</RelativeLayout>
+
+<TextView
+    android:id="@+id/lblProd"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/lblETipo"
+    android:layout_centerHorizontal="true"
+    android:paddingTop="5dp"
+    android:paddingBottom="10dp"
+    android:text="Archivo de parámetros"
+    android:textSize="15sp" />
+
+<TextView
+    android:id="@+id/lblCPago"
+    android:layout_width="wrap_content"
+    android:layout_height="60dp"
+    android:layout_alignParentRight="true"
+    android:layout_centerVertical="true"
+    android:text="Large Text"
+    android:textAppearance="?android:attr/textAppearanceLarge"
+    android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:onClick="writeData"
+        android:text="Button"
+        android:visibility="invisible" />
+
+<RelativeLayout
+    android:id="@+id/relativeLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_above="@+id/relbotpan"
+    android:layout_alignParentBottom="false"
+    android:layout_centerHorizontal="true"
+    android:layout_margin="1dp"
+    android:background="@layout/frame_rect"
+    android:visibility="invisible" >
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:padding="5dp"
+        android:text="Ruta"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <EditText
+        android:id="@+id/txtRuta"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/textView2"
+        android:ems="10" >
+
+        <requestFocus />
+    </EditText>
+
+    <EditText
+        android:id="@+id/txtWS"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/txtRuta"
+        android:ems="10" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="5dp"
+        android:layout_below="@+id/txtWS"
+        android:layout_centerHorizontal="true"
+        android:text="Medium Text"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/textView2"
+        android:layout_alignBottom="@+id/textView2"
+        android:layout_toRightOf="@+id/txtRuta"
+        android:padding="5dp"
+        android:text="Empresa"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <EditText
+        android:id="@+id/txtEmp"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/txtWS"
+        android:layout_toRightOf="@+id/textView4"
+        android:ems="10" />
+</RelativeLayout>
+
+<Button
+    android:id="@+id/Button01"
+    android:layout_width="84dp"
+    android:layout_height="wrap_content"
+    android:layout_above="@+id/relativeLayout1"
+    android:layout_alignParentRight="true"
+    android:background="@layout/back"
+    android:minHeight="18dp"
+    android:minWidth="64dp"
+    android:onClick="comManual"
+    android:paddingBottom="3dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:text="Manual"
+    android:textSize="15sp"
+    android:visibility="invisible" />
+
+<TextView
+    android:id="@+id/lblETipo"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignLeft="@+id/relativeLayout1"
+    android:layout_alignParentRight="true"
+    android:layout_below="@+id/relRoad"
+    android:gravity="center_horizontal"
+    android:paddingBottom="10dp"
+    android:paddingTop="10dp"
+    android:text="Procesado" />
+
+<TextView
+    android:id="@+id/textView1"
+    android:layout_width="20dp"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:layout_centerVertical="true"
+    android:text="Small Text"
+    android:textAppearance="?android:attr/textAppearanceSmall"
+    android:visibility="invisible" />
+
+<RelativeLayout
+    android:id="@+id/relbotpan"
+    android:layout_width="wrap_content"
+    android:layout_height="48dp"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentLeft="true"
+    android:layout_alignParentRight="true"
+    android:layout_alignParentTop="false"
+    android:layout_margin="1dp"
+    android:background="@layout/blue_strip" >
+
+    <TextView
+        android:id="@+id/textView9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="5dp"
+        android:gravity="center_horizontal"
+        android:paddingRight="10dp"
+        android:text="DTSolutions"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp" />
+</RelativeLayout>
+
+<ImageView
+    android:id="@+id/ImageView02"
+    android:layout_width="84dp"
+    android:layout_height="48dp"
+    android:layout_above="@+id/Button01"
+    android:layout_alignParentRight="true"
+    android:adjustViewBounds="true"
+    android:clickable="true"
+    android:onClick="comManual"
+    android:padding="5dp"
+    android:src="@drawable/comunicacion_blanco_gris"
+    android:visibility="invisible" />
+
+<ProgressBar
+    android:id="@+id/progressBar2"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_above="@+id/ImageView02"
+    android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/lblProd"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:gravity="center_horizontal"
+        android:paddingTop="5dp"
+        android:text="Actualizando precios . . ."
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textStyle="bold" />
+
+</RelativeLayout>

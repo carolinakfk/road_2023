@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Road</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_menu">ROAD</string>
+    <string name="title_activity_clientes">Clientes</string>
+    <string name="title_activity_cli_det">Cliente</string>
+    <string name="title_activity_venta">Pedido</string>
+    <string name="title_activity_com_drop">Comunicación manual"</string>
+    <string name="title_activity_message">Mensaje</string>
+    <string name="title_activity_producto">Producto</string>
+    <string name="title_activity_prod_cant">Cantidad</string>
+    <string name="title_activity_pedido_res">Pedido Resumen</string>
+    <string name="title_activity_obj_ruta">ObjRuta</string>
+    <string name="title_activity_obj_prod">ObjProd</string>
+    <string name="title_activity_inv_bodega">Inventario Bodega</string>
+    <string name="title_activity_cons_precio">Consulta de precio</string>
+    <string name="title_activity_pago">Pago</string>
+    <string name="title_activity_cobro">Cobro</string>
+    <string name="title_activity_reimpresion">Reimpresión</string>
+    <string name="title_activity_anulacion">Anulación</string>
+    <string name="title_activity_deposito">Deposito</string>
+    <string name="title_activity_lista_promo">Promociónes</string>
+    <string name="title_activity_depos_doc">DeposDoc</string>
+    <string name="title_activity_desc_bon">Promocion aplicada</string>
+    <string name="title_activity_pic_view">PicView</string>
+    <string name="title_activity_com_ws">Comunicación remota</string>
+    <string name="title_activity_devol_cli">Devolucion</string>
+    <string name="title_activity_dev_cli_cant">Cantidad</string>
+    <string name="title_activity_exist">Existencias</string>
+    <string name="title_activity_devol_bod">Devolucion a Bodega</string>
+    <string name="title_activity_act_disp">Actualizacion de Existencias</string>
+    <string name="title_activity_merc_lista">Mercadeo</string>
+    <string name="title_activity_merc_prop">Mercadeo Propio</string>
+    <string name="title_activity_merc_comp">Mercadeo de Competencia</string>
+    <string name="title_activity_merc_preg">Encuesta</string>
+    <string name="title_activity_merc">Activos</string>
+    <string name="title_activity_cli_nuevo">Cliente Nuevo</string>
+    <string name="title_activity_recarga">Recarga</string>
+    <string name="title_activity_recarg_cant">Recarga cantidad</string>
+    <string name="title_activity_factura_res">Factura Pago</string>
+    <string name="title_activity_fin_dia">Cierre del Día</string>
+    <string name="title_activity_deposito_parc">Deposito Parcial</string>
+    <string name="title_activity_util_print">Configuración de impresora</string>
+    <string name="title_activity_print_dialog">PrintDialog</string>
+    <string name="title_activity_bon_list">BonList</string>
+    <string name="title_activity_bon_venta">BonVenta</string>
+    <string name="title_activity_demo_data">Datos de cliente</string>
+    <string name="title_activity_demo_data_dlg">DemoDataDlg</string>
+    <string name="title_activity_cli_pos">CliPos</string>
+    <string name="title_activity_epson_connect">EpsonConnect</string>
+    <string name="title_activity_cli_gps">Coordenadas de cliente</string>
+    <string name="title_activity_lic_regis">LicRegis</string>
+    <string name="title_activity_recarga_auto">RecargaAuto</string>
+    <string name="title_activity_cli_nuevo_apr">CliNuevoApr</string>
+    <string name="title_activity_solic_inv">SolicInv</string>
+    <string name="title_activity_aprofam1">Aprofam1</string>
+    <string name="title_activity_municipio">Municipio</string>
+    <string name="title_activity_cli_nuevo_apr_edit">CliNuevoAprEdit</string>
+    <string name="title_activity_com_wsexist">ComWSExist</string>
+    <string name="title_activity_repesaje_lista">RepesajeLista</string>
+    <string name="title_activity_prueba_swipe">prueba_swipe</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+
+</resources>

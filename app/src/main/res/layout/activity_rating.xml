@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".rating">
+
+    <RelativeLayout
+        android:id="@+id/relRoad"
+        android:layout_width="match_parent"
+        android:layout_height="48dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_centerVertical="true"
+            android:background="#9A999E"></RelativeLayout>
+
+        <TextView
+            android:id="@+id/txtRoadTit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/imageView4"
+            android:paddingLeft="5dp"
+            android:text="Evalúa ROAD"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#1A8AC6" />
+
+        <ImageView
+            android:id="@+id/ImageView01"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="5dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/logo_nuevo" />
+
+    </RelativeLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="305dp"
+        android:layout_height="470dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/relRoad"
+        app:layout_constraintVertical_bias="0.0">
+
+        <Spinner
+            android:id="@+id/cmbTransError"
+            android:layout_width="280dp"
+            android:layout_height="45dp"
+            android:layout_alignBottom="@+id/lblBU"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="8dp"
+            android:layout_toRightOf="@+id/lblBU"
+            android:background="@layout/spinner_style"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:nextFocusDown="@id/txtComentarioU"
+            android:nextFocusForward="@id/rbROAD"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtTransError" />
+
+        <RatingBar
+            android:id="@+id/rbROAD"
+            android:layout_width="241dp"
+            android:layout_height="52dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
+            android:nextFocusDown="@id/cmbTransError"
+            android:numStars="5"
+            android:stepSize="1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/cmdEnviar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:nextFocusForward="@id/txtComentarioU"
+            android:onClick="GuardaRating"
+            android:text="Enviar"
+            android:textAlignment="center"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtComentarioU" />
+
+        <EditText
+            android:id="@+id/txtComentarioU"
+            android:layout_width="266dp"
+            android:layout_height="79dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/frame_rect"
+            android:duplicateParentState="true"
+            android:ems="10"
+            android:gravity="start|top"
+            android:hint="Ingrese aquí su comentario(200 caracteres máximo)"
+            android:inputType="textMultiLine|textCapWords|textCapSentences"
+            android:isScrollContainer="true"
+            android:maxLength="200"
+            android:nextFocusDown="@id/cmdEnviar"
+            android:nextFocusForward="@id/cmbTransError"
+            android:selectAllOnFocus="true"
+            android:textAlignment="textStart"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/lblComentario" />
+
+        <TextView
+            android:id="@+id/lblComentario"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:layout_marginTop="20dp"
+            android:gravity="center_horizontal"
+            android:text="Comentario"
+            android:textAlignment="center"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.502"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cmbTransError" />
+
+        <TextView
+            android:id="@+id/txtTransError"
+            android:layout_width="185dp"
+            android:layout_height="34dp"
+            android:layout_marginTop="16dp"
+            android:gravity="center_horizontal"
+            android:text="Transacción con error"
+            android:textAlignment="center"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rbROAD" />
+
+        <TextView
+            android:id="@+id/lblCaracteres"
+            android:layout_width="71dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="8dp"
+            android:gravity="center_vertical"
+            android:text=" 0"
+            android:textAlignment="center"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.388"
+            app:layout_constraintStart_toEndOf="@+id/lblComentario"
+            app:layout_constraintTop_toBottomOf="@+id/cmbTransError" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

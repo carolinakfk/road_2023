@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".list_adapt_subcanal">
+
+    <RelativeLayout
+        android:layout_width="297dp"
+        android:layout_height="55dp"
+        tools:layout_editor_absoluteX="45dp"
+        tools:layout_editor_absoluteY="16dp">
+
+        <TextView
+            android:id="@+id/lbCodigo"
+            android:layout_width="288dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="3dp"
+            android:layout_marginTop="3dp"
+            android:text="Código"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/lbNombre"
+            android:layout_width="284dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/lbCodigo"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="3dp"
+            android:layout_marginTop="1dp"
+            android:text="Nombre"
+            android:textSize="16sp" />
+    </RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

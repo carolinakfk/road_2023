@@ -1,0 +1,192 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@layout/back"
+    tools:context=".Products" >
+
+    <RelativeLayout
+        android:id="@+id/relRoad"
+        android:layout_width="match_parent"
+        android:layout_height="48dp" >
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:layout_alignParentLeft="false"
+            android:layout_alignParentRight="false"
+            android:layout_alignParentBottom="false"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="false"
+            android:background="#9A999E"></RelativeLayout>
+
+        <TextView
+            android:id="@+id/txtRoadTit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="5dp"
+            android:layout_toRightOf="@+id/imgRoadTit"
+            android:text="Producto"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="#1A8AC6" />
+
+        <ImageView
+            android:id="@+id/imgTitLogo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="5dp"
+            android:adjustViewBounds="true"
+            android:src="@drawable/logo_nuevo" />
+
+        <ImageView
+            android:id="@+id/imgRoadTit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:adjustViewBounds="true"
+            android:padding="5dp"
+            android:src="@drawable/producto" />
+
+    </RelativeLayout>
+
+    <ListView
+        android:id="@+id/listView1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/lblProd"
+        android:layout_marginTop="45dp">
+
+    </ListView>
+
+    <TextView
+        android:id="@+id/lblProd"
+        android:layout_width="wrap_content"
+        android:layout_height="42dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignRight="@+id/lblBU"
+        android:layout_below="@+id/lblBU"
+        android:gravity="center_vertical"
+        android:paddingLeft="10dp"
+        android:paddingRight="5dp"
+        android:paddingTop="10dp"
+        android:text="Filtro"
+        android:textSize="18sp" />
+
+    <Spinner
+        android:id="@+id/spinner1"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_alignBottom="@+id/lblBU"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="5dp"
+        android:layout_toRightOf="@+id/lblBU"
+        android:background="@layout/spinner_style"
+        android:focusable="true"
+        android:focusableInTouchMode="true" />
+
+    <TextView
+        android:id="@+id/lblPTotal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Small Text"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/lblBU"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/relRoad"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:gravity="center_vertical"
+        android:paddingLeft="10dp"
+        android:paddingRight="5dp"
+        android:paddingTop="10dp"
+        android:text="Familia"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="18sp" />
+
+    <EditText
+        android:id="@+id/editText1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/spinner1"
+        android:layout_alignBottom="@+id/lblProd"
+        android:layout_toLeftOf="@+id/imageView1"
+        android:ems="10"
+        android:singleLine="true">
+
+        <requestFocus />
+    </EditText>
+
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="48dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/editText1"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/editText1"
+        android:adjustViewBounds="true"
+        android:clickable="true"
+        android:focusable="false"
+        android:onClick="limpiaFiltro"
+        android:paddingBottom="6dp"
+        android:paddingTop="6dp"
+        android:src="@drawable/erase" />
+
+    <TextView
+        android:id="@+id/textView27"
+        android:layout_width="153dp"
+        android:layout_height="32dp"
+        android:layout_alignParentStart="false"
+        android:layout_below="@+id/lblProd"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="5dp"
+        android:layout_toLeftOf="@+id/textView29"
+        android:background="@layout/frame_rect"
+        android:clickable="true"
+        android:gravity="center"
+        android:onClick="porCodigo"
+        android:text="Ordenar por codigo"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/textView28"
+        android:layout_width="139dp"
+        android:layout_height="31dp"
+        android:layout_below="@+id/lblProd"
+        android:layout_marginTop="5dp"
+        android:layout_toEndOf="@+id/textView29"
+        android:background="@layout/frame_rect"
+        android:clickable="true"
+        android:gravity="center"
+        android:onClick="porNombre"
+        android:text="Ordenar por nombre"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/textView29"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_alignBottom="@+id/textView27"
+        android:layout_centerHorizontal="true"
+        android:text="TextView"
+        android:visibility="invisible" />
+
+    <ProgressBar
+        android:id="@+id/progressBar6"
+        style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/listView1"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp" />
+
+</RelativeLayout>

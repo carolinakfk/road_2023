@@ -1,0 +1,100 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Img_view_list" >
+
+    <ImageView
+        android:id="@+id/imgImg"
+        android:layout_width="32dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/ok48" />
+
+    <TextView
+        android:id="@+id/lblCFact"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/lblETipo"
+        android:layout_alignParentTop="true"
+        android:layout_alignRight="@+id/lblETipo"
+        android:paddingBottom="5dp"
+        android:paddingLeft="5dp"
+        android:text="Factura"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="#000000"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/lblETipo"
+        android:layout_width="90dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/lblCFact"
+        android:layout_toRightOf="@+id/imgImg"
+        android:gravity="right"
+        android:paddingBottom="5dp"
+        android:paddingLeft="5dp"
+        android:text="000,000.00"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/lblCPago"
+        android:layout_width="90dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/lblETipo"
+        android:layout_alignBottom="@+id/lblETipo"
+        android:layout_toRightOf="@+id/lblCFact"
+        android:gravity="right"
+        android:text="000,000.00"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#000000"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/lblCValor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/lblPag"
+        android:layout_alignLeft="@+id/lblCPago"
+        android:layout_alignParentTop="true"
+        android:layout_alignRight="@+id/lblCPago"
+        android:gravity="right"
+        android:paddingLeft="10dp"
+        android:text="000,000.00"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/lblCVence"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/lblETipo"
+        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@+id/lblCPago"
+        android:gravity="right"
+        android:paddingBottom="5dp"
+        android:paddingLeft="5dp"
+        android:text="31/12/2014"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#000000"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/lblPag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:gravity="right"
+        android:paddingLeft="5dp"
+        android:text="31/12/2014"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textSize="16sp" />
+
+</RelativeLayout>

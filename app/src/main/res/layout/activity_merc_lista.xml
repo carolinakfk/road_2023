@@ -1,0 +1,78 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@layout/back"
+    tools:context=".MercLista" >
+
+    <TextView
+        android:id="@+id/lblCPago"
+        android:layout_width="wrap_content"
+        android:layout_height="10dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="Large Text"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/btnPropio"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/lblCPago"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:background="@layout/frame_btn"
+        android:clickable="true"
+        android:gravity="center_horizontal"
+        android:onClick="mercProp"
+        android:padding="10dp"
+        android:text="Propio"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/btnComp"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnPropio"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:background="@layout/frame_btn"
+        android:clickable="true"
+        android:gravity="center_horizontal"
+        android:onClick="mercComp"
+        android:padding="10dp"
+        android:text="Competencia"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/btnEnc"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnComp"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:background="@layout/frame_btn"
+        android:clickable="true"
+        android:gravity="center_horizontal"
+        android:onClick="mercEnc"
+        android:padding="10dp"
+        android:text="Encuesta"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/btnActivos"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnEnc"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:background="@layout/frame_btn"
+        android:clickable="true"
+        android:gravity="center_horizontal"
+        android:onClick="mercAct"
+        android:padding="10dp"
+        android:text="Activos"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+</RelativeLayout>

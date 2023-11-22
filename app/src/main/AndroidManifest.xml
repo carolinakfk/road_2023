@@ -1,0 +1,568 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:hardwareAccelerated="true"
+    android:installLocation="preferExternal"
+    android:largeHeap="true"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="Android.permission.REBOOT" />
+    <uses-permission android:name="Android.permission.SHUTDOWN" />
+    <uses-permission android:name="Android.permission.DEVICE_POWER" />
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+
+    <application
+        android:name=".appGlobals"
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true"
+        tools:ignore="HardcodedDebugMode,LockedOrientationActivity">
+        <activity
+            android:name=".CliDocumentos"
+            android:exported="false"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".CalculadoraKgs"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysVisible" />
+        <activity
+            android:name=".ResumenProductos"
+            android:exported="true"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".ReportePrefactura"
+            android:exported="true"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".ListaVendedores"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".DepartamentoMun"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".CliNuevoT"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".editar_cliente"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".CanalSubcanal"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="true"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+
+        <service
+            android:name=".srvBase"
+            android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name=".srvEnvPedido"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity
+            android:name=".Menu"
+            android:label="@string/title_activity_menu"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".Clientes"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_clientes"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".CliDet"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_cli_det"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".Venta"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_venta"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ComDrop"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_com_drop"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".MessageBox"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_message"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Producto"
+            android:label="@string/title_activity_producto"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysHidden" />
+        <activity
+            android:name=".ProdCant"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_prod_cant"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".PedidoRes"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_pedido_res"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ObjRuta"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_obj_ruta"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ObjProd"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_obj_prod"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".InvBodega"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_inv_bodega"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ConsPrecio"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_cons_precio"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Pago"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_pago"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".Cobro"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_cobro"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".Reimpresion"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_reimpresion"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".Anulacion"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_anulacion"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".Deposito"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_deposito"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateVisible" />
+        <activity
+            android:name=".ListaPromo"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_lista_promo"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".DeposDoc"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_depos_doc"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".DescBon"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_desc_bon"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen" />
+        <activity
+            android:name=".PicView"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_pic_view" />
+        <activity
+            android:name=".ComWS"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_com_ws"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".DevolCli"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_devol_cli"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".DevCliCant"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_dev_cli_cant"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateVisible" />
+        <activity
+            android:name=".DevolBod"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_devol_bod"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".ActDisp"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_act_disp"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".MercLista"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_merc_lista"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".MercProp"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_merc_prop"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".MercComp"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_merc_comp"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".MercPreg"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_merc_preg"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".MercAct"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_merc"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".CliNuevo"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_cli_nuevo"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Recarga"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_recarga"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".RecargCant"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_recarg_cant"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".FacturaRes"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_factura_res"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".FinDia"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_fin_dia"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".DepositoParc"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_deposito_parc"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateVisible" />
+        <activity
+            android:name=".UtilPrint"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_util_print"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".PrintDialog"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_print_dialog"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen" />
+        <activity
+            android:name=".BonList"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_bon_list"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen" />
+        <activity
+            android:name=".BonVenta"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_bon_venta"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen" />
+        <activity
+            android:name=".DemoData"
+            android:label="@string/title_activity_demo_data"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".DemoDataDlg"
+            android:label="@string/title_activity_demo_data_dlg"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"
+            android:windowSoftInputMode="stateVisible" />
+        <activity
+            android:name=".CliPos"
+            android:label="@string/title_activity_cli_pos"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"
+            android:windowSoftInputMode="stateVisible" />
+        <activity
+            android:name=".CliGPS"
+            android:label="@string/title_activity_cli_gps"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".LicRegis"
+            android:label="@string/title_activity_lic_regis"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".RecargaAuto"
+            android:label="@string/title_activity_recarga_auto"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".CliNuevoApr"
+            android:label="@string/title_activity_cli_nuevo_apr"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".SolicInv"
+            android:label="@string/title_activity_solic_inv"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".Aprofam1"
+            android:label="@string/title_activity_aprofam1"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".Municipio"
+            android:label="@string/title_activity_municipio" />
+        <activity
+            android:name=".CliNuevoAprEdit"
+            android:label="@string/title_activity_cli_nuevo_apr_edit"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".ComWSExist"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_com_wsexist"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ExistPed"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".Tablas"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="Tablas"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".InicioDia"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="Tablas"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".RepesajeLista"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".Repesaje"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysVisible" />
+        <activity
+            android:name=".DevolBodTol"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".DevolBodCan"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".Soporte"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ComWSPrec"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".nota_credito"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ayudante_vehiculo"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ComWSRec"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".BonBarra"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".UtilPrint2"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".comWSLic"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ComWSFotos"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".WSTest"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".rating"
+            android:label="Rating"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysHidden" />
+        <activity android:name=".imprime_barras" />
+        <activity
+            android:name=".desglose"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysHidden" />
+        <activity
+            android:name=".Exist"
+            android:label="@string/title_activity_exist"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ComWSSend"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"
+            android:windowSoftInputMode="stateAlwaysHidden" />
+        <activity
+            android:name=".ProdCantPrev"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ListaPedidos"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".activity_despacho_list"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".despacho_barras"
+            android:label="Despacho Barras"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".TipoCanasta"
+            android:label="Tipo de canasta"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysHidden" />
+        <activity
+            android:name=".Canastas"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar">
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="firebase_performance_logcat_enabled"
+            android:value="true" />
+    </application>
+
+</manifest>

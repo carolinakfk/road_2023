@@ -1,0 +1,92 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@layout/back"
+    tools:context=".ObjProd" >
+
+    <RadioButton
+        android:id="@+id/radioButton1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:checked="true"
+        android:onClick="setUnits"
+        android:paddingRight="30dp"
+        android:text="Cantidad"
+        android:textStyle="bold" />
+
+    <RadioButton
+        android:id="@+id/radioButton2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/radioButton1"
+        android:onClick="setValue"
+        android:text="Monto"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/lblpSaldo"
+        android:layout_width="40dp"
+        android:layout_height="30dp"
+        android:text="TextView"
+        android:visibility="invisible" />
+
+    <TextView
+        android:id="@+id/lblFecha"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/lblpSaldo"
+        android:gravity="right"
+        android:paddingTop="10dp"
+        android:text="Meta"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <TextView
+        android:id="@+id/lblBU"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/lblFecha"
+        android:layout_below="@+id/lblpSaldo"
+        android:layout_toRightOf="@+id/lblFecha"
+        android:gravity="right"
+        android:paddingTop="10dp"
+        android:text="Acumulado"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/lblPTotal"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/lblBU"
+        android:layout_below="@+id/lblpSaldo"
+        android:layout_toRightOf="@+id/lblBU"
+        android:gravity="right"
+        android:paddingTop="10dp"
+        android:text="[ % ]"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <ListView
+        android:id="@+id/listView1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/lblFecha"
+        android:layout_margin="5dp" >
+
+    </ListView>
+
+    <TextView
+        android:id="@+id/btnComp"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/listView1"
+        android:layout_toRightOf="@+id/lblPTotal"
+        android:gravity="right"
+        android:paddingTop="10dp"
+        android:text="Falta"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+</RelativeLayout>

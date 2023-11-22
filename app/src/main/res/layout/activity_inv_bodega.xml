@@ -1,0 +1,69 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@layout/back"
+    tools:context=".InvBodega" >
+
+    <EditText
+        android:id="@+id/txtMonto"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="10dp"
+        android:layout_toLeftOf="@+id/imageView1"
+        android:layout_toRightOf="@+id/textView1" >
+
+        <requestFocus />
+    </EditText>
+
+    <ImageView
+        android:id="@+id/imgPFoto"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:clickable="true"
+        android:onClick="msgAskUpd"
+        android:paddingRight="10dp"
+        android:paddingTop="5dp"
+        android:src="@drawable/comunicacion"
+        android:visibility="invisible" />
+
+    <ListView
+        android:id="@+id/listView1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/txtMonto"
+        android:layout_margin="5dp" >
+
+    </ListView>
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/txtMonto"
+        android:layout_alignLeft="@+id/listView1"
+        android:layout_alignTop="@+id/txtMonto"
+        android:gravity="center_vertical"
+        android:paddingRight="10dp"
+        android:text="Filtro"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="48dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/imgPFoto"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/txtMonto"
+        android:adjustViewBounds="true"
+        android:clickable="true"
+        android:onClick="limpiaFiltro"
+        android:paddingBottom="4dp"
+        android:paddingTop="4dp"
+        android:src="@drawable/erase" />
+
+</RelativeLayout>
