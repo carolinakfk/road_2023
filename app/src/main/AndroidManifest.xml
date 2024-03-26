@@ -28,6 +28,9 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
 
     <application
         android:name=".appGlobals"
@@ -533,6 +536,11 @@
         <activity
             android:name=".despacho_barras"
             android:label="Despacho Barras"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
+        <activity
+            android:name=".OrdenCompra"
+            android:label="Orden compra"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
         <activity

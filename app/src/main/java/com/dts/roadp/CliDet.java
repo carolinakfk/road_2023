@@ -245,6 +245,9 @@ public class CliDet extends PBase {
 		//#CKFK 20210922 Inicializa la variable del total de la devolución
 		gl.devtotal=0;
 
+		//#CKFK 20240313 Inicializa la variable de la orden de compra
+		gl.ordenCompra = "";
+
 		if (!permiteVenta) {
 			if (gl.peVentaGps==1) {
 				msgbox("¡Distancia del cliente "+ sgp1 +" es mayor que la permitida "+ sgp2 +"!\nPara realizar la venta debe acercarse más al cliente.");
@@ -280,6 +283,9 @@ public class CliDet extends PBase {
 	}
 
 	public void showDespacho(View view) {
+		//#CKFK 20240313 Inicializa la variable de la orden de compra
+		gl.ordenCompra = "";
+
 		if (!permiteVenta) {
 			msgbox("¡Distancia del cliente mayor que permitida!\nPara realizar la venta debe acercarse más al cliente.");return;
 		}else{
@@ -613,7 +619,7 @@ public class CliDet extends PBase {
 			gl.vcheque = DT.getString(14).equalsIgnoreCase("S");
 			gl.vchequepost = DT.getString(15).equalsIgnoreCase("S");
 			gl.clitipo = DT.getString(16);
-			gl.ingresaCanastas = DT.getInt(18) == 1;
+			//gl.ingresaCanastas = DT.getInt(18) == 1;
             canal =DT.getString(19);
             canalsub =DT.getString(20);
             prior=DT.getString(21);

@@ -44,7 +44,8 @@ public class clsDocFactura extends clsDocument {
 		nombre="COMPROBANTE AUXILIAR DE FACTURA ELECTRONICA FACTURA DE OPERACION INTERNA";
 
 		try {
-			sql=" SELECT SERIE,CORELATIVO,RUTA,VENDEDOR,CLIENTE,TOTAL,DESMONTO,IMPMONTO,EMPRESA,FECHA,ADD1,ADD2,IMPRES, ANULADO, FECHAENTR " +
+			sql=" SELECT SERIE,CORELATIVO,RUTA,VENDEDOR,CLIENTE,TOTAL,DESMONTO,IMPMONTO,EMPRESA,FECHA,ADD1,ADD2,IMPRES, " +
+				" ANULADO, FECHAENTR, ORDEN_COMPRA " +
 				" FROM D_FACTURA WHERE COREL='"+corel+"'";
 			DT=Con.OpenDT(sql);
 
@@ -80,6 +81,9 @@ public class clsDocFactura extends clsDocument {
 				anulado=DT.getString(13);
 				impres=DT.getInt(12);
 				cantimpres=0;
+
+				//OrdenCompra
+				vOrdenCompra = DT.getString(15);
 
 				if (anulado.equals("S")?true:false){
 					cantimpres = -1;

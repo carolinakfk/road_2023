@@ -1,0 +1,160 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#D0000000"
+    tools:context=".OrdenCompra">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="198dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="false"
+        android:layout_centerVertical="false"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginRight="10dp"
+        android:background="@layout/back"
+        android:paddingBottom="1dp">
+
+        <RelativeLayout
+            android:id="@+id/relRoad"
+            android:layout_width="match_parent"
+            android:layout_height="48dp">
+
+            <RelativeLayout
+                android:id="@+id/relRoadbar"
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentBottom="true"
+                android:layout_centerVertical="true"
+                android:background="#9A999E"></RelativeLayout>
+
+            <ImageView
+                android:id="@+id/imgTitLogo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="5dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/logo_nuevo" />
+
+            <ImageView
+                android:id="@+id/imgRoadTit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/relRoadbar"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:adjustViewBounds="true"
+                android:padding="5dp"
+                android:src="@drawable/cliente" />
+
+            <TextView
+                android:id="@+id/lblFactura"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@+id/imgRoadTit"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:text="Factura"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#1A8AC6" />
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/lblOrdenCompra"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/relRoad"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="12dp"
+            android:paddingBottom="3dp"
+            android:text="Orden compra:"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#000000"
+            android:textSize="18sp" />
+
+        <EditText
+            android:id="@+id/txtOrdenCompra"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/relRoad"
+            android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginRight="10dp"
+            android:layout_toEndOf="@+id/lblOrdenCompra"
+            android:ems="10"
+            android:maxLines="2">
+
+            <requestFocus />
+        </EditText>
+
+        <TextView
+            android:id="@+id/TextView01"
+            android:layout_width="wrap_content"
+            android:layout_height="10dp"
+            android:layout_below="@+id/textView4"
+            android:layout_centerHorizontal="true"
+            android:text="Small Text"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:visibility="invisible" />
+
+        <RelativeLayout
+            android:id="@+id/relbotpan"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_below="@id/cmdAceptar"
+            android:layout_alignParentLeft="false"
+            android:layout_alignParentRight="false"
+            android:layout_marginStart="1dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="1dp"
+            android:layout_marginBottom="1dp"
+            android:background="@layout/blue_strip">
+
+            <TextView
+                android:id="@+id/textView9"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="5dp"
+                android:gravity="center_horizontal"
+                android:paddingRight="10dp"
+                android:text="DTSolutions"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp" />
+        </RelativeLayout>
+
+        <Button
+            android:id="@+id/cmdAceptar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/txtOrdenCompra"
+            android:layout_marginLeft="80dp"
+            android:layout_marginTop="10dp"
+            android:onClick="aceptar"
+            android:text="Aceptar" />
+
+        <Button
+            android:id="@+id/cmdCancelar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/txtOrdenCompra"
+            android:layout_marginStart="65dp"
+            android:layout_marginTop="10dp"
+            android:layout_toEndOf="@+id/cmdAceptar"
+            android:onClick="cancelar"
+            android:text="Cancelar" />
+
+    </RelativeLayout>
+
+</RelativeLayout>

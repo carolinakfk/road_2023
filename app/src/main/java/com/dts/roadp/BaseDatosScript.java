@@ -618,6 +618,7 @@ public class BaseDatosScript {
 					"[DESPCOREL] TEXT,"+
 					"[CERTIFICADA_DGI] INTEGER NOT NULL,"+
 					"[CUFE] TEXT,"+
+					"[ORDEN_COMPRA] TEXT,"+
 					"PRIMARY KEY ([COREL])"+
 					");";
 			database.execSQL(vSQL);
@@ -1993,6 +1994,7 @@ public class BaseDatosScript {
                     "[ENVIO_AUTO_PEDIDOS] INTEGER NOT NULL,"+
                     "[PEDIDOS_CLINUEVO] INTEGER NOT NULL,"+
 					"[VALIDAR_POSICION_GEOREFERENCIAL] INTEGER NOT NULL,"+
+					"[CONTROL_CANASTA] INTEGER NOT NULL,"+
 					"PRIMARY KEY ([CODIGO])"+
 					");";
 			database.execSQL(vSQL);
@@ -2306,6 +2308,7 @@ public class BaseDatosScript {
 					"[ADD1] TEXT," +
 					"[ADD2] TEXT," +
 					"[ADD3] TEXT,"+
+					"[ORDEN_COMPRA] TEXT,"+
 					"PRIMARY KEY ([COREL])"+
 					");";
 			database.execSQL(vSQL);

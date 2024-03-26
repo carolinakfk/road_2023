@@ -14,7 +14,7 @@ public class appGlobals extends Application {
 	public String ruta,rutanom,rutasup,sucur,rutatipo,rutatipog,vend,vendnom,gstr,gstr2,prod,um,umpres,umpresp,umstock,cliente,clitipo;
 	public String ubas,emp, empnom,imgpath,umpeso,lotedf,impresora, tipoImpresora, codSupervisor, ayudante, ayudanteID, vehiculo, vehiculoID;
 	public String wsURL,bonprodid,bonbarid,bonbarprod,pprodname,contrib,ateninistr,tcorel,URLtemp,URLLocal,URLRemoto,
-			iddespacho, coddespacho,pedCorel, rutaPedido, sitio_web = "";
+			iddespacho, coddespacho,pedCorel, rutaPedido, sitio_web = "", ordenCompra = "";
 	public int itemid,gint,tipo,nivel,prodtipo,prw,boldep,vnivel,vnivprec,media;
 	public int autocom,pagomodo,filtrocli,prdlgmode;
 	public long nuevaFecha,atentini;
@@ -32,7 +32,7 @@ public class appGlobals extends Application {
 	public int mpago;
 	public String prodCanasta, corelFac, devcord;
 	public String IdCanal, IdSubcanal, EditarClienteCanal, EditarClienteSubcanal;
-	public boolean ingresaCanastas, enviaMov, enviaPedidosParcial, enviaClientes;
+	public boolean enviaMov, enviaPedidosParcial, enviaClientes, controlCanastas; //ingresaCanastas,
 	public String EditarClienteCodigo, EditarClienteNombre, EditarClienteRuc;
 	public String CliNombre,CliNit, CliDireccion, CliProvincia, CliDistrito, CliCiudad, CliTel, CliEmail, CliContacto, CliCsPollo, CliCsEmbutido,CliCsHuevo,
 			CliCsRes, CliCsCerdo, CliCsCongelados, CliCsSalsas, IdDep, IdMun, CliCodVen="", corelCliente="", CliNomVen;

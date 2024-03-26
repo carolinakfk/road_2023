@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 public class clsDocument {
 
-	public String nombre,numero,serie,ruta,vendedor,cliente,nit,tipo,ref,medidapeso, rutapv;
+	public String nombre,numero,serie,ruta,vendedor,cliente,nit,tipo,ref,medidapeso, rutapv, vOrdenCompra;
 	public String resol,resfecha,resvence,resrango,fsfecha,fsfechaent,modofact;
 	public String tf1="",tf2="",tf3="",tf4="",tf5="",add1="",add2="",deviceid, qrCode,CUFE, Caja, FechaAutorizacion, NumAutorizacion;
 	public clsRepBuilder rep;
@@ -306,6 +306,10 @@ public class clsDocument {
 			}
         }
 
+		if(docfactura){
+			rep.add("Orden compra: "+vOrdenCompra);
+		}
+
 		try{
 			if (nit.length()>0) {
 				String[] DVRuc = nit.split(" ");
@@ -427,7 +431,9 @@ public class clsDocument {
         int idx;
 
         //residx=0;
-		if (emptystr(l)) return "";
+		if (emptystr(l)) {
+			return "";
+		}
         //lu=l.toUpperCase().trim();
         lu=l.trim();
 

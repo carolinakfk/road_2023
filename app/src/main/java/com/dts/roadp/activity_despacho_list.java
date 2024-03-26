@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 public class activity_despacho_list extends PBase {
@@ -49,6 +50,7 @@ public class activity_despacho_list extends PBase {
         listItems();
 
         gl.modpedid="";
+        gl.ordenCompra = "";
 
     }
 
@@ -59,6 +61,9 @@ public class activity_despacho_list extends PBase {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position,	long id) {
+
+                Cursor DT;
+
                 Object lvObj = listView.getItemAtPosition(position);
                 clsClasses.clsDs_pedido item = (clsClasses.clsDs_pedido)lvObj;
 
@@ -68,6 +73,18 @@ public class activity_despacho_list extends PBase {
                 gl.cliente = item.cliente;
                 gl.pedCorel=item.add1;
                 gl.rutaPedido = item.add2;
+                gl.ordenCompra = "";
+
+                sql = "SELECT COALESCE(ORDEN_COMPRA,'') ORDEN_COMPRA FROM DS_PEDIDO WHERE COREL = '" + item.corel + "'";
+                DT=Con.OpenDT(sql);
+
+                if(DT!=null){
+                    if(DT.getCount()>0){
+                        DT.moveToFirst();
+                        gl.ordenCompra=DT.getString(0);
+                    }
+                    DT.close();
+                }
 
                 iniciaVenta();
 

@@ -10,7 +10,6 @@ import android.database.SQLException;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -22,7 +21,6 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -38,8 +36,8 @@ import com.example.edocsdk.Fimador;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import Entidades.Detalle;
 import Entidades.Receptor;
@@ -49,6 +47,7 @@ import Entidades.gDFRefFE;
 import Entidades.gDFRefNum;
 import Entidades.gFormaPago;
 import Entidades.gPagPlazo;
+import Entidades.gPedComGl;
 import Entidades.gRucEmDFRef;
 import Entidades.gRucRec;
 import Entidades.gUbiRec;
@@ -101,7 +100,8 @@ public class FacturaRes extends PBase {
 	private boolean porpeso;
 	private boolean pagocompleto=false;
 	private boolean pagando = false;
-
+	private boolean ingresoOC = false;
+	private int opcion = 0;
 	private clsClasses.clsSucursal Sucursal = clsCls.new clsSucursal();
 	private final rFE Factura = new rFE();
 	private final rFE NotaCredito = new rFE();
@@ -312,6 +312,10 @@ public class FacturaRes extends PBase {
 		Catalogo = new CatalogoFactura(this, Con, db);
 
 		saved=false;
+
+		//#CKFK20240325 Inicializar variable para saber si ya entraron a colocar número de orden de compra
+		ingresoOC = false;
+
 		assignCorel();
 
 		cliPorDia();
@@ -326,6 +330,10 @@ public class FacturaRes extends PBase {
 
 	public void prevScreen(View view) {
 		try{
+
+			//#CKFK20240325 Inicializar variable en false cuando salga de la pantalla
+			ingresoOC = false;
+
 			clearGlobals();
 			/*if(gl.dvbrowse!=0){
 				gl.dvbrowse =0;
@@ -344,7 +352,16 @@ public class FacturaRes extends PBase {
 
 			if (pagando) return;
 
+			//#CKFK20240325 Validación que permite ingresar el número de orden de compra cuando sea vacío
+			if (gl.ordenCompra.equals("") && !ingresoOC){
+				ingresoOC = true;
+				Intent ordencompra = new Intent(this, OrdenCompra.class);
+				startActivity(ordencompra);
+				return;
+			}
+
 			pagando = true;
+			opcion = 2;
 
 			rl_facturares.setEnabled(false);
 			imgMPago.setEnabled(false);
@@ -352,19 +369,21 @@ public class FacturaRes extends PBase {
 			rl_facturares.setVisibility(View.INVISIBLE);
 			imgMPago.setVisibility(View.INVISIBLE);
 
-			if (tieneCanastas()) return;
+			if (!IngresoCanastas()){
+				askContinuarIngresandoCanastas();
+			}else{
+				if (fcorel==0) {
+					msgbox("No existe un correlativo disponible, no se puede emitir factura");return;
+				}
 
-			if (fcorel==0) {
-				msgbox("No existe un correlativo disponible, no se puede emitir factura");return;
+				gl.pagoval=tot;
+				gl.pagolim=tot;
+				gl.pagocobro=false;
+				browse=1;
+
+				Intent intent = new Intent(this,Pago.class);
+				startActivity(intent);
 			}
-
-			gl.pagoval=tot;
-			gl.pagolim=tot;
-			gl.pagocobro=false;
-			browse=1;
-
-			Intent intent = new Intent(this,Pago.class);
-			startActivity(intent);
 
 		}catch (Exception e) {
 			addlog(Objects.requireNonNull(new Object() {
@@ -387,7 +406,16 @@ public class FacturaRes extends PBase {
 
 			if (pagando) return;
 
+			//#CKFK20240325 Validación que permite ingresar el número de orden de compra cuando sea vacío
+			if (gl.ordenCompra.equals("") && !ingresoOC){
+				ingresoOC = true;
+				Intent ordencompra = new Intent(this, OrdenCompra.class);
+				startActivity(ordencompra);
+				return;
+			}
+
 			pagando = true;
+			opcion = 3;
 
 			rl_facturares.setEnabled(false);
 			imgCash.setEnabled(false);
@@ -395,14 +423,17 @@ public class FacturaRes extends PBase {
 			rl_facturares.setVisibility(View.INVISIBLE);
 			imgCash.setVisibility(View.INVISIBLE);
 
-			if (tieneCanastas()) return;
-
-			if (fcorel==0) {
-				msgbox("No existe un correlativo disponible, no se puede emitir factura");return;
+			if (!IngresoCanastas()) {
+				askContinuarIngresandoCanastas();
+			}else{
+				if (opcion == 3){
+					if (fcorel==0) {
+						msgbox("No existe un correlativo disponible, no se puede emitir factura");return;
+					}
+					//inputEfectivo();
+					inputVuelto();
+				}
 			}
-
-			//inputEfectivo();
-			inputVuelto();
 
 		}catch (Exception e){
 			addlog(Objects.requireNonNull(new Object() {
@@ -425,7 +456,16 @@ public class FacturaRes extends PBase {
 
 			if (pagando) return;
 
+			//#CKFK20240325 Validación que permite ingresar el número de orden de compra cuando sea vacío
+			if (gl.ordenCompra.equals("") && !ingresoOC){
+				ingresoOC = true;
+				Intent ordencompra = new Intent(this, OrdenCompra.class);
+				startActivity(ordencompra);
+				return;
+			}
+
 			pagando = true;
+			opcion = 1;
 
 			rl_facturares.setEnabled(false);
 			imgCred.setEnabled(false);
@@ -433,13 +473,17 @@ public class FacturaRes extends PBase {
 			rl_facturares.setVisibility(View.INVISIBLE);
 			imgCred.setVisibility(View.INVISIBLE);
 
-			if (tieneCanastas()) return;
+			if (!IngresoCanastas()){
+				askContinuarIngresandoCanastas();
+			}else{
 
-			if (fcorel==0) {
-				msgbox("No existe un correlativo disponible, no se puede emitir factura");return;
+				if (fcorel==0) {
+					msgbox("No existe un correlativo disponible, no se puede emitir factura");return;
+				}
+
+				inputCredito();
+
 			}
-
-			inputCredito();
 
 		}catch (Exception e){
 			addlog(Objects.requireNonNull(new Object() {
@@ -481,9 +525,12 @@ public class FacturaRes extends PBase {
 		}
 	}
 
-	private boolean tieneCanastas() {
+	private boolean IngresoCanastas() {
 
-		if (gl.ingresaCanastas) {
+		//gl.ingresaCanastas &&
+		if (gl.controlCanastas) {
+
+			if (!tieneInventarioCanastas()) return true;
 
 			long fecha = app.fechaFactTol(du.getActDateTime());
 
@@ -497,22 +544,39 @@ public class FacturaRes extends PBase {
 			Cursor DT = Con.OpenDT(sql);
 
 			if (DT != null) {
-				if(DT.getCount() >= 1) {
+				if(DT.getCount() > 0) {
 					DT.moveToFirst();
 					int cant = DT.getInt(0);
-					if (cant >= 1) {
-						return false;
-					}else {
-						toastcent("Debe registrar canastas antes de pagar.");
-						Intent canastas = new Intent(this, Canastas.class);
-						startActivity(canastas);
-						return true;
-					}
+					return (cant > 0);
 				}
 			}
 		}
 
-		return false;
+		return true;
+	}
+
+	private boolean tieneInventarioCanastas() {
+        boolean result = false
+				;
+		try
+		{
+			String sql = "SELECT COALESCE(SUM(CANT),0) CANT FROM P_STOCK " +
+					     "WHERE CODIGO IN (SELECT CODIGO FROM P_PRODUCTO WHERE ES_CANASTA = 1)";
+
+			Cursor DT = Con.OpenDT(sql);
+
+			if (DT != null) {
+				if(DT.getCount() > 0) {
+					DT.moveToFirst();
+					int cant = DT.getInt(0);
+					result = cant>0;
+				}
+			}
+
+		}catch (Exception e){
+			msgbox(new Object(){}.getClass().getEnclosingMethod().getName() + " " + e.getMessage());
+		}
+		return result;
 	}
 
 	public void showBon(View view) {
@@ -583,9 +647,21 @@ public class FacturaRes extends PBase {
 
 	public void pendientePago(View view){
 		try{
-			if (tieneCanastas()) return;
+			opcion = 4;
 
-			askPendientePago();
+			//#CKFK20240325 Validación que permite ingresar el número de orden de compra cuando sea vacío
+			if (gl.ordenCompra.equals("") && !ingresoOC){
+				ingresoOC = true;
+				Intent ordencompra = new Intent(this, OrdenCompra.class);
+				startActivity(ordencompra);
+				return;
+			}
+
+			if (!IngresoCanastas()){
+				askContinuarIngresandoCanastas();
+			}else{
+				askPendientePago();
+			}
 		}catch (Exception e){
 			addlog(Objects.requireNonNull(new Object() {
 			}.getClass().getEnclosingMethod()).getName(),e.getMessage(),"");
@@ -971,6 +1047,7 @@ public class FacturaRes extends PBase {
 			ins.add("CORELATIVO",fcorel);
 			ins.add("IMPRES",0);
 			ins.add("CERTIFICADA_DGI", 0);
+			ins.add("ORDEN_COMPRA", gl.ordenCompra);
 
 			if (gl.peModal.equalsIgnoreCase("TOL") && app.esClienteNuevo(gl.cliente)) {
 				ins.add("ADD1","NUEVO");
@@ -1216,6 +1293,9 @@ public class FacturaRes extends PBase {
 				}
 
 			}
+
+			Factura.gPedComGl = new gPedComGl();
+			Factura.gPedComGl.dNroPed = gl.ordenCompra;
 
 			//region Devolución de  producto.
 			clsClasses.clsProducto producto;
@@ -2096,7 +2176,7 @@ public class FacturaRes extends PBase {
 			db.setTransactionSuccessful();
 			db.endTransaction();
 
-	} catch (Exception e) {
+		} catch (Exception e) {
 			db.endTransaction();
             addlog(Objects.requireNonNull(new Object() {
 			}.getClass().getEnclosingMethod()).getName(),e.getMessage(),sql);
@@ -3417,6 +3497,70 @@ public class FacturaRes extends PBase {
 			});
 
 			dialog.setNegativeButton("Cancelar", null);
+			dialog.setCancelable(false);
+			dialog.show();
+
+		}catch (Exception e){
+			addlog(Objects.requireNonNull(new Object() {
+			}.getClass().getEnclosingMethod()).getName(),e.getMessage(),"");
+		}
+
+
+	}
+
+	//#HS_20181212 Dialogo para Pendiente de pago
+	private void askContinuarIngresandoCanastas() {
+
+		try{
+
+			AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+			dialog.setTitle("Road");
+			dialog.setMessage("¿Ingresará canastas?");
+			dialog.setCancelable(false);
+
+			dialog.setPositiveButton("Si", (dialog1, which) -> {
+				pagando = false;
+				Intent canastas = new Intent(this, Canastas.class);
+				startActivity(canastas);
+			});
+
+			dialog.setNegativeButton("No", (dialog1, which) -> {
+				switch (opcion) {
+					case 1:
+
+						if (fcorel==0) {
+							msgbox("No existe un correlativo disponible, no se puede emitir factura");return;
+						}
+
+						inputCredito();
+
+						break;
+					case 2:
+						if (fcorel==0) {
+							msgbox("No existe un correlativo disponible, no se puede emitir factura");return;
+						}
+
+						gl.pagoval=tot;
+						gl.pagolim=tot;
+						gl.pagocobro=false;
+						browse=1;
+
+						Intent intent = new Intent(this,Pago.class);
+						startActivity(intent);
+						break;
+					case 3:
+						if (fcorel==0) {
+							msgbox("No existe un correlativo disponible, no se puede emitir factura");return;
+						}
+						//inputEfectivo();
+						inputVuelto();
+						break;
+					case 4:
+						askPendientePago();
+						break;
+				}
+			});
+
 			dialog.setCancelable(false);
 			dialog.show();
 

@@ -266,31 +266,19 @@ public class Canastas extends PBase {
 
             if (!mu.emptystr(gl.corelFac)){
                 tabla="T_CANASTA";
-                if (cantEntr == 0 && gl.ingresaCanastas){
+                /*if (cantEntr == 0 && gl.controlCanastas){
                     toast("La cantidad de canastas entregadas debe ser mayor que cero.");
                     cerrarDialog=false;
                     return;
-                }
+                }*/
             }
 
             if (editando) {
 
                 if( (gl.corelFac == null || gl.corelFac.isEmpty())){
-                   // actualizaStock(gl.prodCanasta, iEntregado);
-
-                   /* sql="INSERT INTO P_STOCK  " +
-                            "VALUES('CANASTA',10,0,22.5,0,'','0082581227','202110010000',0,'3104','A',1,0,'','UN','')";
-                    db.execSQL(sql);
-                    sql="INSERT INTO P_STOCK " +
-                            "VALUES('CANASTA',20,0,45,0,'','0082581228','202110010000',0,'3104','A',1,0,'','UN','')";
-                    db.execSQL(sql);*/
-
-                    aumentaStockCanastas(gl.prodCanasta, iEntregado,
+                   aumentaStockCanastas(gl.prodCanasta, iEntregado,
                             umbas,
                             iEntregado*pesoProm,pesoProm);
-                   /* rebajaStockCanastas(gl.prodCanasta, cantEntr,
-                            umbas,
-                            cantEntr*pesoProm,pesoProm);*/
                 }
             }
 

@@ -2221,17 +2221,22 @@ public class Menu extends PBase {
 
         try {
 
-            sql="SELECT IMPRESION,ENVIO_AUTO_PEDIDOS FROM P_RUTA";
+            sql="SELECT IMPRESION,ENVIO_AUTO_PEDIDOS, CONTROL_CANASTA FROM P_RUTA";
             dt=Con.OpenDT(sql);
             dt.moveToFirst();
 
             if (dt.getString(0).equalsIgnoreCase("N")) {
-                msgbox("La ruta tiene deshabilitada la impresión");
+                toastlong("La ruta tiene deshabilitada la impresión");
             }
 
             if (dt.getInt(1)==1) {
-                msgbox("Envio de pedidos habilitado");
+				toastlong("Envio de pedidos habilitado");
             }
+
+			gl.controlCanastas = (dt.getInt(2)==1?true:false);
+			if (gl.controlCanastas) {
+				toastlong("Control de canastas habilitado");
+			}
 
         } catch (Exception e) {
             msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());

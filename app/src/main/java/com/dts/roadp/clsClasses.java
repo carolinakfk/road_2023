@@ -142,6 +142,7 @@ public class clsClasses {
 		public String add1;
 		public String add2;
 		public String add3;
+		public String orden_compra;
 	}
 
 	public class clsDs_pedidod {
