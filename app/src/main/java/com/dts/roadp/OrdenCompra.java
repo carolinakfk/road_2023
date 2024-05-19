@@ -20,7 +20,7 @@ public class OrdenCompra  extends PBase{
         setContentView(R.layout.activity_orden_compra);
 
         super.InitBase();
-        addlog("CliPos",""+du.getActDateTime(),gl.vend);
+        addlog("Orden compra",""+du.getActDateTime(),gl.vend);
 
         txtOrdenCompra = (EditText) findViewById(R.id.txtOrdenCompra);
         txtOrdenCompra.requestFocus();
@@ -42,7 +42,7 @@ public class OrdenCompra  extends PBase{
                     if (arg2.getAction() == KeyEvent.ACTION_DOWN) {
                         switch (arg1) {
                             case KeyEvent.KEYCODE_ENTER:
-
+                                guardar();
                                 return true;
                         }
                     }
@@ -58,6 +58,10 @@ public class OrdenCompra  extends PBase{
     }
 
     public void aceptar(View view) {
+        guardar();
+    }
+
+    public void guardar(){
         String sOrdenCompra;
 
         try{
@@ -71,13 +75,10 @@ public class OrdenCompra  extends PBase{
 
             gl.ordenCompra = sOrdenCompra;
 
-            msgbox("La orden de compra se guardó");
-
             finish();
         }catch (Exception e){
             addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
         }
-
     }
 
     public void cancelar(View view) {

@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -241,6 +242,7 @@ public class Producto extends PBase {
 				}
 
 			});
+
 		} catch (Exception e){
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
 		}
@@ -282,7 +284,7 @@ public class Producto extends PBase {
                         if (!mu.emptystr(famid)){
                             if (!famid.equalsIgnoreCase("0")) sql=sql+"AND (P_PRODUCTO.LINEA='"+famid+"') ";
                         }
-                        if (vF.length()>0) sql=sql+"AND ((P_PRODUCTO.DESCCORTA LIKE '%" + vF + "%') OR (P_PRODUCTO.CODIGO='" + vF + "')) ";
+                        if (vF.length()>0) sql=sql+"AND ((P_PRODUCTO.DESCCORTA LIKE '%" + vF + "%') OR (P_PRODUCTO.CODIGO LIKE '%" + vF + "%')) ";
                         if (ordPorNombre) sql += "ORDER BY P_PRODUCTO.DESCCORTA"; else sql += "ORDER BY P_PRODUCTO.CODIGO";
 
                     } else {
@@ -370,6 +372,7 @@ public class Producto extends PBase {
 
 			cantidad = DT.getCount();
 			if (cantidad==0) {
+				toastlong("No hay productos con ese filtro, se listarán todos");
                 pbar.setVisibility(View.INVISIBLE);return;
             }
 			

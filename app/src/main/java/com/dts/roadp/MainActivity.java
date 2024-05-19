@@ -45,8 +45,8 @@ public class MainActivity extends PBase {
     private boolean rutapos, scanning = false;
     private String cs1, cs2, cs3, barcode;
 
-    private String parNumVer = "9.9.71 / ";
-    private String parFechaVer = "10-04-2024";
+    private String parNumVer = "9.9.74 / ";
+    private String parFechaVer = "10-05-2024";
     private String parTipoVer = "ROAD QAS";
 
     @Override
@@ -391,6 +391,11 @@ public class MainActivity extends PBase {
         String vCellCom = "";
 
         if (dbVacia()) {
+
+            if (gl==null){
+                super.InitBase();
+            }
+
             gl.modoadmin = true;
             gl.autocom = 0;
             toastcent("¡La base de datos está vacia!");
@@ -536,7 +541,7 @@ public class MainActivity extends PBase {
 
         //Id de Dispositivo
         gl.deviceId = androidid();
-        gl.devicename = getLocalBluetoothName();
+        gl.devicename = Build.MANUFACTURER + " " + Build.MODEL;;//getLocalBluetoothName();
         lblID.setText(gl.devicename);
 
         try {

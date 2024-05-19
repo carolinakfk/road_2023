@@ -271,7 +271,7 @@ public class CliDet extends PBase {
 
 		if (!permiteVenta) {
 			if (gl.peVentaGps == 1) {
-				msgbox("¡Distancia del cliente "+ sgp1 +" es mayor que la permitida "+ sgp2 + "!\nPara realizar la venta debe asercarse más al cliente.");
+				msgbox("¡Distancia del cliente "+ sgp1 +" es mayor que la permitida "+ sgp2 + "!\nPara realizar la venta debe acercarse más al cliente.");
 				return;
 			} else {
 				modoGPS = 2;
@@ -337,7 +337,7 @@ public class CliDet extends PBase {
 
 		if (!permiteVenta) {
 			if (gl.peVentaGps == 1) {
-				msgbox("¡Distancia del cliente "+ sgp1 +" es mayor que permitida "+ sgp2 + "!\nPara realizar la devolución debe asercarse más al cliente.");
+				msgbox("¡Distancia del cliente "+ sgp1 +" es mayor que permitida "+ sgp2 + "!\nPara realizar la devolución debe acercarse más al cliente.");
 				return;
 			} else {
 				modoGPS = 4;

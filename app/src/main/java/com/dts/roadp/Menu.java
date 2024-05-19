@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -28,6 +29,7 @@ import org.apache.commons.lang.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 
 public class Menu extends PBase {
 
@@ -53,6 +55,9 @@ public class Menu extends PBase {
 	private boolean rutapos,horizpos;
 	
 	private final int mRequestCode = 1001;
+
+	private TextView lblUser, lblPassword;
+	private EditText txtUser, txtPassword;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) 	{
@@ -1389,7 +1394,10 @@ public class Menu extends PBase {
 				}
 
 				if (tieneDevolucionTOL()) {
-					startActivity(new Intent(this,DevolBodTol.class));
+
+					askDevolucionBodega();
+
+					//startActivity(new Intent(this,DevolBodTol.class));
 				} else {
 					msgbox("La devolución está vacia, no se puede aplicar");return;
 				}
@@ -1401,7 +1409,185 @@ public class Menu extends PBase {
 		}
 
 	}
-	
+
+	public void askDevolucionBodega() {
+
+		try {
+
+			AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+
+			dialog.setTitle("Devolución bodega");
+			dialog.setMessage("¿Va a realizar la DEVOLUCIÓN A BODEGA, se quedará sin inventario, está seguro?");
+			dialog.setCancelable(false);
+
+			dialog.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					DatosSupervisor();
+				}
+			});
+
+			dialog.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+				}
+			});
+
+			dialog.show();
+
+		} catch (Exception e) {
+			addlog(new Object() {
+			}.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
+		}
+
+
+	}
+	private void DatosSupervisor() {
+
+		try {
+
+			lblUser = new TextView(this, null);
+			lblPassword = new TextView(this, null);
+
+			txtUser = new EditText(this, null);
+			txtPassword = new EditText(this, null);
+
+			final AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+			alert.setTitle("Devolución a bodega");
+
+			final LinearLayout layout = new LinearLayout(this);
+			layout.setOrientation(LinearLayout.VERTICAL);
+
+			if (lblUser.getParent() != null) {
+				((ViewGroup) lblUser.getParent()).removeView(lblUser);
+			}
+
+			if (lblPassword.getParent() != null) {
+				((ViewGroup) lblPassword.getParent()).removeView(lblPassword);
+			}
+
+			if (txtUser.getParent() != null) {
+				((ViewGroup) txtUser.getParent()).removeView(txtUser);
+			}
+
+			if (txtPassword.getParent() != null) {
+				((ViewGroup) txtPassword.getParent()).removeView(txtPassword);
+			}
+
+			lblUser.setText("Usuario: ");
+			lblPassword.setText("Contraseña: ");
+			txtPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+			txtUser.setText("");
+			txtPassword.setText("");
+
+			layout.addView(lblUser);
+			layout.addView(txtUser);
+			layout.addView(lblPassword);
+			layout.addView(txtPassword);
+
+			txtUser.requestFocus();
+
+			alert.setView(layout);
+
+			showkeyb();
+			alert.setCancelable(false);
+			alert.create();
+
+			alert.setPositiveButton("Continuar", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int whichButton) {
+
+					String usr, pwd;
+					boolean dtCorrectos;
+
+					usr = txtUser.getText().toString().trim();
+					pwd = txtPassword.getText().toString().trim();
+
+					if (mu.emptystr(usr)) {
+						toast("Usuario incorrecto.");
+						return;
+					}
+
+					if (mu.emptystr(pwd)) {
+						toast("Contraseña incorrecta.");
+						return;
+					}
+
+					dtCorrectos = validaDatos(usr, pwd);
+
+					if (dtCorrectos) {
+						iniciaDevolucion();
+					} else {
+						layout.removeAllViews();
+
+						return;
+					}
+
+				}
+			});
+
+			alert.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int whichButton) {
+					layout.removeAllViews();
+				}
+			});
+
+			alert.show();
+
+		} catch (Exception e) {
+			addlog(new Object() {
+			}.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
+		}
+
+	}
+
+	private boolean validaDatos(String user, String psw) {
+
+		Cursor DT;
+		boolean correctos = false;
+		String dpsw;
+		try {
+
+			if (gl.tolsuper) {
+				sql = "SELECT NOMBRE,CLAVE,NIVEL,NIVELPRECIO FROM P_VENDEDOR WHERE CODIGO='" + user + "' AND NIVEL=2";
+			} else {
+				sql = "SELECT NOMBRE,CLAVE,NIVEL,NIVELPRECIO FROM P_VENDEDOR WHERE CODIGO='" + user + "' AND NIVEL=1";
+			}
+			DT = Con.OpenDT(sql);
+
+			if (DT.getCount() == 0) {
+				mu.msgbox("Usuario incorrecto !");
+				return false;
+			}
+
+			DT.moveToFirst();
+			dpsw = DT.getString(1);
+			if (!psw.equalsIgnoreCase(dpsw)) {
+				mu.msgbox("Contraseña incorrecta !");
+				return false;
+			}
+
+			if (DT != null) DT.close();
+
+			correctos = true;
+
+		} catch (Exception e) {
+			addlog(new Object() {
+			}.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
+			return false;
+		}
+
+		return correctos;
+
+	}
+
+	private void iniciaDevolucion(){
+		try{
+			startActivity(new Intent(this,DevolBodTol.class));
+		}catch (Exception e){
+			addlog(new Object() {
+			}.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
+		}
+	}
 	private void menuSolicInv() {
 		Cursor dt;
 		boolean newflag=false;

@@ -153,7 +153,7 @@ public class DevCliCant extends PBase {
 				try{
 					gl.dvpeso = Double.parseDouble(txtkgs.getText().toString());
 					if (gl.dvpeso<=0) {
-						throw new Exception();
+						throw new Exception("El peso debe ser mayor que 0");
 					}
 				}catch (Exception e){
 					gl.dvpeso=app.pesoProm(prodid)*cant;

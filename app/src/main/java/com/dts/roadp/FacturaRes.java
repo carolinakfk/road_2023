@@ -78,7 +78,7 @@ public class FacturaRes extends PBase {
 	private long fecha,fechae;
 	private int fcorel;
 	private int clidia;
-	private String cliid,corel,sefect,fserie,desc1,svuelt,corelNC,consprod,lotelote;
+	private String cliid,corel,sefect,fserie,desc1,svuelt,corelNC,consprod,lotelote="";
 
 	private int notaC;
 	private int impres;
@@ -1729,6 +1729,8 @@ public class FacturaRes extends PBase {
 
 				if (!app.prodBarra(vprod)) {
 
+					//toastlong("Guardando Prod: " + vprod + " con Lote: " + lotelote );
+
 					ins.init("D_FACTURAD_LOTES");
 					ins.add("COREL", corel);
 					ins.add("PRODUCTO", vprod);
@@ -1739,7 +1741,6 @@ public class FacturaRes extends PBase {
 					ins.add("UMPESO", gl.umpeso);
 					ins.add("UMVENTA", vumventa);
 					db.execSQL(ins.sql());
-
 				}
 
 				//AT20220822 Acá va el detalle de la factura

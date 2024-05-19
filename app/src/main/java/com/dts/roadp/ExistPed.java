@@ -261,7 +261,6 @@ public class ExistPed extends PBase {
             lblReg.setText(" ( " + dp.getCount() + " ) ");
             dp.moveToFirst();
 
-
             while (!dp.isAfterLast()) {
 
                 pcod=dp.getString(0);

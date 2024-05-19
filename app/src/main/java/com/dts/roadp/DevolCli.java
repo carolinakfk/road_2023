@@ -883,7 +883,7 @@ public class DevolCli extends PBase {
 				ins.add("COREL",gl.dvactualnc);
 				ins.add("FECHA",du.getActDateTime());
 				ins.add("RUTA",gl.ruta);
-				ins.add("TIPO","D");
+				ins.add("TIPO","NC");
 				db.execSQL(ins.sql());
 
 				ncItem +=1;

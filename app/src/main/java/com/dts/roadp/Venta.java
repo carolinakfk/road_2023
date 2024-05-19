@@ -124,7 +124,9 @@ public class Venta extends PBase {
 			imgroad.setImageResource(R.drawable.pedidos_3_gray);
 		}
 
-		if (rutapos) imgroad.setImageResource(R.drawable.pedidos_3_gray);
+		if (rutapos) {
+			imgroad.setImageResource(R.drawable.pedidos_3_gray);
+		}
 
         pedido=rutatipo.equalsIgnoreCase("P");
 

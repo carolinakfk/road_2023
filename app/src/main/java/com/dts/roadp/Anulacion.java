@@ -629,6 +629,7 @@ public class Anulacion extends PBase {
 
 				progress.cancel();
 				mu.msgbox("Documento anulado.");
+				cmdAnular.setVisibility(View.VISIBLE);
 
 			}else{
 
@@ -675,6 +676,7 @@ public class Anulacion extends PBase {
 
 				progress.cancel();
 				mu.msgbox("Documento anulado.");
+				cmdAnular.setVisibility(View.VISIBLE);
 
 			}else{
 
@@ -2983,6 +2985,7 @@ public class Anulacion extends PBase {
 
 			progress.cancel();
 			mu.msgbox("Documento anulado.");
+			cmdAnular.setVisibility(View.VISIBLE);
 
 		}catch (Exception e){
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
