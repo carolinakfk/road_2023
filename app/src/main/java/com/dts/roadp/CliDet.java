@@ -43,7 +43,7 @@ import static android.widget.ImageView.ScaleType.CENTER_CROP;
 
 public class CliDet extends PBase {
 
-	private TextView lblNom,lblRep,lblDir,lblAten,lblTel,lblGPS,lblDescripcionPago;
+	private TextView lblNom,lblRep,lblDir,lblAten,lblTel,lblGPS,lblDescripcionPago,lblTipologia;
 	private TextView lblCLim,lblCUsed,lblCDisp,lblCobro,lblDevol,lblCantDias,lblClientePago;
 	private TextView lblRuta,lblRuta2, lblDespacho, lblCanal, lblCanalsub,lblPrior,lblProv,lblDist;
 	private RelativeLayout relV,relP,relD,relCamara,relCanasta;
@@ -54,7 +54,7 @@ public class CliDet extends PBase {
 	private PhotoViewAttacher zoomFoto;
 	private AppMethods app;
 
-	private String cod,tel, Nombre, NIT, sgp1, sgp2, canal, canalsub,prior;
+	private String cod,tel, Nombre, NIT, sgp1, sgp2, canal, canalsub,prior,idtipo;
 	private String imagenbase64,path,fechav;
 	private Boolean imgPath, imgDB, ventaGPS,flagGPS=true,permiteVenta=true,clicred;
 	private double gpx,gpy,credito,clim,cused,cdisp,cred;
@@ -89,6 +89,7 @@ public class CliDet extends PBase {
 		lblRuta2 = (TextView) findViewById(R.id.lblRuta2);lblRuta2.setVisibility(View.INVISIBLE);
         lblCanal = findViewById(R.id.lblClase);
         lblCanalsub = findViewById(R.id.lblClaseSub);
+		lblTipologia = findViewById(R.id.lblDescripcionPago2);
         lblPrior = findViewById(R.id.textView100);
         lblProv = findViewById(R.id.textView98);
         lblDist= findViewById(R.id.textView99);
@@ -553,10 +554,11 @@ public class CliDet extends PBase {
 			sql="SELECT NOMBRE,NOMBRE_PROPIETARIO,DIRECCION,ULTVISITA,TELEFONO,LIMITECREDITO,NIVELPRECIO,PERCEPCION,TIPO_CONTRIBUYENTE, " +
 					"COORX,COORY,MEDIAPAGO,NIT,VALIDACREDITO,BODEGA,CHEQUEPOST,TIPO,DIACREDITO,INGRESA_CANASTAS, " +
                     "CANAL,SUBCANAL,PRIORIZACION,MUNICIPIO, GEOREFERENCIA_CANASTA, GEOREFERENCIA_PREVENTA, GEOREFERENCIA_PREFACTURA, " +
-					"GEOREFERENCIA_AUTOVENTA, DESCRIPCION_PAGO, PERMITIR_PEDIDO_EXTRA_RUTA "+
+					"GEOREFERENCIA_AUTOVENTA, DESCRIPCION_PAGO, PERMITIR_PEDIDO_EXTRA_RUTA,TIPOLOGIA "+
 					"FROM P_CLIENTE WHERE CODIGO='"+cod+"'";
 			DT=Con.OpenDT(sql);
 			DT.moveToFirst();
+
 
 			lblNom.setText(cod + " - " + DT.getString(0));
 			lblRep.setText(DT.getString(12));
@@ -622,6 +624,7 @@ public class CliDet extends PBase {
 			//gl.ingresaCanastas = DT.getInt(18) == 1;
             canal =DT.getString(19);
             canalsub =DT.getString(20);
+			idtipo=DT.getString(29);
             prior=DT.getString(21);
             idmuni=DT.getString(22);
             gl.IdMun = idmuni;
@@ -665,6 +668,15 @@ public class CliDet extends PBase {
             } catch (Exception e) {
                 lblCanalsub.setText("Subcanal : ");
             }
+
+			sql="SELECT NOMBRE FROM P_TIPOLOGIA WHERE CODIGO='"+idtipo+"'";
+			DT=Con.OpenDT(sql);
+			try {
+				DT.moveToFirst();lblTipologia.setText("Tipologia : "+DT.getString(0));
+			} catch (Exception e) {
+				lblTipologia.setText("Tipologia : ");
+			}
+
 
             lblPrior.setText("Categorización : "+prior);
 

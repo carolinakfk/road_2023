@@ -55,7 +55,7 @@ public class PedidoRes extends PBase {
 	
 	private long fecha,fechae;
 	private String itemid,cliid,corel;
-	private int cyear, cmonth, cday,dweek,impres, presday;
+	private int cyear, cmonth, cday,dweek,impres, presday,bandera_monto;
 	
 	private double dmax,dfinmon,descpmon,descg,descgmon,tot,stot0,stot,descmon,totimp,totperc,dispventa;
 	private boolean acum,cleandprod,toledano,porpeso,prodstandby,impprecio;
@@ -84,7 +84,9 @@ public class PedidoRes extends PBase {
 		dweek=mu.dayofweek();
 
 		setActDate2();
-		fechae=fecha;
+
+		fechae=du.ffecha00(fecha);
+
 		lblFecha.setText(du.sfecha(fechae));
         app = new AppMethods(this, gl, Con, db);
 
@@ -126,9 +128,10 @@ public class PedidoRes extends PBase {
 		pdoc=new clsDocPedido(this,prn.prw,gl.peMon,gl.peDecImp, "");
 		pdoc.global=gl;
 		pdoc.deviceid =gl.numSerie;
+
+		validaTotalMontoPedidos();
 	}
-		
-	
+
 	//region Events
 	
 	public void showBon(View view) {
@@ -347,9 +350,9 @@ public class PedidoRes extends PBase {
 
 			if (!gl.impresora.equalsIgnoreCase("S")) {
 				gl.tolpedsend=true;
-				super.finish();
 			}
 
+			super.finish();
 		} catch (Exception e){
 			mu.msgbox("Error " + e.getMessage());
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
@@ -402,6 +405,7 @@ public class PedidoRes extends PBase {
         int ncItem=0;
 
         corel=gl.ruta+"_"+mu.getCorelBase();
+		long ff=fechae;
 		fechae=du.ffecha00(fechae);
         prodstandby=false;
 
@@ -473,6 +477,8 @@ public class PedidoRes extends PBase {
 			ins.add("ID_FACTURACION",0);
             ins.add("RUTASUPER","");
             ins.add("FECHA_SISTEMA",du.getActDateTime());
+			ins.add("ANULADO_POR_MONTO_MINIMO",0);
+			ins.add("CUMPLE_MONTO_MINIMO",bandera_monto);
 
 			db.execSQL(ins.sql());
           		
@@ -699,25 +705,23 @@ public class PedidoRes extends PBase {
 
             //endregion
 
-
             db.setTransactionSuccessful();
 			db.endTransaction();
 			 
 		} catch (Exception e) {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
 			db.endTransaction();
-		   	mu.msgbox( e.getMessage());
+		   	mu.msgbox(e.getMessage());
 		   	return false;
 		}
 		
 		try {
-
 			upd.init("P_CLIRUTA");
 			upd.add("BANDERA",0);
 
 			if (gl.tolsuper) {
 				upd.Where("CLIENTE='"+cliid+"'");
-			}else{
+			} else {
 				upd.Where("CLIENTE='"+cliid+"' AND DIA="+dweek);
 			}
 	
@@ -884,8 +888,97 @@ public class PedidoRes extends PBase {
 		
 	}
 
-
     //endregion
+
+	//region Monto minimo
+
+	private void validaTotalMontoPedidos() {
+		double mt,mm;
+
+		try {
+			bandera_monto=0;
+			mt=montoActual()+montoPedidos();
+			mm=montoMinimo();
+
+			if (mt>=mm) bandera_monto=1;
+			if (bandera_monto==0) msgbox("El total de prefacturas ("+mu.frmcur(mt)+") es menor que " +
+				"monto minimo ("+mu.frmcur(mm)+"). ");
+
+			sql="UPDATE D_PEDIDO SET CUMPLE_MONTO_MINIMO="+bandera_monto+" "+
+				"WHERE (CLIENTE='"+gl.cliente+"') AND (ANULADO='N') AND (FECHAENTR="+fechae+")";
+			db.execSQL(sql);
+
+		} catch (Exception e) {
+			msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+		}
+	}
+
+	private double montoActual() {
+		try {
+			sql="SELECT SUM(CANT*PRECIO) FROM T_VENTA";
+			Cursor dt=Con.OpenDT(sql);
+			double mt=dt.getDouble(0);
+			if(dt!=null) dt.close();
+
+			return mt;
+		} catch (Exception e) {
+			msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());return 0;
+		}
+	}
+
+	private double montoPedidos() {
+		Cursor dt,dtt;
+		String pcor;
+		double mt;
+
+		try {
+
+
+			fecha=du.cfechaSinHora(Integer.parseInt(lblFecha.getText().toString().substring(8,10)),
+					Integer.parseInt(lblFecha.getText().toString().substring(3,5)),
+					Integer.parseInt(lblFecha.getText().toString().substring(0,2)));
+
+			if (!fechaValida()) mu.msgbox("La fecha de entrega ingresada no es válida, no se puede guardar el pedido");
+			fechae=fecha*10000;
+
+			sql="SELECT COREL FROM D_PEDIDO WHERE (CLIENTE='"+gl.cliente+"') " +
+				"AND (ANULADO='N') AND (FECHAENTR="+fechae+")";
+			dt=Con.OpenDT(sql);
+
+			mt=0;
+			if (dt.getCount()>0) {
+				dt.moveToFirst();
+				while (!dt.isAfterLast()) {
+					pcor=dt.getString(0);
+
+					sql="SELECT SUM(CANT*PRECIO) FROM D_PEDIDOD WHERE (COREL='"+pcor+"')";
+					dtt=Con.OpenDT(sql);
+					mt+=dtt.getDouble(0);
+					if(dtt!=null) dtt.close();
+
+					dt.moveToNext();
+				}
+			}
+
+			if(dt!=null) dt.close();
+
+			return mt;
+		} catch (Exception e) {
+			msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());return 0;
+		}
+	}
+
+	private double montoMinimo() throws Exception{
+		try {
+			sql="SELECT MM_ESTANDAR FROM P_monto_minimo_cliente WHERE (ACTIVO=1) AND (CLIENTE='"+gl.cliente+"')";
+			Cursor dt=Con.OpenDT(sql);
+			return dt.getDouble(0);
+		} catch (Exception e) {
+			throw new Exception("No está definido monto minimo para cliente");
+		}
+	}
+
+	//endregion
 
 	//region Date
 
@@ -894,11 +987,9 @@ public class PedidoRes extends PBase {
 		/*DialogFragment newFragment = new DatePickerFragment();
 	    //newFragment.show(getSupportFragmentManager(), "datePicker");*/
 			obtenerFecha();
-
-		}catch (Exception e){
+		} catch (Exception e){
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
 		}
-
 	}
 
 	private void obtenerFecha(){
@@ -910,12 +1001,13 @@ public class PedidoRes extends PBase {
 					String diaFormateado = (dayOfMonth < 10)? CERO + String.valueOf(dayOfMonth):String.valueOf(dayOfMonth);
 					String mesFormateado = (mesActual < 10)? CERO + String.valueOf(mesActual):String.valueOf(mesActual);
 					lblFecha.setText(diaFormateado + BARRA + mesFormateado + BARRA + year);
+					validaTotalMontoPedidos();
 				}
 			},anio, mes, dia);
 
 			recogerFecha.show();
 
-		}catch (Exception e){
+		} catch (Exception e){
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
 		}
 	}

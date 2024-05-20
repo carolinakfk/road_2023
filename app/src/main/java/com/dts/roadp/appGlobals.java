@@ -31,7 +31,7 @@ public class appGlobals extends Application {
 	public boolean validar_posicion_georef;
 	public int mpago;
 	public String prodCanasta, corelFac, devcord;
-	public String IdCanal, IdSubcanal, EditarClienteCanal, EditarClienteSubcanal;
+	public String IdCanal, IdSubcanal, IdTipologia, EditarClienteCanal, EditarClienteSubcanal, EditarTipologia;
 	public boolean enviaMov, enviaPedidosParcial, enviaClientes, controlCanastas; //ingresaCanastas,
 	public String EditarClienteCodigo, EditarClienteNombre, EditarClienteRuc;
 	public String CliNombre,CliNit, CliDireccion, CliProvincia, CliDistrito, CliCiudad, CliTel, CliEmail, CliContacto, CliCsPollo, CliCsEmbutido,CliCsHuevo,
