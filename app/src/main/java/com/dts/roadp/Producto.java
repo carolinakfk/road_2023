@@ -1,5 +1,6 @@
 package com.dts.roadp;
 
+import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.graphics.Color;
@@ -44,6 +45,7 @@ public class Producto extends PBase {
 	private double disp_peso;
 	boolean ordPorNombre,modotol;
 	
+	@SuppressLint("SuspiciousIndentation")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 	

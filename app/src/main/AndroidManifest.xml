@@ -155,7 +155,7 @@
             android:label="@string/title_activity_pedido_res"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar"
-            android:windowSoftInputMode="stateHidden" />
+            android:windowSoftInputMode="stateAlwaysVisible" />
         <activity
             android:name=".ObjRuta"
             android:configChanges="keyboardHidden|orientation|screenSize"

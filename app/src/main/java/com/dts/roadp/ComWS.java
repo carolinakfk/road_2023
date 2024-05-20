@@ -252,7 +252,9 @@ public class ComWS extends PBase {
 		//#CKFK 20190319 Para facilidades de desarrollo se debe colocar la variable debug en true
 		if (gl.debug) {
 			if (mu.emptystr(txtRuta.getText().toString())) {
-				txtRuta.setText("0050-1");
+				txtRuta.setText("M102-1");
+				//txtRuta.setText("6055-5");
+				//txtRuta.setText("0050-1");
 				//txtRuta.setText("8001-1");
 				txtEmp.setText("03");
 			}
@@ -1786,7 +1788,7 @@ public class ComWS extends PBase {
 				xr = getXMLRegionSingle("CommitEnvioResult");
 				xr = (String) getSingle(xr, "CommitEnvioResult", String.class);
 
-			} else{
+			} else {
 
 				value=value.replace("&", "&amp;");
 				value=value.replace("\"", "&quot;");
@@ -2682,6 +2684,7 @@ public class ComWS extends PBase {
 			if (!AddTable("P_GLOBPARAM")) return false;
 			if (!AddTable("P_CONFIGBARRA")) return false;
             if (!AddTable("P_STOCK_PV")) return false;
+			if (!AddTable("P_TIPOLOGIA")) return false;
 
 			licResult = checkLicence(licSerial);
 			licResultRuta = checkLicenceRuta(licRuta);
@@ -3638,7 +3641,7 @@ public class ComWS extends PBase {
 				SQL += "BODEGA, COD_PAIS, FACT_VS_FACT, CHEQUEPOST, PERCEPCION, TIPO_CONTRIBUYENTE, ID_DESPACHO, ID_FACTURACION," +
 						"MODIF_PRECIO, INGRESA_CANASTAS, PRIORIZACION, CONTACTO, GEOREFERENCIA_CANASTA," +
 						"GEOREFERENCIA_PREFACTURA,GEOREFERENCIA_PREVENTA, GEOREFERENCIA_AUTOVENTA, TIPORECEPTOR, CIUDAD, DESCRIPCION_PAGO," +
-						"PERMITIR_PEDIDO_EXTRA_RUTA ";
+						"PERMITIR_PEDIDO_EXTRA_RUTA,TIPOLOGIA ";
 				SQL += "FROM P_CLIENTE ";
 				SQL += "WHERE (CODIGO IN (SELECT CLIENTE FROM P_CLIRUTA WHERE (RUTA='" + ActRuta + "') )) ";
 
@@ -3651,7 +3654,8 @@ public class ComWS extends PBase {
 				SQL += "PRECIO_ESTRATEGICO, NOMBRE_PROPIETARIO, NOMBRE_REPRESENTANTE, ";
 				SQL += "BODEGA, COD_PAIS, FACT_VS_FACT, CHEQUEPOST, PERCEPCION, TIPO_CONTRIBUYENTE, ID_DESPACHO, " +
 						"ID_FACTURACION,MODIF_PRECIO, INGRESA_CANASTAS, PRIORIZACION, CONTACTO, GEOREFERENCIA_CANASTA," +
-						"GEOREFERENCIA_PREFACTURA,GEOREFERENCIA_PREVENTA, GEOREFERENCIA_AUTOVENTA, TIPORECEPTOR, CIUDAD ";
+						"GEOREFERENCIA_PREFACTURA,GEOREFERENCIA_PREVENTA, GEOREFERENCIA_AUTOVENTA, " +
+						"TIPORECEPTOR, CIUDAD ";
 				SQL += "FROM P_CLIENTE WHERE CODIGO IN ( ";
 				SQL += "SELECT DISTINCT CLIENTE FROM P_CLIRUTA WHERE RUTA IN ( ";
 				SQL += "SELECT DISTINCT RUTA FROM VENDEDORES WHERE Codigo IN ( ";
@@ -4007,6 +4011,16 @@ public class ComWS extends PBase {
             SQL = "SELECT * FROM P_PRIORIZACION";
             return SQL;
         }
+
+		if (TN.equalsIgnoreCase("P_TIPOLOGIA")) {
+			SQL = "SELECT CODIGO, CANALSUB, NOMBRE FROM P_TIPOLOGIA";
+			return SQL;
+		}
+
+		if (TN.equalsIgnoreCase("P_MONTO_MINIMO_CLIENTE")) {
+			SQL = "SELECT IDMONTOMINIMOCLIENTE,CLIENTE,MM_ESTANDAR,MM_EXTRARUTA, ACTIVO FROM P_MONTO_MINIMO_CLIENTE";
+			return SQL;
+		}
 
 
 		// Objetivos
@@ -4888,10 +4902,15 @@ public class ComWS extends PBase {
 					nombretabla="P_MEDIDA";break;
 				case 76:
 					nombretabla="P_CIUDAD";break;
-                case 77://#CKFK 20210813 Cambié esto para el final
+				case 77:
+					nombretabla="P_TIPOLOGIA";break;
+				case 78:
+					nombretabla="P_MONTO_MINIMO_CLIENTE";break;
+
+                case 79://#CKFK 20210813 Cambié esto para el final
                     nombretabla="Procesando tablas ...";break;
 
-                case 78:
+                case 80:
 					procesaDatos();
 					//#AT 20220322 Se cambia el valor de las variables
 					//gl.permitir_cantidad_mayor, gl.permitir_producto_nuevo, gl.validar_posicion_georef
@@ -5327,8 +5346,7 @@ public class ComWS extends PBase {
 			envioClientesParcial();
 			if (errflag) {
 				dbld.savelog();
-				addlog(new Object() {
-				}.getClass().getEnclosingMethod().getName(), fstr, "Error envío");
+				addlog(new Object() {}.getClass().getEnclosingMethod().getName(), fstr, "Error envío");
 				return false;
 			}
 
@@ -5762,7 +5780,7 @@ public class ComWS extends PBase {
 		String Aux;
 
 		try {
-			sql = "SELECT COREL FROM D_PEDIDO WHERE STATCOM='N'";
+			sql = "SELECT COREL FROM D_PEDIDO WHERE (STATCOM='N') AND (CUMPLE_MONTO_MINIMO=1)";
 			DT = Con.OpenDT(sql);
 			if (DT.getCount() == 0) {
 				senv += "Pedidos : " + pc + "\n";
@@ -6467,7 +6485,7 @@ public class ComWS extends PBase {
 
 		try {
 
-			sql = "SELECT COREL FROM D_PEDIDO WHERE STATCOM='N'";
+			sql = "SELECT COREL FROM D_PEDIDO WHERE (STATCOM='N') AND (CUMPLE_MONTO_MINIMO=1)";
 			DT = Con.OpenDT(sql);
 
 			if (DT.getCount() == 0) {
@@ -6606,11 +6624,8 @@ public class ComWS extends PBase {
 
 				} catch (Exception e) {
 					errflag = true;
-
 					dbld.savelog("clientes.txt");
-
-					addlog(new Object() {
-					}.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
+					addlog(new Object() {}.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
 					//fterr+="\n"+e.getMessage();
 				}
 				DT.moveToNext();

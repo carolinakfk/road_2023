@@ -199,6 +199,12 @@ public class clsClasses {
 		public String canal;
 	}
 
+	public class clsP_tipologia {
+		public String codigo;
+		public String canalsub;
+		public String nombre;
+	}
+
 	public class clsDepartamento {
 		public String codigo;
 		public String area;

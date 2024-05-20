@@ -43,7 +43,7 @@ public class CliNuevoT extends PBase {
             txtProvincia, txtDistrito, txtCiudad, txtCliTelefono,
             txtCliEmail, txtCliContacto, txtCliCanal, txtCliSubCanal,
             txtCodVendedor, txtPollo, txtEmbutidos, txtHuevos, txtRes,
-            txtCerdo, txtCongelados, txtSalsas;
+            txtCerdo, txtCongelados, txtSalsas, txtTipologia;
 
     private int d1, d2, d3, d4, d5, d6, d7, nivel=0, tipo=0, codimg, correlativo = 0;
     private Boolean imgPath, imgDB;
@@ -84,6 +84,7 @@ public class CliNuevoT extends PBase {
         txtCerdo = (EditText) findViewById(R.id.txtCerdo);
         txtCongelados = (EditText) findViewById(R.id.txtCongelados);
         txtSalsas = (EditText) findViewById(R.id.txtSalsas);
+        txtTipologia= (EditText) findViewById(R.id.txtTipologia);
 
         imgGuardar = (ImageView) findViewById(R.id.imgGuardar);
         imgBuscarCanal = (ImageView) findViewById(R.id.imgBuscarCanal);
@@ -116,6 +117,7 @@ public class CliNuevoT extends PBase {
         Cursor DT;
         int codimagen = 0;
         String cliente = "";
+
 
         try {
             //Guardando Info en D_CLINUEVOT
@@ -167,6 +169,7 @@ public class CliNuevoT extends PBase {
             ins.add("CSCERDO", txtCerdo.getText().toString());
             ins.add("CSCONGELADOS", txtCongelados.getText().toString());
             ins.add("CSSALSAS", txtSalsas.getText().toString());
+            ins.add("TIPOLOGIA",gl.IdTipologia);
 
             db.execSQL(ins.sql());
 
@@ -227,6 +230,7 @@ public class CliNuevoT extends PBase {
             ins.add("MODIF_PRECIO", 0);
             ins.add("PRIORIZACION", "");
             ins.add("CONTACTO", txtCliContacto.getText().toString());
+            ins.add("TIPOLOGIA",gl.IdTipologia);
 
             db.execSQL(ins.sql());
 
@@ -277,36 +281,38 @@ public class CliNuevoT extends PBase {
             //#AT20220425 Guardar documentos en D_CLINUEVOT_IMAGEN
             sql = "SELECT * FROM TMP_D_CLINUEVOT_IMAGEN WHERE CODIGO = '"+gl.corelCliente+"'";
             DT = Con.OpenDT(sql);
-            if (DT == null || DT.getCount() == 0) return;
 
-            DT.moveToFirst();
-            while (!DT.isAfterLast()) {
-                codimagen = DT.getInt(0);
-                cliente = DT.getString(1);
+            if (DT.getCount() >0) {
 
-                ins.init("D_CLINUEVOT_IMAGEN");
+                DT.moveToFirst();
+                while (!DT.isAfterLast()) {
+                    codimagen = DT.getInt(0);
+                    cliente = DT.getString(1);
 
-                ins.add("CODIMAGEN", codimagen);
-                ins.add("CODIGO", cliente);
-                ins.add("RUTA", gl.ruta);
-                ins.add("OBSERVACIONES", "");
-                ins.add("FECHA", du.getFechaActual());
-                ins.add("STATCOM", "N");
+                    ins.init("D_CLINUEVOT_IMAGEN");
 
-                db.execSQL(ins.sql());
+                    ins.add("CODIMAGEN", codimagen);
+                    ins.add("CODIGO", cliente);
+                    ins.add("RUTA", gl.ruta);
+                    ins.add("OBSERVACIONES", "");
+                    ins.add("FECHA", du.getFechaActual());
+                    ins.add("STATCOM", "N");
 
-                DT.moveToNext();
+                    db.execSQL(ins.sql());
+
+                    DT.moveToNext();
+                }
+
+                if (DT != null) DT.close();
+
             }
-
-            if (DT != null) DT.close();
 
             limpiar();
             Toast.makeText(this, "Cliente nuevo creado", Toast.LENGTH_SHORT).show();
-            super.finish();
+            finish();
 
         } catch (Exception e) {
-            addlog(new Object() {
-            }.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
+            addlog(new Object() { }.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
             mu.msgbox(e.getMessage());
         }
     }
@@ -314,7 +320,6 @@ public class CliNuevoT extends PBase {
     public void doSave(View view) {
         try {
             if (!checkValues()) return;
-
             msgAskSave("Crear cliente nuevo");
         } catch (Exception e) {
             addlog(new Object() {
@@ -928,11 +933,9 @@ public class CliNuevoT extends PBase {
             });
 
             dialog.show();
-        }catch (Exception e){
+        } catch (Exception e){
             addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
         }
-
-
     }
 
     private boolean getCountTmpImg() {
@@ -952,6 +955,7 @@ public class CliNuevoT extends PBase {
             return false;
         }
     }
+
     private void msgTomarFotos(String msg) {
 
         try{
@@ -1148,6 +1152,8 @@ public class CliNuevoT extends PBase {
         gl.gpspx = 0.0000;
         gl.gpspy = 0.0000;
         gl.gpsCliente = false;
+        gl.IdTipologia = "";
+        gl.EditarTipologia = "";
 
         txtCliNombre.setText("");
         txtCliNit.setText("");
@@ -1175,7 +1181,6 @@ public class CliNuevoT extends PBase {
         if (gl.CliCodVen == null || gl.CliCodVen.isEmpty()) {
             gl.CliCodVen = gl.vend;
         }
-
         if (gl.corelCliente.isEmpty() || gl.corelCliente == null) {
             setCorel();
         }
@@ -1203,6 +1208,7 @@ public class CliNuevoT extends PBase {
         txtCerdo.setText(gl.CliCsCerdo);
         txtCongelados.setText(gl.CliCsCongelados);
         txtSalsas.setText(gl.CliCsSalsas);
+        txtTipologia.setText(gl.EditarTipologia);
     }
 
     public void opendb() {

@@ -10,6 +10,7 @@ android {
     defaultConfig {
         applicationId "com.dts.roadp"
         minSdkVersion 23
+        //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 28
         renderscriptTargetApi 28
         renderscriptSupportModeEnabled true

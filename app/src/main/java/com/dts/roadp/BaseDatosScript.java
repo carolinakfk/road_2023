@@ -112,6 +112,8 @@ public class BaseDatosScript {
 					"[ID_FACTURACION] INTEGER NOT NULL,"+
 					"[RUTASUPER] TEXT NOT NULL,"+
                     "[FECHA_SISTEMA] INTEGER NOT NULL,"+
+					"[ANULADO_POR_MONTO_MINIMO] INTEGER NOT NULL,"+
+					"[CUMPLE_MONTO_MINIMO] INTEGER NOT NULL,"+
 					"PRIMARY KEY ([COREL])"+
 					");";
 			database.execSQL(vSQL);
@@ -462,6 +464,7 @@ public class BaseDatosScript {
 					"[CSCERDO] REAL NOT NULL,"+
 					"[CSCONGELADOS] REAL NOT NULL,"+
 					"[CSSALSAS] REAL NOT NULL,"+
+					"[TIPOLOGIA] TEXT NOT NULL,"+
 					"PRIMARY KEY ([CODIGO],[RUTA])"+
 					");";
 			database.execSQL(vSQL);
@@ -1388,6 +1391,7 @@ public class BaseDatosScript {
 					"[CIUDAD] TEXT,"+
 					"[DESCRIPCION_PAGO] TEXT,"+
 					"[PERMITIR_PEDIDO_EXTRA_RUTA] INTEGER DEFAULT 0 NOT NULL,"+
+					"[TIPOLOGIA] TEXT ,"+
 					"PRIMARY KEY ([CODIGO])"+
 					");";
 			database.execSQL(vSQL);
@@ -2405,6 +2409,27 @@ public class BaseDatosScript {
 					"PRIMARY KEY ([CODIGO])"+
 					");";
 			database.execSQL(vSQL);
+
+			vSQL="CREATE TABLE [P_tipologia] ("+
+					"CODIGO TEXT NOT NULL,"+
+					"CANALSUB TEXT NOT NULL,"+
+					"NOMBRE TEXT NOT NULL,"+
+					"PRIMARY KEY ([CODIGO])"+
+					");";
+			database.execSQL(vSQL);
+
+
+			vSQL="CREATE TABLE [P_monto_minimo_cliente] ("+
+					"IDMONTOMINIMOCLIENTE INTEGER NOT NULL,"+
+					"CLIENTE TEXT NOT NULL,"+
+					"MM_ESTANDAR REAL NOT NULL,"+
+					"MM_EXTRARUTA REAL NOT NULL,"+
+					"ACTIVO INTEGER NOT NULL,"+
+					"PRIMARY KEY ([IDMONTOMINIMOCLIENTE])"+
+					");";
+			database.execSQL(vSQL);
+
+			vSQL="CREATE INDEX P_monto_minimo_cliente_idx1 ON P_monto_minimo_cliente(CLIENTE)";database.execSQL(vSQL);
 
 			return 1;
 

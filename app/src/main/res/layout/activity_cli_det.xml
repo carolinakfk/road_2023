@@ -56,6 +56,17 @@
                 android:layout_height="wrap_content">
 
                 <TextView
+                    android:id="@+id/lblDescripcionPago2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/lblClaseSub"
+                    android:background="#F0F0F0"
+                    android:paddingStart="5dp"
+                    android:paddingTop="0dp"
+                    android:text="Tipologia"
+                    android:textSize="18sp" />
+
+                <TextView
                     android:id="@+id/lblClaseSub"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -132,8 +143,7 @@
                     android:id="@+id/lblDescripcionPago"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/lblClaseSub"
-                    android:background="#F0F0F0"
+                    android:layout_below="@id/lblDescripcionPago2"
                     android:paddingStart="5dp"
                     android:paddingTop="0dp"
                     android:text="Descripcion_pago"
@@ -144,6 +154,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/lblDescripcionPago"
+                    android:background="#F0F0F0"
                     android:paddingStart="5dp"
                     android:paddingTop="0dp"
                     android:text="Categorización"
@@ -154,7 +165,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/textView100"
-                    android:background="#F0F0F0"
                     android:paddingStart="5dp"
                     android:paddingEnd="5dp"
                     android:text="Provincia"
@@ -165,6 +175,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/textView98"
+                    android:background="#F0F0F0"
                     android:paddingStart="5dp"
                     android:paddingEnd="5dp"
                     android:text="Distrito"

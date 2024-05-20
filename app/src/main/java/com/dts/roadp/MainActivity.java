@@ -157,7 +157,12 @@ public class MainActivity extends PBase {
 
             //#CKFK 20190319 Para facilidades de desarrollo se debe colocar la variable debug en true
             if (gl.debug) {
-                txtUser.setText("00110698");txtPass.setText("inicio01"); // Administrador
+
+                txtUser.setText("00008984");txtPass.setText("MARFAUS984");//6055-5
+                //txtUser.setText("00101080");txtPass.setText("101080NQ");//6055-5
+
+                //txtUser.setText("00110698");txtPass.setText("inicio01"); // Administrador
+
                 //txtUser.setText("00101051");txtPass.setText("na1051");//1002-3
                 //txtUser.setText("00100858");txtPass.setText("lopez026");// 0050-1
                 //txtUser.setText("00100938");txtPass.setText("MZ"); // 8001-1
