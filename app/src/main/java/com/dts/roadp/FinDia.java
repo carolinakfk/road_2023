@@ -36,7 +36,7 @@ public class FinDia extends PBase {
     private printer prn;
 
     private String rutatipo, fserie, sp, devcorel;
-    private int corelz, fac, faca, cfac, cfaca, rec, reca, ptot, ped, peda, fcorel, mw;
+    private int corelz, fac, faca, cfac, cfaca, rec, reca, ptot, ped, peda, fcorel, mw,pedanul;
     private double val, tot, tte, ttc, ttk, tto, tre, trc, tro, tote, totc, depe, depc, bale, balc;
     private boolean idle = true, fullfd, fail;
     private clsFinDia claseFinDia;
@@ -663,7 +663,7 @@ public class FinDia extends PBase {
                 } else {
                     if (claseFinDia.getImpresionDeposito() <1) {
 
-                        totDeposito();
+                         totDeposito();
                          if ((depe+depc)>0){
                              msgAskImpresionDeposito();
                              return false;
@@ -2238,7 +2238,6 @@ public class FinDia extends PBase {
     }
 
     private double TotalCredito2(){
-
         Cursor DT;
         double vTotCredito2 = 0;
 
@@ -2310,6 +2309,50 @@ public class FinDia extends PBase {
         }
 
         return vTotalRecibos;
+    }
+
+    //JP 20240520
+    private void anularPedidosSinMontoMinimo() {
+        Cursor dt;
+        String cor;
+
+        try {
+            pedanul=0;
+
+            sql = "SELECT COREL FROM D_PEDIDO  WHERE (CUMPLE_MONTO_MINIMO=0) AND (ANULADO='N')";
+            dt = Con.OpenDT(sql);
+
+            if (dt.getCount()>0) {
+                dt.moveToFirst();
+                while (!dt.isAfterLast()) {
+                    cor=dt.getString(0);
+
+                    try {
+                        db.beginTransaction();
+
+                        sql="UPDATE D_PEDIDO SET ANULADO='S',ANULADO_POR_MONTO_MINIMO=1 WHERE (COREL='"+cor+"')";
+                        db.execSQL(sql);
+
+                        sql="UPDATE D_PEDIDOD SET ANULADO='S' WHERE (COREL='"+cor+"')";
+                        db.execSQL(sql);
+
+                        db.setTransactionSuccessful();
+                        db.endTransaction();
+
+                        pedanul++;
+                    } catch (Exception e) {
+                        db.endTransaction();
+                        msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+                    }
+
+                    dt.moveToNext();
+                }
+            }
+
+            if (dt!=null) dt.close();
+        } catch (Exception e) {
+            msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+        }
     }
 
     //endregion
@@ -2411,31 +2454,35 @@ public class FinDia extends PBase {
 
             dialog1.setPositiveButton("Si", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
+                    String cmsg="CIERRE DEL DIA COMPLETO";
 
-                   if ( buildReportsTOL()){
+                    //JP 20240520
+                    anularPedidosSinMontoMinimo();
 
-                      if(imprimeCierreZ()){
-                           corelz+=1;
-                           claseFinDia.updateGrandTotalCorelZ(gSumados,corelz);
-                       }
-                   }else{
+                    if ( buildReportsTOL()){
+                        if (imprimeCierreZ()){
+                            corelz+=1;
+                            claseFinDia.updateGrandTotalCorelZ(gSumados,corelz);
+
+                            //JP 20240520
+                            if (pedanul>0) cmsg+="\n\nSE ANULO PEDIDOS: "+pedanul+"\nPOR RAZÓN DE MONTO MINIMO.";
+                            msgExit(cmsg);
+                        }
+                   } else {
                        msgAskCierreIncompleto("No se pudo generar el reporte Z");
                    }
-
                 }
             });
 
             dialog1.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which)
-                {
+                public void onClick(DialogInterface dialog, int which) {
                     msgAskCierreIncompleto("Proceso de fin de día incompleto");
                 }
             });
 
             dialog1.show();
         } catch (Exception e) {
-            addlog(new Object() {
-            }.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
+            addlog(new Object() { }.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
         }
     }
 
