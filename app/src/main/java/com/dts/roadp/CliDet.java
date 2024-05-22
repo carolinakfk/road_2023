@@ -1374,7 +1374,6 @@ public class CliDet extends PBase {
 			Log.d("habilitaOpciones_err", ex.getMessage());
 		}
 
-		//relP.setVisibility(View.VISIBLE);
 
 		if (gl.tolsuper) {
 			relP.setVisibility(View.VISIBLE);
@@ -1386,6 +1385,8 @@ public class CliDet extends PBase {
 			txtRuta.setVisibility(View.VISIBLE);
 			lblRuta2.setVisibility(View.VISIBLE);
 		}
+
+		//relP.setVisibility(View.VISIBLE);
 
 	}
 

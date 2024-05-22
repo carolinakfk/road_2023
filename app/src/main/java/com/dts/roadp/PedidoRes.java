@@ -58,7 +58,7 @@ public class PedidoRes extends PBase {
 	private int cyear, cmonth, cday,dweek,impres, presday,bandera_monto;
 	
 	private double dmax,dfinmon,descpmon,descg,descgmon,tot,stot0,stot,descmon,totimp,totperc,dispventa;
-	private boolean acum,cleandprod,toledano,porpeso,prodstandby,impprecio;
+	private boolean acum,cleandprod,toledano,porpeso,prodstandby,impprecio,cli_estandar;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -128,6 +128,8 @@ public class PedidoRes extends PBase {
 		pdoc=new clsDocPedido(this,prn.prw,gl.peMon,gl.peDecImp, "");
 		pdoc.global=gl;
 		pdoc.deviceid =gl.numSerie;
+
+		dweek = mu.dayofweek();
 
 		validaTotalMontoPedidos();
 	}
@@ -896,6 +898,9 @@ public class PedidoRes extends PBase {
 		double mt,mm;
 
 		try {
+			validaClienteExtraruta();
+			if (!cli_estandar) toastcent("Cliente extraruta");
+
 			bandera_monto=0;
 			mt=montoActual()+montoPedidos();
 			mm=montoMinimo();
@@ -968,13 +973,19 @@ public class PedidoRes extends PBase {
 		}
 	}
 
-	private double montoMinimo() throws Exception{
+	private double montoMinimo() throws Exception {
+		double montomin;
 		try {
-			sql="SELECT MM_ESTANDAR FROM P_monto_minimo_cliente WHERE (ACTIVO=1) AND (CLIENTE='"+gl.cliente+"')";
+			sql="SELECT MM_ESTANDAR,MM_EXTRARUTA FROM P_monto_minimo_cliente WHERE (ACTIVO=1) AND (CLIENTE='"+gl.cliente+"')";
 			Cursor dt=Con.OpenDT(sql);
-			return dt.getDouble(0);
+
+			if (cli_estandar) montomin=dt.getDouble(0);else montomin=dt.getDouble(1);
+
+			return montomin;
 		} catch (Exception e) {
-			throw new Exception("No está definido monto minimo para cliente");
+			//throw new Exception("No está definido monto minimo para cliente");
+			toastcent("No está definido monto minimo para cliente");
+			return 100;
 		}
 	}
 
@@ -1296,6 +1307,24 @@ public class PedidoRes extends PBase {
 
         return prodstandby;
     }
+
+	private void validaClienteExtraruta() {
+
+		try {
+			cli_estandar=false;
+			int diasemana = mu.dayofweek();
+
+			sql = "SELECT CLIENTE FROM P_CLIRUTA WHERE (CLIENTE='"+cliid+"') AND (DIA ="+diasemana+") ";
+			Cursor dt=Con.OpenDT(sql);
+			if (dt.getCount()>0) cli_estandar=true;
+
+			if(dt!=null) dt.close();
+
+		} catch (Exception e) {
+			msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+		}
+	}
+
 
     //endregion
 

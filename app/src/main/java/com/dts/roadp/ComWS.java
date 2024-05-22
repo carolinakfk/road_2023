@@ -1406,7 +1406,7 @@ public class ComWS extends PBase {
 		try {
 
 			pend = pend + getDocCount("SELECT IFNULL(COUNT(COREL),0) FROM D_FACTURA WHERE STATCOM<>'S'", "Fact: ");
-			pend = pend + getDocCount("SELECT IFNULL(COUNT(COREL),0) FROM D_PEDIDO WHERE STATCOM<>'S'", "Ped: ");
+			pend = pend + getDocCount("SELECT IFNULL(COUNT(COREL),0) FROM D_PEDIDO WHERE (STATCOM='N') AND ((ANULADO='S') OR (CUMPLE_MONTO_MINIMO=1))", "Ped: ");
 			pend = pend + getDocCount("SELECT IFNULL(COUNT(COREL),0) FROM D_COBRO WHERE STATCOM<>'S'", "Rec: ");
 			pend = pend + getDocCount("SELECT IFNULL(COUNT(COREL),0) FROM D_DEPOS WHERE STATCOM<>'S'", "Dep: ");
 			pend = pend + getDocCount("SELECT IFNULL(COUNT(COREL),0) FROM D_MOV WHERE STATCOM<>'S'", "Inv : ");
@@ -5780,7 +5780,7 @@ public class ComWS extends PBase {
 		String Aux;
 
 		try {
-			sql = "SELECT COREL FROM D_PEDIDO WHERE (STATCOM='N') AND (CUMPLE_MONTO_MINIMO=1)";
+			sql = "SELECT COREL FROM D_PEDIDO WHERE (STATCOM='N') AND ((ANULADO='S') OR (CUMPLE_MONTO_MINIMO=1))";
 			DT = Con.OpenDT(sql);
 			if (DT.getCount() == 0) {
 				senv += "Pedidos : " + pc + "\n";
@@ -6485,7 +6485,7 @@ public class ComWS extends PBase {
 
 		try {
 
-			sql = "SELECT COREL FROM D_PEDIDO WHERE (STATCOM='N') AND (CUMPLE_MONTO_MINIMO=1)";
+			sql = "SELECT COREL FROM D_PEDIDO WHERE (STATCOM='N') AND ((ANULADO='S') OR (CUMPLE_MONTO_MINIMO=1))";
 			DT = Con.OpenDT(sql);
 
 			if (DT.getCount() == 0) {

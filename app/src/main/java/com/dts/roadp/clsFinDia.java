@@ -321,7 +321,7 @@ public class clsFinDia extends PBase{
             sql = "UPDATE P_HANDHELD SET CorelZ=" + corel + ", GrandTotal = GrandTotal + " + valor;
             db.execSQL(sql);
 
-        }catch (Exception e){
+        } catch (Exception e){
             addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
             msgbox("updateGrandTotal: " + e.getMessage());
         }
