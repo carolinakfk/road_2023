@@ -65,12 +65,14 @@ public class OrdenCompra  extends PBase{
         String sOrdenCompra;
 
         try{
-            sOrdenCompra=txtOrdenCompra.getText().toString();
+            sOrdenCompra=txtOrdenCompra.getText().toString().trim();
 
             if (mu.emptystr(sOrdenCompra.trim())) {
                 msgbox("La orden de compra debe ser distinta de vacía");return;
             }else if (sOrdenCompra.trim().equals("0")) {
                 msgbox("La orden de compra debe ser distinta de 0");return;
+            }else if (sOrdenCompra.trim().length()>12) {
+                msgbox("La orden de compra excede los 12 caracteres permitidos");return;
             }
 
             gl.ordenCompra = sOrdenCompra;

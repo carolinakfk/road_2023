@@ -756,6 +756,8 @@ public class FinDia extends PBase {
                             startActivity(intent);
                         }
                     }, 2000);
+                }else{
+                    msgbox("No hay impresora habilitada");
                 }
             }else{
                 claseFinDia.updateImprimioCierreZ(7);
