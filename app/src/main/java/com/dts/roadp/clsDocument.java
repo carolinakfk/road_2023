@@ -52,6 +52,7 @@ public class clsDocument {
 	}
 
 	public boolean buildPrint(String corel,int reimpres) {
+
 		setAddlog("Build print",""+DU.getActDateTime(),"");
 
 		modofact="*";
@@ -311,29 +312,31 @@ public class clsDocument {
 		}
 
 		try{
-			if (nit.length()>0) {
-				String[] DVRuc = nit.split(" ");
-				String dDV="";
-				String ruc="";
-				String receptor = "";
-				if (DVRuc.length > 1) {
-					ruc = DVRuc[0].trim();
-					if (DVRuc[1].trim().equals("")){
-						try{
-							dDV =  StringUtils.right("00" + DVRuc[3].trim(),2);
-						}catch (Exception ex){
-							dDV = "";
+			if (nit!=null){
+				if (nit.length()>0) {
+					String[] DVRuc = nit.split(" ");
+					String dDV="";
+					String ruc="";
+					String receptor = "";
+					if (DVRuc.length > 1) {
+						ruc = DVRuc[0].trim();
+						if (DVRuc[1].trim().equals("")){
+							try{
+								dDV =  StringUtils.right("00" + DVRuc[3].trim(),2);
+							}catch (Exception ex){
+								dDV = "";
+							}
+							receptor = DVRuc[2].trim();
+						}else{
+							dDV =  StringUtils.right("00" + DVRuc[2].trim(),2);
+							receptor = DVRuc[1].trim();
 						}
-						receptor = DVRuc[2].trim();
-					}else{
-						dDV =  StringUtils.right("00" + DVRuc[2].trim(),2);
-						receptor = DVRuc[1].trim();
+						nit = ruc + " DV:" + dDV + " Rec." + receptor;
 					}
-					nit = ruc + " DV:" + dDV + " Rec." + receptor;
 				}
 			}
 		}catch (Exception ex){
-			toast("Error " + ex.getMessage());
+			toast("Error 202406110456: " + ex.getMessage());
 		}
 
         if (!emptystr(nit)) {

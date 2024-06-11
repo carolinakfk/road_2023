@@ -81,7 +81,7 @@ public class InicioDia extends PBase implements View.OnClickListener{
     @Override
     public void onClick(View v) {
         try{
-            switch (v.getId()){
+           /* switch (v.getId()){
                 case R.id.imgCalendario:
                     obtenerFecha();
                     break;
@@ -94,7 +94,7 @@ public class InicioDia extends PBase implements View.OnClickListener{
                         addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
                         mu.msgbox("InicioDia Imp: "+e.getMessage());
                     }
-            }
+            }*/
         }catch (Exception e){
             addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
         }

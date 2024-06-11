@@ -26,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -171,6 +172,12 @@ public class MainActivity extends PBase {
             //#AT20221117 Set path
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 gl.PathDataDir = this.getApplicationContext().getDataDir().getPath();
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
+                }
             }
 
             //#AT20221117 Se valida si existe el archivo

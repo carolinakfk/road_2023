@@ -101,7 +101,9 @@ public class Exist extends PBase {
                 msgbox("No hay inventario disponible");
                 return;
             }
-            if (doc.buildPrint("0",0)) prn.printask();
+            if (doc.buildPrint("0",0)) {
+                prn.printask();
+            }
         }catch (Exception e){
             addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
         }

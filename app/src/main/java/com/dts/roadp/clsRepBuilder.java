@@ -136,7 +136,7 @@ public class clsRepBuilder {
 			items.clear();
 
 		} catch(Exception e){
-			Toast.makeText(cont,e.getMessage(), Toast.LENGTH_LONG).show();
+			Toast.makeText(cont,"Error_240611" + e.getMessage(), Toast.LENGTH_LONG).show();
 			return false;
 		}
 

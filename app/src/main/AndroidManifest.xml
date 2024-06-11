@@ -24,6 +24,10 @@
     <uses-permission android:name="Android.permission.REBOOT"/>
     <uses-permission android:name="Android.permission.SHUTDOWN"/>
     <uses-permission android:name="Android.permission.DEVICE_POWER"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
     <uses-feature
         android:name="android.hardware.camera"

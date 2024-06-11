@@ -5,15 +5,15 @@ apply plugin: 'com.google.firebase.firebase-perf'
 apply plugin: 'com.google.firebase.appdistribution'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 34
 
     defaultConfig {
         applicationId "com.dts.roadp"
-        minSdkVersion 23
-        targetSdkVersion 28
+        minSdkVersion 24
+        //noinspection ExpiredTargetSdkVersion
+        targetSdkVersion 24
         renderscriptTargetApi 28
         renderscriptSupportModeEnabled true
-
     }
 
     sourceSets {
