@@ -171,7 +171,11 @@ public class CliNuevoT extends PBase {
             ins.add("CSSALSAS", txtSalsas.getText().toString());
             ins.add("TIPOLOGIA",gl.IdTipologia);
 
+            //JP 20240618
+            ins.add("RUC_VALIDADO",0);
+
             db.execSQL(ins.sql());
+
 
             //Guardando Info en P_Cliente
             ins.init("P_CLIENTE");

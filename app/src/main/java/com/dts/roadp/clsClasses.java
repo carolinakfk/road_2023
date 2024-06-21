@@ -18,7 +18,7 @@ public class clsClasses {
 
     //JP20210614
 	public class clsCFDV {
-		public int id,flag,bandera, tipodoc;
+		public int id,flag,bandera,tipodoc,banderamonto=0;
 		public String Cod,Desc,Fecha,Valor,Sid, Cufe, Numero_Autorizacion, Certificada_DGI, Estado, CufeFactura ="";
 		public double val;
 	}

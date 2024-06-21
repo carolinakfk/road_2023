@@ -28,7 +28,7 @@ public class appGlobals extends Application {
 	public boolean closeCliDet,closeVenta,promapl,pagado,pagocobro,sinimp,rutapos,devol,modoadmin;
 	public boolean usarpeso,banderafindia,depparc,incNoLectura,cobroPendiente,findiaactivo,banderaCobro;
 	public boolean permitir_cantidad_mayor, permitir_producto_nuevo,pedidomod,listapedidos;
-	public boolean validar_posicion_georef;
+	public boolean validar_posicion_georef,cliente_extraruta;
 	public int mpago;
 	public String prodCanasta, corelFac, devcord;
 	public String IdCanal, IdSubcanal, IdTipologia, EditarClienteCanal, EditarClienteSubcanal, EditarTipologia;
