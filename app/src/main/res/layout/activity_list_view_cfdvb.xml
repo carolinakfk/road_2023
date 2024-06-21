@@ -13,7 +13,7 @@
         android:layout_alignParentTop="true"
         android:gravity="center_vertical"
         android:paddingLeft="5dp"
-        android:paddingBottom="5dp"
+        android:paddingTop="5dp"
         android:text="Código"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textSize="16sp"
@@ -31,7 +31,6 @@
         android:width="0dip"
         android:maxLines="2"
         android:paddingLeft="5dp"
-        android:paddingBottom="5dp"
         android:scrollHorizontally="false"
         android:text="Descripción"
         android:textAppearance="?android:attr/textAppearanceSmall"
@@ -45,8 +44,8 @@
         android:layout_above="@+id/lblPNum"
         android:layout_alignParentRight="true"
         android:gravity="center_vertical"
+        android:paddingTop="5dp"
         android:paddingRight="5dp"
-        android:paddingBottom="5dp"
         android:text="Código"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="#000000"
@@ -129,5 +128,18 @@
         android:layout_toEndOf="@id/lblEstadoDGI"
         android:text="TextView"
         tools:visibility="gone" />
+
+    <TextView
+        android:id="@+id/textView108"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/lblPNum"
+        android:layout_marginTop="0dp"
+        android:paddingStart="5dp"
+        android:text="Monto mínimo pendiente"
+        android:textColor="#FF5722"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
 
 </RelativeLayout>

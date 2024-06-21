@@ -3017,13 +3017,19 @@ public class ComWS extends PBase {
 			fprog = "Procesando: " + (rc - 1) + " de: " + (rc - 1);
 			wsRtask.onProgressUpdate();
 
-			if (modo_recepcion==1){
+			try {
+				dbT.execSQL("DELETE FROM P_STOCK_PVC");
+				sql = "INSERT INTO P_STOCK_PVC (CODIGO,CANT) SELECT CODIGO,CANT FROM P_STOCK_PV";
+				dbT.execSQL(sql);
+			} catch (Exception e) {
+				msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+			}
+
+			if (modo_recepcion==1) {
 				Actualiza_FinDia();
 				encodeLicence();
 				//encodeLicenceRuta();
-
 				encodePrinters();
-
 				fechaCarga();
 				//SetStatusRecToTrans("1");
 			}
@@ -3098,11 +3104,8 @@ public class ComWS extends PBase {
 
 			if (modo_recepcion==1 ){
 				validaDatos(true);
-
 				comparaCorrel();
-
 				otrosParametros();
-
 			}
 
 			isbusy = 0;
@@ -4018,7 +4021,7 @@ public class ComWS extends PBase {
 		}
 
 		if (TN.equalsIgnoreCase("P_MONTO_MINIMO_CLIENTE")) {
-			SQL = "SELECT IDMONTOMINIMOCLIENTE,CLIENTE,MM_ESTANDAR,MM_EXTRARUTA, ACTIVO FROM P_MONTO_MINIMO_CLIENTE";
+			SQL = "SELECT CLIENTE,MM_ESTANDAR,MM_EXTRARUTA FROM P_MONTO_MINIMO_CLIENTE";
 			return SQL;
 		}
 
@@ -4105,7 +4108,7 @@ public class ComWS extends PBase {
 		}
 
 		if (TN.equalsIgnoreCase("P_SUCURSAL")) {
-			SQL = " SELECT CODIGO, EMPRESA, DESCRIPCION, NOMBRE, DIRECCION, TELEFONO, NIT, TEXTO, TIPO_SUCURSAL, CORREO, COORDENADA_X, COORDENADA_Y, CODUBI, TIPORUC, CODMUNI, SITIO_WEB " +
+			SQL = " SELECT CODIGO, EMPRESA, DESCRIPCION, NOMBRE, DIRECCION, TELEFONO, NIT, TEXTO, TIPO_SUCURSAL, CORREO, COORDENADA_X, COORDENADA_Y, CODUBI, TIPORUC, CODMUNI, SITIO_WEB, MM_INCLUYE_CERRADOS " +
 					" FROM P_SUCURSAL WHERE CODIGO IN (SELECT SUCURSAL FROM P_RUTA WHERE CODIGO = '" + ActRuta + "')";
 			return SQL;
 		}
@@ -4274,8 +4277,7 @@ public class ComWS extends PBase {
 			if (dt != null) dt.close();
 
 		} catch (Exception e) {
-			addlog(new Object() {
-			}.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
+			addlog(new Object() {}.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
 			Log.d("ValidaDatos", e.getMessage());
 		}
 

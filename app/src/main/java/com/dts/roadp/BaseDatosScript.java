@@ -114,6 +114,8 @@ public class BaseDatosScript {
                     "[FECHA_SISTEMA] INTEGER NOT NULL,"+
 					"[ANULADO_POR_MONTO_MINIMO] INTEGER NOT NULL,"+
 					"[CUMPLE_MONTO_MINIMO] INTEGER NOT NULL,"+
+					"[TIPO_PEDIDO] TEXT NOT NULL,"+
+					"[TOTAL_MONTO_MINIMO] INTEGER NOT NULL,"+
 					"PRIMARY KEY ([COREL])"+
 					");";
 			database.execSQL(vSQL);
@@ -465,6 +467,7 @@ public class BaseDatosScript {
 					"[CSCONGELADOS] REAL NOT NULL,"+
 					"[CSSALSAS] REAL NOT NULL,"+
 					"[TIPOLOGIA] TEXT NOT NULL,"+
+					"[RUC_VALIDADO] INTEGER NOT NULL,"+
 					"PRIMARY KEY ([CODIGO],[RUTA])"+
 					");";
 			database.execSQL(vSQL);
@@ -1689,6 +1692,7 @@ public class BaseDatosScript {
 			        "[TIPORUC] TEXT,"+
 					"[CODMUNI] TEXT,"+
 					"[SITIO_WEB] TEXT,"+
+					"[MM_INCLUYE_CERRADOS] INTEGER,"+
 					"PRIMARY KEY ([CODIGO])"+
 					");";
 			database.execSQL(vSQL);
@@ -2368,7 +2372,15 @@ public class BaseDatosScript {
             vSQL="CREATE INDEX P_stock_pv_idx4 ON P_stock_pv(ENVIADO)";database.execSQL(vSQL);
 
 
-            //#JP 20210831
+			vSQL="CREATE TABLE [P_STOCK_PVC] ("+
+					"CODIGO TEXT NOT NULL,"+
+					"CANT REAL NOT NULL,"+
+					"PRIMARY KEY ([CODIGO])"+
+					");";
+			database.execSQL(vSQL);
+
+
+			//#JP 20210831
             vSQL = "CREATE TABLE [P_CANAL](" +
                     "[CODIGO] TEXT NOT NULL," +
                     "[NOMBRE] TEXT NOT NULL,"+
@@ -2420,12 +2432,10 @@ public class BaseDatosScript {
 
 
 			vSQL="CREATE TABLE [P_monto_minimo_cliente] ("+
-					"IDMONTOMINIMOCLIENTE INTEGER NOT NULL,"+
 					"CLIENTE TEXT NOT NULL,"+
 					"MM_ESTANDAR REAL NOT NULL,"+
 					"MM_EXTRARUTA REAL NOT NULL,"+
-					"ACTIVO INTEGER NOT NULL,"+
-					"PRIMARY KEY ([IDMONTOMINIMOCLIENTE])"+
+					"PRIMARY KEY ([CLIENTE])"+
 					");";
 			database.execSQL(vSQL);
 

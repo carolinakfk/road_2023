@@ -74,7 +74,7 @@ public class Anulacion extends PBase {
 	private AppMethods app;
 	
 	private int tipo,depparc,fcorel;	
-	private String selid,itemid,fserie,fres,scor, CUFE, corelNotaCre, corelFactura;
+	private String selid,itemid,fserie,fres,scor, CUFE, corelNotaCre, corelFactura,cliid;
 	private boolean modoapr=false,toledano;
 
 	private String vError="";
@@ -115,9 +115,10 @@ public class Anulacion extends PBase {
 	private String urlDoc = "";
 	private String QR = "";
 	private String urlanulacion="";
-
 	private String referencia = "";
-	private boolean exito_anula_nc = false;
+	private int bandera_monto;
+	private long fechae;
+	private boolean exito_anula_nc = false,cli_estandar;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -371,7 +372,8 @@ public class Anulacion extends PBase {
 		try {
 			
 			if (tipo==0) {
-				sql="SELECT D_PEDIDO.COREL,P_CLIENTE.NOMBRE,D_PEDIDO.FECHA,D_PEDIDO.TOTAL,D_PEDIDO.BANDERA "+
+				sql="SELECT D_PEDIDO.COREL,P_CLIENTE.NOMBRE,D_PEDIDO.FECHA,D_PEDIDO.TOTAL," +
+						"D_PEDIDO.BANDERA,D_PEDIDO.CUMPLE_MONTO_MINIMO,D_PEDIDO.FECHAENTR,D_PEDIDO.CLIENTE "+
 					 "FROM D_PEDIDO INNER JOIN P_CLIENTE ON D_PEDIDO.CLIENTE=P_CLIENTE.CODIGO "+
 					 "WHERE (D_PEDIDO.ANULADO='N') AND (D_PEDIDO.STATCOM='N') ORDER BY D_PEDIDO.COREL DESC ";	
 			}
@@ -476,10 +478,13 @@ public class Anulacion extends PBase {
 					}					
 					
 					vItem.Valor=sval;
-					vItem.bandera=0;
+					vItem.bandera=0;vItem.banderamonto=0;fechae=0;cliid="";
                     if (tipo==0) {
                         if (DT.getString(4).equalsIgnoreCase("S")) vItem.bandera=1;
-                    }
+						if (DT.getInt(5)==0) vItem.banderamonto=1;
+						fechae=DT.getLong(6);
+						cliid=DT.getString(7);
+					}
 
 					if (tipo==4 || tipo==5) vItem.Valor="";
 					
@@ -2319,13 +2324,13 @@ public class Anulacion extends PBase {
             db.setTransactionSuccessful();
             db.endTransaction();
 
+			validaTotalMontoPedidos();
         } catch (Exception e) {
             db.endTransaction();
             msgbox(e.getMessage());
         }
 
 		cmdAnular.setVisibility(View.VISIBLE);
-
 	}
 	
 	private boolean anulFactura(String itemid) {
@@ -3616,7 +3621,96 @@ public class Anulacion extends PBase {
 	}
 
 	//endregion
-	
+
+	//region Monto minimo
+
+	private void validaTotalMontoPedidos() {
+		double mt,mm;
+
+		try {
+			validaClienteExtraruta();
+
+			bandera_monto=0;
+			mt=montoPedidos();
+			mm=montoMinimo();
+			if (mt>=mm) bandera_monto=1;
+
+			sql="UPDATE D_PEDIDO SET CUMPLE_MONTO_MINIMO="+bandera_monto+" "+
+					"WHERE (CLIENTE='"+gl.cliente+"') AND (ANULADO='N') AND (FECHAENTR="+fechae+")";
+			db.execSQL(sql);
+
+		} catch (Exception e) {
+			msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+		}
+	}
+
+	private double montoPedidos() {
+		Cursor dt,dtt;
+		String pcor;
+		double mt;
+
+		try {
+			sql="SELECT COREL FROM D_PEDIDO WHERE (CLIENTE='"+gl.cliente+"') " +
+				"AND (ANULADO='N') AND (FECHAENTR="+fechae+")";
+			dt=Con.OpenDT(sql);
+
+			mt=0;
+			if (dt.getCount()>0) {
+				dt.moveToFirst();
+				while (!dt.isAfterLast()) {
+					pcor=dt.getString(0);
+
+					sql="SELECT SUM(CANT*PRECIO) FROM D_PEDIDOD WHERE (COREL='"+pcor+"')";
+					dtt=Con.OpenDT(sql);
+					mt+=dtt.getDouble(0);
+					if(dtt!=null) dtt.close();
+
+					dt.moveToNext();
+				}
+			}
+
+			if(dt!=null) dt.close();
+
+			return mt;
+		} catch (Exception e) {
+			msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());return 0;
+		}
+	}
+
+	private double montoMinimo() throws Exception {
+		double montomin;
+		try {
+			sql="SELECT MM_ESTANDAR,MM_EXTRARUTA FROM P_monto_minimo_cliente WHERE (CLIENTE='"+gl.cliente+"')";
+			Cursor dt=Con.OpenDT(sql);
+
+			if (cli_estandar) montomin=dt.getDouble(0);else montomin=dt.getDouble(1);
+
+			return montomin;
+		} catch (Exception e) {
+			//throw new Exception("No está definido monto minimo para cliente");
+			toastcent("No está definido monto mínimo para cliente");
+			return 100;
+		}
+	}
+
+	private void validaClienteExtraruta() {
+		try {
+			cli_estandar=false;
+			int diasemana = mu.dayofweek();
+
+			sql = "SELECT CLIENTE FROM P_CLIRUTA WHERE (CLIENTE='"+cliid+"') AND (DIA ="+diasemana+") ";
+			Cursor dt=Con.OpenDT(sql);
+			if (dt.getCount()>0) cli_estandar=true;
+
+			if(dt!=null) dt.close();
+
+		} catch (Exception e) {
+			msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+		}
+	}
+
+	//endregion
+
 	//region Aux
 	
 	private void msgAsk(String msg) {
@@ -3982,6 +4076,7 @@ public class Anulacion extends PBase {
 	}
 
 	//endregion
+
 	public class AsyncGetToken extends AsyncTask<Void, Void, String> {
 
 		@Override
@@ -4077,6 +4172,7 @@ public class Anulacion extends PBase {
 		listItems();
 
 	}
+
 	public void ProgressDialog(String mensaje) {
 		try {
 			progress = new ProgressDialog(this);
@@ -4090,4 +4186,5 @@ public class Anulacion extends PBase {
 			e.printStackTrace();
 		}
 	}
+
 }

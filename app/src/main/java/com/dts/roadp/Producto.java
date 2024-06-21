@@ -281,6 +281,10 @@ public class Producto extends PBase {
                                 "FROM P_PRODUCTO INNER JOIN	P_STOCK_PV ON P_STOCK_PV.CODIGO=P_PRODUCTO.CODIGO INNER JOIN " +
                                 "P_PRODPRECIO ON (P_STOCK_PV.CODIGO=P_PRODPRECIO.CODIGO)  " +
                                 "WHERE (P_PRODPRECIO.NIVEL = " + gl.nivel +") AND (P_PRODUCTO.ES_VENDIBLE=1) ";
+                    	if (gl.cliente_extraruta) {
+							 sql=sql+"AND (P_STOCK_PV.CANT=0) ";
+						}
+
                         if (!mu.emptystr(famid)){
                             if (!famid.equalsIgnoreCase("0")) sql=sql+"AND (P_PRODUCTO.LINEA='"+famid+"') ";
                         }

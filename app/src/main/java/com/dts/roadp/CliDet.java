@@ -264,11 +264,16 @@ public class CliDet extends PBase {
 
 	public void showPreventa(View view) {
 		Toast.makeText(this, "gl.validar_posicion_georef: "+gl.validar_posicion_georef+" georefPreventa: "+georefPreventa+" permiteVenta: "+permiteVenta + " Distancia Clie-Vend: "+(gl.gpsdist - rangoGPS)+" MargenGps: "+rangoGPS, Toast.LENGTH_LONG).show();
+
 	    if (clinue) {
             if (!pedclinue) {
                 msgbox("No se permite crear pedido al cliente nuevo.");return;
             }
         }
+
+		if (montoMinimo()==0) {
+			msgbox("No está definido monto minimo, no se puede vender.");return;
+		}
 
 		if (!permiteVenta) {
 			if (gl.peVentaGps == 1) {
@@ -1507,6 +1512,24 @@ public class CliDet extends PBase {
 		}
 
 		return cantidad;
+	}
+
+	private double montoMinimo()  {
+		double montomin=0;
+
+		try {
+
+			sql="SELECT MM_ESTANDAR FROM P_monto_minimo_cliente WHERE (CLIENTE='"+gl.cliente+"')";
+			Cursor dt=Con.OpenDT(sql);
+
+			dt.moveToFirst();
+			montomin=dt.getDouble(0);
+			if(dt!=null) dt.close();
+
+			return montomin;
+		} catch (Exception e) {
+			return 0;
+		}
 	}
 
 	//endregion

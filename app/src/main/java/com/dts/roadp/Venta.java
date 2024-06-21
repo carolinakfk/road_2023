@@ -152,6 +152,7 @@ public class Venta extends PBase {
 		setGPS();
 		cliPorDia();
 		validaNivelPrecio();
+		validaClienteExtraruta();
 
         gl.peditems.clear();
         if (!gl.modpedid.isEmpty()) {
@@ -4059,6 +4060,22 @@ public class Venta extends PBase {
 		} catch (SQLException e) {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
 			mu.msgbox("Error : " + e.getMessage());
+		}
+	}
+
+	private void validaClienteExtraruta() {
+		try {
+			gl.cliente_extraruta=true;
+			int diasemana = mu.dayofweek();
+
+			sql = "SELECT CLIENTE FROM P_CLIRUTA WHERE (CLIENTE='"+cliid+"') AND (DIA ="+diasemana+") ";
+			Cursor dt=Con.OpenDT(sql);
+			if (dt.getCount()>0) gl.cliente_extraruta=false;
+
+			if(dt!=null) dt.close();
+
+		} catch (Exception e) {
+			msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
 		}
 	}
 

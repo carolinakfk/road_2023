@@ -191,7 +191,6 @@ public class Reimpresion extends PBase {
 			
 	}
 	
-	
 	// Events
 	
 	public void printDoc(View view){
@@ -332,7 +331,8 @@ public class Reimpresion extends PBase {
 		try {
 				
 			if (tipo==0) {
-				sql= " SELECT D_PEDIDO.COREL,P_CLIENTE.NOMBRE,D_PEDIDO.FECHA,D_PEDIDO.TOTAL,D_PEDIDO.BANDERA "+
+				sql= " SELECT D_PEDIDO.COREL,P_CLIENTE.NOMBRE,D_PEDIDO.FECHA,D_PEDIDO.TOTAL," +
+						"D_PEDIDO.BANDERA,D_PEDIDO.CUMPLE_MONTO_MINIMO,D_PEDIDO.ANULADO "+
 					 " FROM D_PEDIDO INNER JOIN P_CLIENTE ON D_PEDIDO.CLIENTE=P_CLIENTE.CODIGO "+
 					 " ORDER BY D_PEDIDO.COREL DESC ";
 			}
@@ -442,10 +442,12 @@ public class Reimpresion extends PBase {
 							vItem.Valor=mu.frmcur(val);
 						}
 
-						vItem.bandera=0;
+						vItem.bandera=0;vItem.banderamonto=0;
 						if (tipo==0) {
 						    if (DT.getString(4).equalsIgnoreCase("S")) vItem.bandera=1;
-                        }
+							if (DT.getInt(5)==0) vItem.banderamonto=1;
+							if (DT.getString(6).equalsIgnoreCase("S")) vItem.banderamonto=2;
+						}
 
 						if (tipo==3 || tipo==6) {
 							if (gl.peModal.equalsIgnoreCase("TOL")) {

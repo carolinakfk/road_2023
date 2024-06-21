@@ -14,14 +14,14 @@ import java.util.ArrayList;
 
 public class ListAdaptCFDVB extends BaseAdapter {
 
-	private static ArrayList<clsClasses.clsCFDV> itemDetailsrrayList;
+	private static ArrayList<clsClasses.clsCFDV> items;
 
 	private int selectedIndex;
 
 	private LayoutInflater l_Inflater;
 
 	public ListAdaptCFDVB(Context context, ArrayList<clsClasses.clsCFDV> results) {
-		itemDetailsrrayList = results;
+		items = results;
 		l_Inflater = LayoutInflater.from(context);
 		selectedIndex = -1;
 	}
@@ -36,11 +36,11 @@ public class ListAdaptCFDVB extends BaseAdapter {
 	}
 
 	public int getCount() {
-		return itemDetailsrrayList.size();
+		return items.size();
 	}
 
 	public Object getItem(int position) {
-		return itemDetailsrrayList.get(position);
+		return items.get(position);
 	}
 
 	public long getItemId(int position) {
@@ -65,23 +65,25 @@ public class ListAdaptCFDVB extends BaseAdapter {
 			holder.lblCufe = (TextView) convertView.findViewById(R.id.lblCufe);
 			holder.lblCertificada = (TextView) convertView.findViewById(R.id.lblCertificada);
 			holder.lblEstadoDGI = (TextView) convertView.findViewById(R.id.lblEstadoDGI);
+			holder.lblmontominimo= (TextView) convertView.findViewById(R.id.textView108);
+
 
 			convertView.setTag(holder);
 		} else {
 			holder = (ViewHolder) convertView.getTag();
 		}
 
-		holder.lblFecha.setText(itemDetailsrrayList.get(position).Fecha);
-		holder.lblDesc.setText(itemDetailsrrayList.get(position).Desc);
-		holder.lblValor.setText(itemDetailsrrayList.get(position).Valor);
+		holder.lblFecha.setText(items.get(position).Fecha);
+		holder.lblDesc.setText(items.get(position).Desc);
+		holder.lblValor.setText(items.get(position).Valor);
 
-		if (itemDetailsrrayList.get(position).tipodoc==3
-			|| itemDetailsrrayList.get(position).tipodoc==6
-			|| itemDetailsrrayList.get(position).tipodoc==7) {
+		if (items.get(position).tipodoc==3
+			|| items.get(position).tipodoc==6
+			|| items.get(position).tipodoc==7) {
 
-			holder.txtCufe.setText(itemDetailsrrayList.get(position).Cufe);
-			holder.txtCertificada.setText(itemDetailsrrayList.get(position).Certificada_DGI);
-			holder.txtEstadoDGI.setText(itemDetailsrrayList.get(position).Estado);
+			holder.txtCufe.setText(items.get(position).Cufe);
+			holder.txtCertificada.setText(items.get(position).Certificada_DGI);
+			holder.txtEstadoDGI.setText(items.get(position).Estado);
 
 			holder.txtCufe.setVisibility(View.VISIBLE);
 			holder.txtCertificada.setVisibility(View.VISIBLE);
@@ -90,7 +92,7 @@ public class ListAdaptCFDVB extends BaseAdapter {
 			holder.lblCertificada.setVisibility(View.VISIBLE);
 			holder.lblEstadoDGI.setVisibility(View.VISIBLE);
 
-		}else{
+		} else {
 			holder.txtCufe.setText("");
 			holder.txtCertificada.setText("");
 			holder.txtEstadoDGI.setText("");
@@ -101,10 +103,25 @@ public class ListAdaptCFDVB extends BaseAdapter {
 			holder.lblCufe.setVisibility(View.GONE);
 			holder.lblCertificada.setVisibility(View.GONE);
 			holder.lblEstadoDGI.setVisibility(View.GONE);
+
+			if (items.get(position).tipodoc==0) {
+				if (items.get(position).banderamonto>0) {
+					if (items.get(position).banderamonto==1) {
+						holder.lblmontominimo.setTextColor(Color.RED);
+						holder.lblmontominimo.setText("Monto mínimo pendiente");
+					}
+					if (items.get(position).banderamonto==2){
+						holder.lblmontominimo.setTextColor(Color.BLUE);
+						holder.lblmontominimo.setText("ANULADO");
+					}
+					holder.lblmontominimo.setVisibility(View.VISIBLE);
+				} else {
+					holder.lblmontominimo.setVisibility(View.GONE);
+				}
+			}
 		}
 
-
-		if (itemDetailsrrayList.get(position).bandera==1) {
+		if (items.get(position).bandera==1) {
             holder.img1.setVisibility(View.VISIBLE);
         } else {
             holder.img1.setVisibility(View.INVISIBLE);
@@ -121,7 +138,8 @@ public class ListAdaptCFDVB extends BaseAdapter {
 
 
 	static class ViewHolder {
-		TextView  lblFecha,lblDesc,lblValor, txtCufe, txtEstadoDGI, txtCertificada, lblCufe, lblEstadoDGI,lblCertificada;
+		TextView  lblFecha,lblDesc,lblValor, txtCufe, txtEstadoDGI, txtCertificada,
+				  lblCufe, lblEstadoDGI,lblCertificada,lblmontominimo;
 		ImageView img1;
 	}
 

@@ -57,8 +57,11 @@ public class PedidoRes extends PBase {
 	private String itemid,cliid,corel;
 	private int cyear, cmonth, cday,dweek,impres, presday,bandera_monto;
 	
-	private double dmax,dfinmon,descpmon,descg,descgmon,tot,stot0,stot,descmon,totimp,totperc,dispventa;
-	private boolean acum,cleandprod,toledano,porpeso,prodstandby,impprecio,cli_estandar;
+	private double dmax,dfinmon,descpmon,descg,descgmon,tot,stot0,stot,monto_minimo;
+	private double descmon,totimp,totperc,dispventa,nue_monto,nue_monto_ext;
+	private double monto_a,monto_c,montop_a,montop_c;
+	private boolean acum,cleandprod,toledano,porpeso,prodstandby,impprecio;
+	private boolean cli_estandar,cli_nuevo,incluye_cerrados;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -135,7 +138,39 @@ public class PedidoRes extends PBase {
 	}
 
 	//region Events
-	
+
+	public void askSave(View view) {
+		String ss;
+
+		try {
+
+			prodstandby=validaStandby();
+			if (prodstandby) ss="Guardar pedido con producto cerrado?";else ss="Guardar pedido ?";
+
+			if (cli_nuevo) {
+				if (bandera_monto==0) ss="Guardar pedido de un cliente nuevo sin alcanzar el monto minimo?";
+			}
+
+			AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+
+			dialog.setTitle("Road");
+			dialog.setMessage(ss);
+
+			dialog.setPositiveButton("Guardar", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					finishOrder();
+				}
+			});
+
+			dialog.setNegativeButton("Salir", null);
+
+			dialog.show();
+
+		} catch (Exception e){
+			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
+		}
+	}
+
 	public void showBon(View view) {
 		Intent intent = new Intent(this,BonVenta.class);
 		startActivity(intent);	
@@ -402,7 +437,7 @@ public class PedidoRes extends PBase {
 	private boolean saveOrder(){
 		Cursor DT;
 		double tot,desc,imp,peso,vcant,vpeso,vfactor,factpres,cantinv;
-        String vprod,vumstock,vumventa,bandisp, vumstockaux = "";
+        String vprod,vumstock,vumventa,bandisp, vumstockaux = "",tipo_pedido;
         int dev_ins=1;
         int ncItem=0;
 
@@ -443,15 +478,18 @@ public class PedidoRes extends PBase {
 			if (!gl.modpedid.isEmpty()) {
                 anulaPedidoExistente();
             }
+			if (cli_estandar) tipo_pedido="REGULAR";else tipo_pedido="EXTRARUTA";
+
 			
 			ins.init("D_PEDIDO");
+
 			ins.add("COREL",corel);
 			ins.add("ANULADO","N");
 			ins.add("FECHA",du.getActDate());
 			ins.add("EMPRESA",gl.emp);
 			if (gl.tolsuper) {
 				ins.add("RUTA",gl.rutasup);ins.add("RUTASUPER",gl.ruta);
-			}else {
+			} else {
 				ins.add("RUTA",gl.ruta);ins.add("RUTASUPER","");
 			}
 			ins.add("VENDEDOR",gl.vend);
@@ -481,6 +519,8 @@ public class PedidoRes extends PBase {
             ins.add("FECHA_SISTEMA",du.getActDateTime());
 			ins.add("ANULADO_POR_MONTO_MINIMO",0);
 			ins.add("CUMPLE_MONTO_MINIMO",bandera_monto);
+			ins.add("TIPO_PEDIDO",tipo_pedido);
+			ins.add("TOTAL_MONTO_MINIMO",monto_minimo);
 
 			db.execSQL(ins.sql());
           		
@@ -895,19 +935,24 @@ public class PedidoRes extends PBase {
 	//region Monto minimo
 
 	private void validaTotalMontoPedidos() {
-		double mt,mm;
+		double mt,mm,mmac;
 
 		try {
-			validaClienteExtraruta();
+			montoMinimoNuevo();
+			validaCliente();
 			if (!cli_estandar) toastcent("Cliente extraruta");
 
-			bandera_monto=0;
 			mt=montoActual()+montoPedidos();
-			mm=montoMinimo();
+			if (!incluye_cerrados) {
+				mt=monto_a+montop_a;
+			}
+			mm=montoMinimo();monto_minimo=mm;
 
+			bandera_monto=0;
 			if (mt>=mm) bandera_monto=1;
+
 			if (bandera_monto==0) msgbox("El total de prefacturas ("+mu.frmcur(mt)+") es menor que " +
-				"monto minimo ("+mu.frmcur(mm)+"). ");
+				"monto mínimo ("+mu.frmcur(mm)+"). ");
 
 			sql="UPDATE D_PEDIDO SET CUMPLE_MONTO_MINIMO="+bandera_monto+" "+
 				"WHERE (CLIENTE='"+gl.cliente+"') AND (ANULADO='N') AND (FECHAENTR="+fechae+")";
@@ -919,11 +964,52 @@ public class PedidoRes extends PBase {
 	}
 
 	private double montoActual() {
+		Cursor dt,dtt=null;
+		String idprodm;
+		double totm,cantm,precm,dispm;
+
 		try {
+
+			monto_a=0;monto_c=0;
+
 			sql="SELECT SUM(CANT*PRECIO) FROM T_VENTA";
-			Cursor dt=Con.OpenDT(sql);
+			dt=Con.OpenDT(sql);
 			double mt=dt.getDouble(0);
+
+			sql="SELECT PRODUCTO,CANT,PRECIO FROM T_VENTA";
+			dt=Con.OpenDT(sql);
+
+			if (dt.getCount()>0) {
+				dt.moveToFirst();
+				while (!dt.isAfterLast()) {
+
+					idprodm=dt.getString(0);
+					cantm=dt.getDouble(1);
+					precm=dt.getDouble(2);
+					totm=cantm*precm;
+
+					sql="SELECT CANT FROM P_STOCK_PVC WHERE (CODIGO='"+idprodm+"')";
+					dtt=Con.OpenDT(sql);
+
+					try {
+						dtt.moveToFirst();
+						dispm=dtt.getDouble(0);
+					} catch (Exception e) {
+						dispm=0;
+					}
+
+					if (dispm==0) { // abierto
+						monto_a+=totm;
+					} else {		// cerrado
+						monto_c+=totm;
+					}
+
+					dt.moveToNext();
+				}
+			}
+
 			if(dt!=null) dt.close();
+			if(dtt!=null) dt.close();
 
 			return mt;
 		} catch (Exception e) {
@@ -932,12 +1018,13 @@ public class PedidoRes extends PBase {
 	}
 
 	private double montoPedidos() {
-		Cursor dt,dtt;
-		String pcor;
-		double mt;
+		Cursor dt,dtt=null,dtd=null;
+		String pcor,idprodm;
+		double mt,totm,cantm,precm,dispm;
 
 		try {
 
+			montop_a=0;montop_c=0;
 
 			fecha=du.cfechaSinHora(Integer.parseInt(lblFecha.getText().toString().substring(8,10)),
 					Integer.parseInt(lblFecha.getText().toString().substring(3,5)),
@@ -956,16 +1043,46 @@ public class PedidoRes extends PBase {
 				while (!dt.isAfterLast()) {
 					pcor=dt.getString(0);
 
-					sql="SELECT SUM(CANT*PRECIO) FROM D_PEDIDOD WHERE (COREL='"+pcor+"')";
+					sql="SELECT PRODUCTO,CANT,PRECIO FROM D_PEDIDOD WHERE (COREL='"+pcor+"')";
 					dtt=Con.OpenDT(sql);
-					mt+=dtt.getDouble(0);
-					if(dtt!=null) dtt.close();
+
+					if (dtt.getCount()>0) {
+						dtt.moveToFirst();
+						while (!dtt.isAfterLast()) {
+
+							idprodm=dtt.getString(0);
+							cantm=dtt.getDouble(1);
+							precm=dtt.getDouble(2);
+							totm=cantm*precm;
+							mt+=totm;
+
+							sql="SELECT CANT FROM P_STOCK_PVC WHERE (CODIGO='"+idprodm+"')";
+							dtd=Con.OpenDT(sql);
+
+							try {
+								dtd.moveToFirst();
+								dispm=dtd.getDouble(0);
+							} catch (Exception e) {
+								dispm=0;
+							}
+
+							if (dispm==0) { // abierto
+								montop_a+=totm;
+							} else {		// cerrado
+								montop_c+=totm;
+							}
+
+							dtt.moveToNext();
+						}
+					}
 
 					dt.moveToNext();
 				}
 			}
 
 			if(dt!=null) dt.close();
+			if(dtt!=null) dtt.close();
+			if(dtd!=null) dtd.close();
 
 			return mt;
 		} catch (Exception e) {
@@ -973,19 +1090,75 @@ public class PedidoRes extends PBase {
 		}
 	}
 
-	private double montoMinimo() throws Exception {
+	private double montoMinimo()  {
 		double montomin;
 		try {
-			sql="SELECT MM_ESTANDAR,MM_EXTRARUTA FROM P_monto_minimo_cliente WHERE (ACTIVO=1) AND (CLIENTE='"+gl.cliente+"')";
+			cli_nuevo=false;
+			sql="SELECT MM_ESTANDAR,MM_EXTRARUTA FROM P_monto_minimo_cliente WHERE (CLIENTE='"+gl.cliente+"')";
 			Cursor dt=Con.OpenDT(sql);
 
+			dt.moveToFirst();
 			if (cli_estandar) montomin=dt.getDouble(0);else montomin=dt.getDouble(1);
+			if(dt!=null) dt.close();
 
 			return montomin;
 		} catch (Exception e) {
-			//throw new Exception("No está definido monto minimo para cliente");
-			toastcent("No está definido monto minimo para cliente");
-			return 100;
+			cli_nuevo=true;
+			toastcent("Aplicado monto mínimo promedio");
+			if (cli_estandar) return nue_monto;else return nue_monto_ext;
+		}
+	}
+
+	private void validaCliente() {
+		Cursor dt;
+
+		try {
+
+			sql = "SELECT SUCURSAL FROM P_RUTA WHERE (CODIGO='"+gl.ruta+"')";
+			dt=Con.OpenDT(sql);
+			dt.moveToFirst();
+			String idsucursal=dt.getString(0);
+
+			sql = "SELECT MM_INCLUYE_CERRADOS FROM P_SUCURSAL WHERE (CODIGO='"+idsucursal+"') ";
+			dt=Con.OpenDT(sql);
+			dt.moveToFirst();
+			incluye_cerrados=dt.getInt(0)==1;
+
+		} catch (Exception e) {
+			msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+			incluye_cerrados=false;
+		}
+
+		try {
+			cli_estandar=false;
+			int diasemana = mu.dayofweek();
+
+			sql = "SELECT CLIENTE FROM P_CLIRUTA WHERE (CLIENTE='"+cliid+"') AND (DIA ="+diasemana+") ";
+			dt=Con.OpenDT(sql);
+			if (dt.getCount()>0) cli_estandar=true;
+
+			if(dt!=null) dt.close();
+
+		} catch (Exception e) {
+			msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+		}
+	}
+
+	private void montoMinimoNuevo()  {
+		try {
+			cli_nuevo=false;
+			sql="SELECT AVG(MM_ESTANDAR),AVG(MM_EXTRARUTA) FROM P_monto_minimo_cliente";
+			Cursor dt=Con.OpenDT(sql);
+
+			dt.moveToFirst();
+			nue_monto=dt.getDouble(0);
+			nue_monto_ext=dt.getDouble(1);
+
+			if(dt!=null) dt.close();
+		} catch (Exception e) {
+			cli_nuevo=true;
+			toastcent("No está definido monto mínimo para ninguno cliente");
+			nue_monto=0;nue_monto_ext=0;
 		}
 	}
 
@@ -1149,34 +1322,6 @@ public class PedidoRes extends PBase {
 		}
 	
 	}
-	
-	public void askSave(View view) {
-        String ss;
-
-		try {
-
-            prodstandby=validaStandby();
-            if (prodstandby) ss="Guardar pedido con producto cerrado?";else ss="Guardar pedido ?";
-
-			AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-
-			dialog.setTitle("Road");
-			dialog.setMessage(ss);
-
-			dialog.setPositiveButton("Guardar", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					finishOrder();
-				}
-			});
-
-			dialog.setNegativeButton("Salir", null);
-
-			dialog.show();
-
-		}catch (Exception e){
-			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
-		}
-	}
 
 	public  boolean fechaValida(){
 		boolean vFechaValida = false;
@@ -1307,24 +1452,6 @@ public class PedidoRes extends PBase {
 
         return prodstandby;
     }
-
-	private void validaClienteExtraruta() {
-
-		try {
-			cli_estandar=false;
-			int diasemana = mu.dayofweek();
-
-			sql = "SELECT CLIENTE FROM P_CLIRUTA WHERE (CLIENTE='"+cliid+"') AND (DIA ="+diasemana+") ";
-			Cursor dt=Con.OpenDT(sql);
-			if (dt.getCount()>0) cli_estandar=true;
-
-			if(dt!=null) dt.close();
-
-		} catch (Exception e) {
-			msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
-		}
-	}
-
 
     //endregion
 
