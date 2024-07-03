@@ -1731,6 +1731,10 @@ public class FacturaRes extends PBase {
 
 					//toastlong("Guardando Prod: " + vprod + " con Lote: " + lotelote );
 
+					if (lotelote.equals("")){
+
+					}
+
 					ins.init("D_FACTURAD_LOTES");
 					ins.add("COREL", corel);
 					ins.add("PRODUCTO", vprod);
@@ -2549,6 +2553,8 @@ public class FacturaRes extends PBase {
 
 		try {
 
+			lote="";
+
 			sql="SELECT CANT,CANTM,PESO,plibra,LOTE,DOCUMENTO,FECHA,ANULADO,CENTRO,STATUS,ENVIADO,CODIGOLIQUIDACION,COREL_D_MOV " +
 					"FROM P_STOCK WHERE (CANT>0) AND (CODIGO='"+prid+"') AND (UNIDADMEDIDA='"+umstock+"') ORDER BY CANT";
 
@@ -2560,8 +2566,6 @@ public class FacturaRes extends PBase {
 			dt.moveToFirst();
 
 			while (!dt.isAfterLast()) {
-
-				lote="";
 
 				cant=dt.getDouble(0);
 				speso=dt.getDouble(2);

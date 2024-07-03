@@ -3811,7 +3811,7 @@ public class ComWS extends PBase {
 		}
 
 		if (TN.equalsIgnoreCase("P_CODATEN")) {
-			SQL = "SELECT * FROM P_CODATEN";
+			SQL = "SELECT * FROM P_CODATEN WHERE ACTIVO = 1";
 			return SQL;
 		}
 

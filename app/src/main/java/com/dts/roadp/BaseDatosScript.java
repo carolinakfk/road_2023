@@ -1791,6 +1791,7 @@ public class BaseDatosScript {
 			vSQL="CREATE TABLE [P_CODATEN] ("+
 					"[CODIGO] INTEGER NOT NULL,"+
 					"[NOMBRE] TEXT NOT NULL,"+
+					"[ACTIVO] INT NOT NULL,"+
 					"PRIMARY KEY ([CODIGO])"+
 					");";
 			database.execSQL(vSQL);
