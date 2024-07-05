@@ -128,4 +128,6 @@ public class appGlobals extends Application {
 	public String url_consultar_documento_por_ruta= ""; //"https://labpa.guru-soft.com/EdocPanama/4.0/Emision/Api/Consulta/ConsultarDocumentoRuta"
 	public String url_lote_ruc_dv = ""; //"https://labpa.guru-soft.com/eDocPanama/4.0/Ruc/Consulta/Api/LoteRucDV"
 
+	public String RUC_token= "";
+
 }

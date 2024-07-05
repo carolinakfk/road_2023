@@ -1,5 +1,6 @@
 package com.dts.roadp;
 
+import static android.util.Base64.encodeToString;
 import static android.widget.ImageView.ScaleType.CENTER_CROP;
 
 import android.app.AlertDialog;
@@ -13,21 +14,29 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.Looper;
 import android.os.StrictMode;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
-import android.util.Patterns;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -35,6 +44,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Objects;
 
+import Facturacion.HttpClientAPI;
+import Facturacion.RUCValid;
+import okhttp3.MediaType;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 import uk.co.senab.photoview.PhotoViewAttacher;
 
 public class CliNuevoT extends PBase {
@@ -44,76 +58,99 @@ public class CliNuevoT extends PBase {
             txtCliEmail, txtCliContacto, txtCliCanal, txtCliSubCanal,
             txtCodVendedor, txtPollo, txtEmbutidos, txtHuevos, txtRes,
             txtCerdo, txtCongelados, txtSalsas, txtTipologia;
+    private ProgressBar pbar;
 
-    private int d1, d2, d3, d4, d5, d6, d7, nivel=0, tipo=0, codimg, correlativo = 0;
+    private int d1, d2, d3, d4, d5, d6, d7, nivel=0, tipo=0, codimg, correlativo = 0,tipo_contib;
     private Boolean imgPath, imgDB;
     private PhotoViewAttacher zoomFoto;
+
+    private AppMethods app;
 
     private Spinner spinnerPrecio;
     private ImageView imgGuardar, imgBuscarPro, imgBuscarCanal, imgRoadTit, imgVendedor;
     private CheckBox cb1, cb2, cb3, cb4, cb5, cb6, cb7;
-    private String imagenbase64,path;
+    private String imagenbase64,path,corelRUC;
 
     private ArrayList<String> spincode = new ArrayList<String>();
     private ArrayList<String> spinlist = new ArrayList<String>();
 
+    private HttpClientAPI htclient;
+    private Runnable rnValidRUC;
+    private Gson gson;
+    private boolean ruc_valid, ruc_estado;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cli_nuevo_t);
+        try {
 
-        super.InitBase();
-        lbGPS = (TextView) findViewById(R.id.lbCoor);
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_cli_nuevo_t);
 
-        txtCliNombre = (EditText) findViewById(R.id.txtCliNombre);
-        txtCliNit = (EditText) findViewById(R.id.txtCliNit);
-        txtCliDireccion = (EditText) findViewById(R.id.txtCliDireccion);
-        txtProvincia = (EditText) findViewById(R.id.txtProvincia);
-        txtDistrito = (EditText) findViewById(R.id.txtDistrito);
-        txtCiudad = (EditText) findViewById(R.id.txtCiudad);
-        txtCliTelefono = (EditText) findViewById(R.id.txtCliTelefono);
-        txtCliEmail = (EditText) findViewById(R.id.txtCliEmail);
-        txtCliContacto = (EditText) findViewById(R.id.txtCliContacto);
-        txtCliCanal = (EditText) findViewById(R.id.txtCliCanal);
-        txtCliSubCanal = (EditText) findViewById(R.id.txtCliSubCanal);
-        txtCodVendedor = (EditText) findViewById(R.id.txtCodVendedor);
-        txtPollo = (EditText) findViewById(R.id.txtPollo);
-        txtEmbutidos = (EditText) findViewById(R.id.txtEmbutidos);
-        txtHuevos = (EditText) findViewById(R.id.txtHuevos);
-        txtRes = (EditText) findViewById(R.id.txtRes);
-        txtCerdo = (EditText) findViewById(R.id.txtCerdo);
-        txtCongelados = (EditText) findViewById(R.id.txtCongelados);
-        txtSalsas = (EditText) findViewById(R.id.txtSalsas);
-        txtTipologia= (EditText) findViewById(R.id.txtTipologia);
+            super.InitBase();
+            lbGPS = (TextView) findViewById(R.id.lbCoor);
 
-        imgGuardar = (ImageView) findViewById(R.id.imgGuardar);
-        imgBuscarCanal = (ImageView) findViewById(R.id.imgBuscarCanal);
-        imgBuscarPro = (ImageView) findViewById(R.id.imgBuscarPro);
-        imgRoadTit = (ImageView) findViewById(R.id.imgRoadTit);
-        imgVendedor = (ImageView) findViewById(R.id.imgBuscarVen);
+            txtCliNombre = (EditText) findViewById(R.id.txtCliNombre);
+            txtCliNit = (EditText) findViewById(R.id.txtCliNit);
+            txtCliDireccion = (EditText) findViewById(R.id.txtCliDireccion);
+            txtProvincia = (EditText) findViewById(R.id.txtProvincia);
+            txtDistrito = (EditText) findViewById(R.id.txtDistrito);
+            txtCiudad = (EditText) findViewById(R.id.txtCiudad);
+            txtCliTelefono = (EditText) findViewById(R.id.txtCliTelefono);
+            txtCliEmail = (EditText) findViewById(R.id.txtCliEmail);
+            txtCliContacto = (EditText) findViewById(R.id.txtCliContacto);
+            txtCliCanal = (EditText) findViewById(R.id.txtCliCanal);
+            txtCliSubCanal = (EditText) findViewById(R.id.txtCliSubCanal);
+            txtCodVendedor = (EditText) findViewById(R.id.txtCodVendedor);
+            txtPollo = (EditText) findViewById(R.id.txtPollo);
+            txtEmbutidos = (EditText) findViewById(R.id.txtEmbutidos);
+            txtHuevos = (EditText) findViewById(R.id.txtHuevos);
+            txtRes = (EditText) findViewById(R.id.txtRes);
+            txtCerdo = (EditText) findViewById(R.id.txtCerdo);
+            txtCongelados = (EditText) findViewById(R.id.txtCongelados);
+            txtSalsas = (EditText) findViewById(R.id.txtSalsas);
+            txtTipologia= (EditText) findViewById(R.id.txtTipologia);
 
-        spinnerPrecio = (Spinner) findViewById(R.id.spinnerPrecio);
+            imgGuardar = (ImageView) findViewById(R.id.imgGuardar);
+            imgBuscarCanal = (ImageView) findViewById(R.id.imgBuscarCanal);
+            imgBuscarPro = (ImageView) findViewById(R.id.imgBuscarPro);
+            imgRoadTit = (ImageView) findViewById(R.id.imgRoadTit);
+            imgVendedor = (ImageView) findViewById(R.id.imgBuscarVen);
 
-        cb1 = (CheckBox) findViewById(R.id.checkBox1);
-        cb2 = (CheckBox) findViewById(R.id.checkBox2);
-        cb3 = (CheckBox) findViewById(R.id.checkBox3);
-        cb4 = (CheckBox) findViewById(R.id.checkBox4);
-        cb5 = (CheckBox) findViewById(R.id.checkBox5);
-        cb6 = (CheckBox) findViewById(R.id.checkBox6);
-        cb7 = (CheckBox) findViewById(R.id.checkBox7);
+            spinnerPrecio = (Spinner) findViewById(R.id.spinnerPrecio);
+            pbar = (ProgressBar) findViewById(R.id.progressBar7);pbar.setVisibility(View.INVISIBLE);
 
-        setData();
+            cb1 = (CheckBox) findViewById(R.id.checkBox1);
+            cb2 = (CheckBox) findViewById(R.id.checkBox2);
+            cb3 = (CheckBox) findViewById(R.id.checkBox3);
+            cb4 = (CheckBox) findViewById(R.id.checkBox4);
+            cb5 = (CheckBox) findViewById(R.id.checkBox5);
+            cb6 = (CheckBox) findViewById(R.id.checkBox6);
+            cb7 = (CheckBox) findViewById(R.id.checkBox7);
 
-        setDataSpinnerPrecio();
-        setHandlers();
-        miniFachada();
+            setData();
+
+            app = new AppMethods(this, gl, Con, db);
+
+            setDataSpinnerPrecio();
+            setHandlers();
+            miniFachada();
+
+            htclient = new HttpClientAPI();
+            gson = new Gson();
+            rnValidRUC = () -> { cbValidRUC() ;};
+
+
+        } catch (Exception e) {
+            msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+        }
+
     }
 
     private void setCorel() {
         gl.corelCliente = mu.getCorelBase();
     }
 
-    private void GuardarCliente() {
+    private void GuardarCliente(int ruc_validado) {
         Cursor DT;
         int codimagen = 0;
         String cliente = "";
@@ -123,7 +160,7 @@ public class CliNuevoT extends PBase {
             //Guardando Info en D_CLINUEVOT
             ins.init("D_CLINUEVOT");
 
-            ins.add("CODIGO", gl.corelCliente);
+            ins.add("CODIGO", gl.corelCliente);corelRUC=gl.corelCliente;
             ins.add("RUTA", gl.ruta);
             ins.add("FECHA", fecha);
             ins.add("NOMBRE", txtCliNombre.getText().toString());
@@ -170,9 +207,8 @@ public class CliNuevoT extends PBase {
             ins.add("CSCONGELADOS", txtCongelados.getText().toString());
             ins.add("CSSALSAS", txtSalsas.getText().toString());
             ins.add("TIPOLOGIA",gl.IdTipologia);
-
             //JP 20240618
-            ins.add("RUC_VALIDADO",0);
+            ins.add("RUC_VALIDADO",ruc_validado);
 
             db.execSQL(ins.sql());
 
@@ -315,6 +351,10 @@ public class CliNuevoT extends PBase {
             Toast.makeText(this, "Cliente nuevo creado", Toast.LENGTH_SHORT).show();
             finish();
 
+            try {
+                finish();
+            } catch (Exception e) {}
+
         } catch (Exception e) {
             addlog(new Object() { }.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
             mu.msgbox(e.getMessage());
@@ -324,15 +364,21 @@ public class CliNuevoT extends PBase {
     public void doSave(View view) {
         try {
             if (!checkValues()) return;
-            msgAskSave("Crear cliente nuevo");
-        } catch (Exception e) {
-            addlog(new Object() {
-            }.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
-        }
 
+            if (app.isOnWifi()==0) {
+                toast("No hay conexion a internet");
+                msgAskSave("Crear cliente nuevo sin validar RUC");
+            } else {
+                msgAskSaveRUC();
+            }
+        } catch (Exception e) {
+            addlog(new Object() {}.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
+        }
     }
 
+
     //Validaciones
+
     private String valToStr(int val) {
         if (val == 1) return "S";
         else return "N";
@@ -656,7 +702,9 @@ public class CliNuevoT extends PBase {
         }
     }
 
+
     //Set datos en Spinner
+
     private void setDataSpinnerPrecio() {
         Cursor DT;
 
@@ -696,7 +744,10 @@ public class CliNuevoT extends PBase {
     public void CapturarFoto(View view) {
         msgTomarFotos("Capturar imagen");
     }
+
+
     //Foto
+
     public void tomarFoto(){
         Cursor DT, DU;
         File URLfoto;
@@ -902,7 +953,9 @@ public class CliNuevoT extends PBase {
 
     }
 
+
     //GPS
+
     public void setGPS(View view) {
         try{
             setDataClienteG();
@@ -915,7 +968,104 @@ public class CliNuevoT extends PBase {
 
     }
 
+
+    // Validacion RUC
+
+    private void validaRUC() {
+
+        try {
+            ruc_estado =false;ruc_valid =false;
+
+            String RUC=txtCliNit.getText().toString().trim();
+            if (RUC.isEmpty()) {
+                msgbox("Falta ingresar el RUC.");return;
+            }
+
+            JSONArray jsonArray = new JSONArray();
+
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("Ruc",RUC);
+            jsonObject.put("TipoRuc", tipo_contib);
+
+            jsonArray.put(jsonObject);
+            String jsonInputString = jsonArray.toString();
+
+            final MediaType JSONMedia = MediaType.parse("application/json; charset=utf-8");
+            RequestBody body = RequestBody.create(JSONMedia,jsonInputString);
+
+            Request request =new Request.Builder()
+                    .url(gl.url_base+"Ruc/Consulta/Api/LoteRucDV")
+                    .post(body)
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("Authorization", "Bearer " + gl.RUC_token)
+                    .build();
+
+            pbar.setVisibility(View.VISIBLE);
+            htclient.makeGetRequest(request,rnValidRUC);
+
+        } catch (Exception e) {
+            msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+            pbar.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private void cbValidRUC() {
+        try {
+
+            try {
+                Looper.prepare();
+            } catch (Exception e) {}
+
+
+            pbar.setVisibility(View.INVISIBLE);
+
+            if (htclient.retcode!=1) {
+                runOnUiThread(() -> msgAskRUCInvalido("No se logro validar RUC. Continuar sin validar"));
+                return;
+            }
+
+            try {
+                JSONObject jsonObject = new JSONObject(htclient.data);
+
+                try {
+                    JSONArray jsonArray = jsonObject.getJSONArray("consultaRucDv");
+                    JSONObject jsonItem=jsonArray.getJSONObject(0);
+
+                    RUCValid ruc = gson.fromJson(jsonItem.toString(), RUCValid.class);
+                    ruc_valid=ruc.afiliadoSFE;
+
+                    ruc_estado=ruc_valid;
+                } catch (Exception e) {
+                    runOnUiThread(() -> msgAskRUCInvalido("No se logro validar RUC. Continuar sin validar"));
+                    return;
+                }
+
+                if (!ruc_estado) {
+                    runOnUiThread(() -> msgAskRUCInvalido("No se logro validar RUC. Continuar sin validar"));
+                    return;
+                }
+
+                runOnUiThread(() -> msgbox("RUC correcto"));
+
+                GuardarCliente(1);
+
+                try {
+                    finish();
+                } catch (Exception e) {}
+
+            } catch (Exception e) {
+                runOnUiThread(() -> msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage()));
+            }
+
+        } catch (Exception e) {
+            runOnUiThread(() -> msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage()));
+        }
+
+    }
+
+
     //Modales
+
     private void msgAskSave(String msg) {
         try{
             AlertDialog.Builder dialog = new AlertDialog.Builder(this);
@@ -926,7 +1076,7 @@ public class CliNuevoT extends PBase {
 
             dialog.setPositiveButton("Si", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
-                    GuardarCliente();
+                    GuardarCliente(0);
                 }
             });
 
@@ -934,6 +1084,62 @@ public class CliNuevoT extends PBase {
                 public void onClick(DialogInterface dialog, int which) {
 
                 }
+            });
+
+            dialog.show();
+        } catch (Exception e){
+            addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
+        }
+    }
+
+    private void msgAskSaveRUC() {
+        try{
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+
+            dialog.setTitle(R.string.app_name);
+            dialog.setMessage("¿ Contribuyente JURIDICO ?");
+            dialog.setIcon(R.drawable.ic_quest);
+
+            dialog.setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    tipo_contib=2;
+                    validaRUC();
+                }
+            });
+
+            dialog.setNeutralButton("No", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    tipo_contib=1;
+                    validaRUC();
+                }
+            });
+
+            dialog.setNegativeButton("Salir", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {}
+            });
+
+            dialog.show();
+        } catch (Exception e){
+            addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
+        }
+    }
+
+    private void msgAskRUCInvalido(String msg) {
+        try{
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+
+            dialog.setTitle(R.string.app_name);
+            dialog.setMessage("¿" + msg  + "?");
+            dialog.setIcon(R.drawable.ic_quest);
+
+            dialog.setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    GuardarCliente(0);
+                }
+            });
+
+            dialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {}
             });
 
             dialog.show();

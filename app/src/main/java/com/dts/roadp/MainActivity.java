@@ -1,5 +1,8 @@
 package com.dts.roadp;
 
+import static android.util.Base64.NO_WRAP;
+import static android.util.Base64.encodeToString;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -28,12 +31,19 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
+
+import Facturacion.HttpClientAPI;
+import Facturacion.Token;
+import okhttp3.Request;
 
 public class MainActivity extends PBase {
 
@@ -49,6 +59,14 @@ public class MainActivity extends PBase {
     private String parNumVer = "9.9.76 / ";
     private String parFechaVer = "11-06-2024";
     private String parTipoVer = "ROAD PRD";
+
+    //RUC Token
+
+    private Token token = new Token();
+    private HttpClientAPI htclient;
+    private Runnable rnToken;
+    private Gson gson;
+    private clsClasses.clsEmpresa Empresa = clsCls.new clsEmpresa();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -569,6 +587,15 @@ public class MainActivity extends PBase {
             msgbox(e.getMessage());
         }
 
+        try {
+            htclient = new HttpClientAPI();
+            gson = new Gson();
+            rnToken= () -> { cbToken() ;};
+            getHttpToken();
+        } catch (Exception e) {
+            msgbox(e.getMessage());
+        }
+
     }
 
     private void processLogIn() {
@@ -862,6 +889,78 @@ public class MainActivity extends PBase {
             mu.msgbox("Error : " + e.getMessage());
         }
 
+    }
+
+    //endregion
+
+    //region  Validacion RUC
+
+    private void getHttpToken() {
+        try {
+
+            gl.RUC_token="";
+            getDatosEmpresa();
+
+            String base = Empresa.usuarioApi + ":" + Empresa.claveApi;
+            String credenciales = "Basic "+ encodeToString(base.getBytes(), NO_WRAP);
+
+            //.url("https://labpa.guru-soft.com/EdocPanama/4.0/Autenticacion/Api/ServicioEDOC?Id=3")
+            Request request =new Request.Builder()
+                    .url(gl.url_base+"Autenticacion/Api/ServicioEDOC?Id=3")
+                    .get()
+                    .addHeader("Accept", "*/*")
+                    .addHeader("Accept-Encoding", "gzip,deflate,br")
+                    .addHeader("Authorization", credenciales)
+                    .build();
+
+            htclient.makeGetRequest(request, rnToken);
+
+        } catch (Exception e) {
+            msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+        }
+    }
+
+    private void cbToken() {
+        try {
+
+            if (htclient.retcode!=1) {
+                toast("Error: "+htclient.data);return;
+            }
+
+            String rs= htclient.data;
+            try {
+                token = gson.fromJson(rs,Token.class);
+                gl.RUC_token=token.getToken();
+            } catch (JsonSyntaxException e) {
+                msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+            }
+        } catch (Exception e) {
+            msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+        }
+    }
+
+    private void getDatosEmpresa() {
+        Cursor DT;
+
+        try	{
+            sql = "SELECT URL_AUTENTICACION, URL_ANULACION, USUARIO_API, CLAVE_API FROM P_EMPRESA";
+            DT=Con.OpenDT(sql);
+            DT.moveToFirst();
+
+            if (DT.getCount() > 0) {
+                Empresa.urlToken = DT.getString(0);
+                Empresa.urlAnulacion = DT.getString(1);
+                Empresa.usuarioApi = DT.getString(2);
+                Empresa.claveApi = DT.getString(3);
+            } else {
+                return;
+            }
+
+            if(DT!=null) DT.close();
+
+        } catch (Exception e) {
+            mu.msgbox(new Object() {}.getClass().getEnclosingMethod().getName() + " - " + e.getMessage());
+        }
     }
 
     //endregion

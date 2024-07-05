@@ -12,29 +12,28 @@ public class ConfigRetrofit {
     private appGlobals gl;
     private static Retrofit retrofit = null;
 
-    public ConfigRetrofit (Context cont) {
-        gl = ((appGlobals) (((Activity) cont).getApplication()));
+    public ConfigRetrofit(Context cont) {
+        gl = (appGlobals) ((Activity) cont).getApplication();
     }
-    public  <S> S CrearServicio(Class<S> claseServicio) {
+
+    public <S> S CrearServicio(Class<S> claseServicio) {
         getCliente();
         return retrofit.create(claseServicio);
     }
 
-    public void getCliente() {
-
+    private void getCliente() {
         OkHttpClient cliente = new OkHttpClient.Builder()
                 .connectTimeout(1, TimeUnit.MINUTES)
                 .writeTimeout(1, TimeUnit.MINUTES)
                 .readTimeout(1, TimeUnit.MINUTES)
                 .build();
 
-        if (retrofit==null) {
+        if (retrofit == null) {
             retrofit = new Retrofit.Builder()
-                    .baseUrl(gl.url_base)
+                    .baseUrl(gl.url_base)  // Asegúrate de que esta URL base sea correcta
                     .addConverterFactory(GsonConverterFactory.create())
                     .client(cliente)
                     .build();
         }
-
     }
 }

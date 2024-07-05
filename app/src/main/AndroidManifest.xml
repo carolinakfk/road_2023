@@ -46,6 +46,9 @@
         android:usesCleartextTraffic="true"
         tools:ignore="HardcodedDebugMode,LockedOrientationActivity">
         <activity
+            android:name=".RUCprueba"
+            android:exported="false" />
+        <activity
             android:name=".CliDocumentos"
             android:exported="false"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar" />

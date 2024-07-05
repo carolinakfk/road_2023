@@ -1,5 +1,8 @@
 package com.dts.roadp;
 
+import static android.util.Base64.NO_WRAP;
+import static android.util.Base64.encodeToString;
+
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -29,11 +32,17 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.dts.roadp.clsClasses.clsCDB;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import Facturacion.HttpClientAPI;
+import Facturacion.Token;
+import okhttp3.Request;
 
 
 public class Clientes extends PBase {
@@ -73,6 +82,7 @@ public class Clientes extends PBase {
 
 	private static final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 1; // in Meters
 	private static final long MIN_TIME_BW_UPDATES = 1000; // in Milliseconds
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

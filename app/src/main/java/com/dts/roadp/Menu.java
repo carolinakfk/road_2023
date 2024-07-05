@@ -158,6 +158,8 @@ public class Menu extends PBase {
 
             validaParametros();
 
+			//toastlongd("Token: "+gl.RUC_token);
+
 		} catch (Exception e) 		{
 			Log.e("Mnu", e.getMessage());
 		}
@@ -2429,6 +2431,9 @@ public class Menu extends PBase {
         }
     }
 
+	public void doRUCTest(View view) {
+		startActivity(new Intent(this,RUCprueba.class));
+	}
 
 	//endregion
 

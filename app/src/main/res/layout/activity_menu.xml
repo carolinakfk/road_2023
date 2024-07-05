@@ -82,6 +82,16 @@
             android:text="Vendedor"
             android:textColor="#FFFFFF"
             android:textSize="15dp" />
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="79dp"
+            android:layout_toEndOf="@+id/lblVendedor"
+            android:onClick="doRUCTest"
+            android:text="RUC"
+            android:visibility="invisible" />
     </RelativeLayout>
 
     <GridView
