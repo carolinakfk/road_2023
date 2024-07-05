@@ -469,7 +469,8 @@ public class MainActivity extends PBase {
             sql = " SELECT EMPRESA,NOMBRE,DEVOLUCION_MERCANCIA,USARPESO,FIN_DIA,DEPOSITO_PARCIAL,UNIDAD_MEDIDA_PESO," +
                   " INCIDENCIA_NO_LECTURA, LOTE_POR_DEFECTO, URL_TOKEN, USUARIO_API, CLAVE_API, URL_EMISION_NC_B2C," +
                   " URL_EMISION_ND_B2C,URL_EMISION_FACTURA_B2C,QR_API,URL_BASE, ARCHIVO_P12,URL_B2C_HH,QR_CLAVE, URL_DOC, " +
-                  " URL_EMISION_NC_B2B_HH, URL_EMISION_ND_B2B_HH, UNIDAD_MEDIDA_DEFECTO, AMBIENTE, URL_CONSULTAR_DOCUMENTO_POR_RUTA " +
+                  " URL_EMISION_NC_B2B_HH, URL_EMISION_ND_B2B_HH, UNIDAD_MEDIDA_DEFECTO, AMBIENTE, URL_CONSULTAR_DOCUMENTO_POR_RUTA," +
+                  " URL_LOTE_RUC_DV " +
                   " FROM P_EMPRESA ";
             DT = Con.OpenDT(sql);
 
@@ -506,6 +507,7 @@ public class MainActivity extends PBase {
                 gl.unidad_medida_defecto =DT.getString(23);
                 gl.ambiente =DT.getString(24);
                 gl.url_consultar_documento_por_ruta =DT.getString(25);
+                gl.url_lote_ruc_dv =DT.getString(26);
             } else {
                 gl.emp = "";lblRuta.setText("");
                 gl.devol = false;

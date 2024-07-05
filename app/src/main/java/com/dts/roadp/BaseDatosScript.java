@@ -1664,6 +1664,7 @@ public class BaseDatosScript {
 					"[UNIDAD_MEDIDA_DEFECTO] TEXT,"+
 					"[AMBIENTE] TEXT,"+
 					"[URL_CONSULTAR_DOCUMENTO_POR_RUTA] TEXT,"+
+					"[URL_LOTE_RUC_DV] TEXT,"+
 					"PRIMARY KEY ([EMPRESA])"+
 					");";
 			database.execSQL(vSQL);
