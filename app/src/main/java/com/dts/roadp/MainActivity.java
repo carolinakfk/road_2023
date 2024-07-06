@@ -6,7 +6,6 @@ import static android.util.Base64.encodeToString;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.bluetooth.BluetoothAdapter;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -54,11 +53,11 @@ public class MainActivity extends PBase {
     private BaseDatosVersion dbVers;
 
     private boolean rutapos, scanning = false;
-    private String cs1, cs2, cs3, barcode;
+    //private String cs1, cs2, cs3, barcode;
 
-    private String parNumVer = "9.9.76 / ";
-    private String parFechaVer = "11-06-2024";
-    private String parTipoVer = "ROAD PRD";
+    private final String parNumVer = "9.9.76 / ";
+    private final String  parFechaVer = "11-06-2024";
+    private final String parTipoVer = "ROAD PRD";
 
     //RUC Token
 
@@ -146,13 +145,13 @@ public class MainActivity extends PBase {
                 File file1 = new File(Environment.getExternalStorageDirectory(), "/debug.txt");
                 ffile = new File(file1.getPath());
                 if (ffile.exists()) {
-                    gl.debug=true;
-                }else {
-                    gl.debug=false;
+                    gl.debug = true;
+                } else {
+                    gl.debug = false;
                 }
 
             } catch (Exception e) {
-                gl.debug=false;
+                gl.debug = false;
             }
 
             // DB VERSION
@@ -163,7 +162,7 @@ public class MainActivity extends PBase {
 
             txtUser.requestFocus();
 
-            gl.tolsuper=false;
+            gl.tolsuper = false;
 
             initSession();
 
@@ -177,7 +176,8 @@ public class MainActivity extends PBase {
             //#CKFK 20190319 Para facilidades de desarrollo se debe colocar la variable debug en true
             if (gl.debug) {
 
-                txtUser.setText("00008984");txtPass.setText("MARFAUS984");//6055-5
+                txtUser.setText("00008984");
+                txtPass.setText("MARFAUS984");//6055-5
                 //txtUser.setText("00101080");txtPass.setText("101080NQ");//6055-5
 
                 //txtUser.setText("00110698");txtPass.setText("inicio01"); // Administrador
@@ -204,8 +204,8 @@ public class MainActivity extends PBase {
             }
 
             //#AT20221117 Se valida si existe el archivo
-            String fname = gl.PathDataDir+"/"+gl.archivo_p12;
-            File archivo= new File(fname);
+            String fname = gl.PathDataDir + "/" + gl.archivo_p12;
+            File archivo = new File(fname);
 
             //#AT20221117 Si no existe, procede a realizar la copia
             if (!archivo.exists()) {
@@ -213,8 +213,10 @@ public class MainActivity extends PBase {
             }
 
         } catch (Exception e) {
-            addlog(new Object() {}.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
-            msgbox(new Object() {}.getClass().getEnclosingMethod().getName() + " . " + e.getMessage());
+            addlog(new Object() {
+            }.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
+            msgbox(new Object() {
+            }.getClass().getEnclosingMethod().getName() + " . " + e.getMessage());
         }
 
     }
@@ -263,7 +265,7 @@ public class MainActivity extends PBase {
                 out.write(buffer, 0, read);
             }
         } catch (Exception e) {
-            Toast.makeText(this, e+"", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, e + "", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -422,7 +424,7 @@ public class MainActivity extends PBase {
 
         if (dbVacia()) {
 
-            if (gl==null){
+            if (gl == null) {
                 super.InitBase();
             }
 
@@ -435,7 +437,7 @@ public class MainActivity extends PBase {
         try {
             //#HS_20181122_1505 Se agrego el campo Impresion.
             sql = "SELECT CODIGO,NOMBRE,VENDEDOR,VENTA,WLFOLD,IMPRESION,SUCURSAL,CELULAR," +
-                  "PERMITIR_PRODUCTO_NUEVO, PERMITIR_CANTIDAD_MAYOR, VALIDAR_POSICION_GEOREFERENCIAL FROM P_RUTA";
+                    "PERMITIR_PRODUCTO_NUEVO, PERMITIR_CANTIDAD_MAYOR, VALIDAR_POSICION_GEOREFERENCIAL FROM P_RUTA";
             DT = Con.OpenDT(sql);
 
             if (DT.getCount() > 0) {
@@ -458,9 +460,9 @@ public class MainActivity extends PBase {
 
                 rutapos = s.equalsIgnoreCase("R");
 
-                gl.permitir_cantidad_mayor=(DT.getInt(8)==1?true:false);
-                gl.permitir_producto_nuevo=(DT.getInt(9)==1?true:false);
-                gl.validar_posicion_georef = (DT.getInt(10)==1?true:false);
+                gl.permitir_cantidad_mayor = (DT.getInt(8) == 1 ? true : false);
+                gl.permitir_producto_nuevo = (DT.getInt(9) == 1 ? true : false);
+                gl.validar_posicion_georef = (DT.getInt(10) == 1 ? true : false);
 
 
             } else {
@@ -470,8 +472,8 @@ public class MainActivity extends PBase {
                 gl.vend = "0";
                 gl.rutatipog = "V";
                 gl.wsURL = "http://192.168.1.1/wsAndr/wsAndr.asmx";
-                gl.permitir_cantidad_mayor=false;
-                gl.permitir_producto_nuevo=false;
+                gl.permitir_cantidad_mayor = false;
+                gl.permitir_producto_nuevo = false;
 
             }
 
@@ -490,11 +492,11 @@ public class MainActivity extends PBase {
         try {
             //#HS_20181120_1616 Se agrego el campo UNIDAD_MEDIDA_PESO.//campo INCIDENCIA_NO_LECTURA
             sql = " SELECT EMPRESA,NOMBRE,DEVOLUCION_MERCANCIA,USARPESO,FIN_DIA,DEPOSITO_PARCIAL,UNIDAD_MEDIDA_PESO," +
-                  " INCIDENCIA_NO_LECTURA, LOTE_POR_DEFECTO, URL_TOKEN, USUARIO_API, CLAVE_API, URL_EMISION_NC_B2C," +
-                  " URL_EMISION_ND_B2C,URL_EMISION_FACTURA_B2C,QR_API,URL_BASE, ARCHIVO_P12,URL_B2C_HH,QR_CLAVE, URL_DOC, " +
-                  " URL_EMISION_NC_B2B_HH, URL_EMISION_ND_B2B_HH, UNIDAD_MEDIDA_DEFECTO, AMBIENTE, URL_CONSULTAR_DOCUMENTO_POR_RUTA," +
-                  " URL_LOTE_RUC_DV " +
-                  " FROM P_EMPRESA ";
+                    " INCIDENCIA_NO_LECTURA, LOTE_POR_DEFECTO, URL_TOKEN, USUARIO_API, CLAVE_API, URL_EMISION_NC_B2C," +
+                    " URL_EMISION_ND_B2C,URL_EMISION_FACTURA_B2C,QR_API,URL_BASE, ARCHIVO_P12,URL_B2C_HH,QR_CLAVE, URL_DOC, " +
+                    " URL_EMISION_NC_B2B_HH, URL_EMISION_ND_B2B_HH, UNIDAD_MEDIDA_DEFECTO, AMBIENTE, URL_CONSULTAR_DOCUMENTO_POR_RUTA," +
+                    " URL_LOTE_RUC_DV " +
+                    " FROM P_EMPRESA ";
             DT = Con.OpenDT(sql);
 
             if (DT.getCount() > 0) {
@@ -526,22 +528,24 @@ public class MainActivity extends PBase {
                 gl.qr_clave = DT.getString(19);
                 gl.url_doc = DT.getString(20);
                 gl.url_emision_nc_b2b_hh = DT.getString(21);
-                gl.url_emision_nd_b2b_hh =DT.getString(22);
-                gl.unidad_medida_defecto =DT.getString(23);
-                gl.ambiente =DT.getString(24);
-                gl.url_consultar_documento_por_ruta =DT.getString(25);
-                gl.url_lote_ruc_dv =DT.getString(26);
+                gl.url_emision_nd_b2b_hh = DT.getString(22);
+                gl.unidad_medida_defecto = DT.getString(23);
+                gl.ambiente = DT.getString(24);
+                gl.url_consultar_documento_por_ruta = DT.getString(25);
+                gl.url_lote_ruc_dv = DT.getString(26);
             } else {
-                gl.emp = "";lblRuta.setText("");
+                gl.emp = "";
+                lblRuta.setText("");
                 gl.devol = false;
                 msgbox("¡No se pudo cargar configuración de la empresa!");
             }
 
-            if(DT!=null) DT.close();
+            if (DT != null) DT.close();
 
         } catch (Exception e) {
             msgbox("¡No se pudo cargar configuración de la empresa!");
-            addlog(new Object() {}.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
+            addlog(new Object() {
+            }.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
         }
 
         gl.vendnom = "Vendedor 1";
@@ -549,31 +553,37 @@ public class MainActivity extends PBase {
         try {
             File directory = new File(Environment.getExternalStorageDirectory() + "/SyncFold");
             directory.mkdirs();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
 
         try {
             File directory = new File(Environment.getExternalStorageDirectory() + "/RoadFotos");
             directory.mkdirs();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
 
         try {
             File directory = new File(Environment.getExternalStorageDirectory() + "/RoadFotos/clinue");
             directory.mkdirs();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
 
         try {
             File directory = new File(Environment.getExternalStorageDirectory() + "/RoadFotos/clidocs");
             directory.mkdirs();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
 
         try {
             File directory = new File(Environment.getExternalStorageDirectory() + "/RoadPedidos");
             directory.mkdirs();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
 
         //Id de Dispositivo
         gl.deviceId = androidid();
-        gl.devicename = Build.MANUFACTURER + " " + Build.MODEL;;//getLocalBluetoothName();
+        gl.devicename = Build.MANUFACTURER + " " + Build.MODEL;
+        ;//getLocalBluetoothName();
         lblID.setText(gl.devicename);
 
         try {
@@ -583,14 +593,17 @@ public class MainActivity extends PBase {
             app.parametrosBarras();
 
         } catch (Exception e) {
-            addlog(new Object() {}.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
+            addlog(new Object() {
+            }.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
             msgbox(e.getMessage());
         }
 
         try {
             htclient = new HttpClientAPI();
             gson = new Gson();
-            rnToken= () -> { cbToken() ;};
+            rnToken = () -> {
+                cbToken();
+            };
             getHttpToken();
         } catch (Exception e) {
             msgbox(e.getMessage());
@@ -604,7 +617,7 @@ public class MainActivity extends PBase {
         if (!validaLicencia()) {
             lblLogin.setVisibility(View.VISIBLE);
             mu.msgbox("¡Licencia invalida!");
-            startActivity(new Intent(this,comWSLic.class));
+            startActivity(new Intent(this, comWSLic.class));
             return;
         }
 
@@ -666,10 +679,10 @@ public class MainActivity extends PBase {
             gl.vnivel = DT.getInt(2);
             gl.vnivprec = DT.getInt(3);
 
-            gl.tolsuper=false;
+            gl.tolsuper = false;
             if (gl.peModal.equalsIgnoreCase("TOL")) {
-                if (gl.vnivel==2){
-                    gl.tolsuper=true;
+                if (gl.vnivel == 2) {
+                    gl.tolsuper = true;
                 }
             }
 
@@ -694,11 +707,11 @@ public class MainActivity extends PBase {
 
             if (DT.getCount() > 0) {
                 gl.codSupervisor = DT.getString(0);
-            }else{
+            } else {
                 gl.codSupervisor = "";
             }
 
-            if(DT!=null) DT.close();
+            if (DT != null) DT.close();
 
         } catch (Exception e) {
             addlog(new Object() {
@@ -825,13 +838,13 @@ public class MainActivity extends PBase {
             db.execSQL(sql);
             sql = "DELETE FROM D_FACTURAD_LOTES";
             db.execSQL(sql);
-            sql="DELETE FROM D_FACTURA_BARRA";
+            sql = "DELETE FROM D_FACTURA_BARRA";
             db.execSQL(sql);
-            sql="DELETE FROM D_FACTURA_STOCK";
+            sql = "DELETE FROM D_FACTURA_STOCK";
             db.execSQL(sql);
-            sql="DELETE FROM D_FACTURAF";
+            sql = "DELETE FROM D_FACTURAF";
             db.execSQL(sql);
-            sql="DELETE FROM D_FACTURAD_MODIF";
+            sql = "DELETE FROM D_FACTURAD_MODIF";
             db.execSQL(sql);
 
             sql = "DELETE FROM D_PEDIDO";
@@ -898,15 +911,15 @@ public class MainActivity extends PBase {
     private void getHttpToken() {
         try {
 
-            gl.RUC_token="";
+            gl.RUC_token = "";
             getDatosEmpresa();
 
             String base = Empresa.usuarioApi + ":" + Empresa.claveApi;
-            String credenciales = "Basic "+ encodeToString(base.getBytes(), NO_WRAP);
+            String credenciales = "Basic " + encodeToString(base.getBytes(), NO_WRAP);
 
             //.url("https://labpa.guru-soft.com/EdocPanama/4.0/Autenticacion/Api/ServicioEDOC?Id=3")
-            Request request =new Request.Builder()
-                    .url(gl.url_base+"Autenticacion/Api/ServicioEDOC?Id=3")
+            Request request = new Request.Builder()
+                    .url(gl.url_base + "Autenticacion/Api/ServicioEDOC?Id=3")
                     .get()
                     .addHeader("Accept", "*/*")
                     .addHeader("Accept-Encoding", "gzip,deflate,br")
@@ -916,35 +929,39 @@ public class MainActivity extends PBase {
             htclient.makeGetRequest(request, rnToken);
 
         } catch (Exception e) {
-            msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+            msgbox(new Object() {
+            }.getClass().getEnclosingMethod().getName() + " . " + e.getMessage());
         }
     }
 
     private void cbToken() {
         try {
 
-            if (htclient.retcode!=1) {
-                toast("Error: "+htclient.data);return;
+            if (htclient.retcode != 1) {
+                toast("Error: " + htclient.data);
+                return;
             }
 
-            String rs= htclient.data;
+            String rs = htclient.data;
             try {
-                token = gson.fromJson(rs,Token.class);
-                gl.RUC_token=token.getToken();
+                token = gson.fromJson(rs, Token.class);
+                gl.RUC_token = token.getToken();
             } catch (JsonSyntaxException e) {
-                msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+                msgbox(new Object() {
+                }.getClass().getEnclosingMethod().getName() + " . " + e.getMessage());
             }
         } catch (Exception e) {
-            msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+            msgbox(new Object() {
+            }.getClass().getEnclosingMethod().getName() + " . " + e.getMessage());
         }
     }
 
     private void getDatosEmpresa() {
         Cursor DT;
 
-        try	{
+        try {
             sql = "SELECT URL_AUTENTICACION, URL_ANULACION, USUARIO_API, CLAVE_API FROM P_EMPRESA";
-            DT=Con.OpenDT(sql);
+            DT = Con.OpenDT(sql);
             DT.moveToFirst();
 
             if (DT.getCount() > 0) {
@@ -956,10 +973,11 @@ public class MainActivity extends PBase {
                 return;
             }
 
-            if(DT!=null) DT.close();
+            if (DT != null) DT.close();
 
         } catch (Exception e) {
-            mu.msgbox(new Object() {}.getClass().getEnclosingMethod().getName() + " - " + e.getMessage());
+            mu.msgbox(new Object() {
+            }.getClass().getEnclosingMethod().getName() + " - " + e.getMessage());
         }
     }
 
@@ -1089,8 +1107,10 @@ public class MainActivity extends PBase {
             }
 
         } catch (Exception e) {
-            addlog(new Object() {}.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
-            mu.msgbox(new Object() {}.getClass().getEnclosingMethod().getName() + " : " + e.getMessage());
+            addlog(new Object() {
+            }.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
+            mu.msgbox(new Object() {
+            }.getClass().getEnclosingMethod().getName() + " : " + e.getMessage());
         }
 
         return false;
@@ -1121,8 +1141,8 @@ public class MainActivity extends PBase {
             TelephonyManager tm = (TelephonyManager) this.getSystemService(this.TELEPHONY_SERVICE);
             uniqueID = tm.getDeviceId();
 
-            if (uniqueID==null){
-                uniqueID = Settings.Secure.getString(getContentResolver(),Settings.Secure.ANDROID_ID);
+            if (uniqueID == null) {
+                uniqueID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
             }
 
         } catch (Exception e) {
@@ -1132,16 +1152,6 @@ public class MainActivity extends PBase {
         }
 
         return uniqueID;
-    }
-
-    public String getLocalBluetoothName() {
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-        if (mBluetoothAdapter == null) {
-            return "";
-        } else {
-            return mBluetoothAdapter.getName();
-        }
     }
 
     //endregion
