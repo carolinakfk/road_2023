@@ -1729,10 +1729,13 @@ public class FacturaRes extends PBase {
 
 				if (!app.prodBarra(vprod)) {
 
-					//toastlong("Guardando Prod: " + vprod + " con Lote: " + lotelote );
+					if (lotelote.equals("") || !lotePerteneceAProd(lotelote,vprod)){
 
-					if (lotelote.equals("")){
-
+						if (lotelote.equals("")){
+							throw new Exception("El lote vacío no es válido para el producto " + vprod);
+						}else {
+							throw new Exception("El lote " +lotelote + " no es válido para el producto " + vprod);
+						}
 					}
 
 					ins.init("D_FACTURAD_LOTES");
@@ -3064,6 +3067,28 @@ public class FacturaRes extends PBase {
 			mu.msgbox("esProductoConStock: " + e.getMessage());
 			return false;
 	    }
+	}
+
+	private boolean lotePerteneceAProd(String vLote,String vProd) {
+		Cursor DT;
+
+		try {
+
+			sql="SELECT lote FROM P_STOCK WHERE CODIGO='"+vProd+"' AND LOTE ='"+vLote+"' ";
+			DT=Con.OpenDT(sql);
+
+			if (DT!=null){
+				return (DT.getCount()>0);
+			}else{
+				return false;
+			}
+
+		} catch (Exception e) {
+			addlog(Objects.requireNonNull(new Object() {
+			}.getClass().getEnclosingMethod()).getName(),e.getMessage(),sql);
+			mu.msgbox("esProductoConStock: " + e.getMessage());
+			return false;
+		}
 	}
 
 	//endregion
