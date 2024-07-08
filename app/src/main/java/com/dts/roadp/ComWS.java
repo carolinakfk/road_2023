@@ -3017,6 +3017,7 @@ public class ComWS extends PBase {
 			fprog = "Procesando: " + (rc - 1) + " de: " + (rc - 1);
 			wsRtask.onProgressUpdate();
 
+			/*
 			try {
 				dbT.execSQL("DELETE FROM P_STOCK_PVC");
 				sql = "INSERT INTO P_STOCK_PVC (CODIGO,CANT) SELECT CODIGO,CANT FROM P_STOCK_PV";
@@ -3024,6 +3025,7 @@ public class ComWS extends PBase {
 			} catch (Exception e) {
 				msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
 			}
+			*/
 
 			if (modo_recepcion==1) {
 				Actualiza_FinDia();

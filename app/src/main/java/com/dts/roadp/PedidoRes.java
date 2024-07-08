@@ -389,7 +389,7 @@ public class PedidoRes extends PBase {
 				gl.tolpedsend=true;
 			}
 
-			super.finish();
+			//super.finish();
 		} catch (Exception e){
 			mu.msgbox("Error " + e.getMessage());
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
@@ -965,18 +965,19 @@ public class PedidoRes extends PBase {
 
 	private double montoActual() {
 		Cursor dt,dtt=null;
-		String idprodm;
-		double totm,cantm,precm,dispm;
+		String idprodm,pac;
+		double totm;
 
 		try {
 
 			monto_a=0;monto_c=0;
 
-			sql="SELECT SUM(CANT*PRECIO) FROM T_VENTA";
+			//JP 20240708
+			sql="SELECT SUM(TOTAL) FROM T_VENTA";
 			dt=Con.OpenDT(sql);
 			double mt=dt.getDouble(0);
 
-			sql="SELECT PRODUCTO,CANT,PRECIO FROM T_VENTA";
+			sql="SELECT PRODUCTO,TOTAL FROM T_VENTA";
 			dt=Con.OpenDT(sql);
 
 			if (dt.getCount()>0) {
@@ -984,21 +985,19 @@ public class PedidoRes extends PBase {
 				while (!dt.isAfterLast()) {
 
 					idprodm=dt.getString(0);
-					cantm=dt.getDouble(1);
-					precm=dt.getDouble(2);
-					totm=cantm*precm;
+					totm=dt.getDouble(1);
 
-					sql="SELECT CANT FROM P_STOCK_PVC WHERE (CODIGO='"+idprodm+"')";
+					sql="SELECT ESTADO FROM P_STOCK_PV WHERE (CODIGO='"+idprodm+"')";
 					dtt=Con.OpenDT(sql);
 
 					try {
 						dtt.moveToFirst();
-						dispm=dtt.getDouble(0);
+						pac=dtt.getString(0);
 					} catch (Exception e) {
-						dispm=0;
+						pac="A";
 					}
 
-					if (dispm==0) { // abierto
+					if (pac.equalsIgnoreCase("A")) { // abierto
 						monto_a+=totm;
 					} else {		// cerrado
 						monto_c+=totm;
@@ -1019,8 +1018,8 @@ public class PedidoRes extends PBase {
 
 	private double montoPedidos() {
 		Cursor dt,dtt=null,dtd=null;
-		String pcor,idprodm;
-		double mt,totm,cantm,precm,dispm;
+		String pcor,idprodm,pac;
+		double mt,totm;
 
 		try {
 
@@ -1043,7 +1042,7 @@ public class PedidoRes extends PBase {
 				while (!dt.isAfterLast()) {
 					pcor=dt.getString(0);
 
-					sql="SELECT PRODUCTO,CANT,PRECIO FROM D_PEDIDOD WHERE (COREL='"+pcor+"')";
+					sql="SELECT PRODUCTO,TOTAL FROM D_PEDIDOD WHERE (COREL='"+pcor+"')";
 					dtt=Con.OpenDT(sql);
 
 					if (dtt.getCount()>0) {
@@ -1051,25 +1050,23 @@ public class PedidoRes extends PBase {
 						while (!dtt.isAfterLast()) {
 
 							idprodm=dtt.getString(0);
-							cantm=dtt.getDouble(1);
-							precm=dtt.getDouble(2);
-							totm=cantm*precm;
+							totm=dtt.getDouble(1);
 							mt+=totm;
 
-							sql="SELECT CANT FROM P_STOCK_PVC WHERE (CODIGO='"+idprodm+"')";
-							dtd=Con.OpenDT(sql);
+							sql="SELECT ESTADO FROM P_STOCK_PV WHERE (CODIGO='"+idprodm+"')";
+							dtt=Con.OpenDT(sql);
 
 							try {
-								dtd.moveToFirst();
-								dispm=dtd.getDouble(0);
+								dtt.moveToFirst();
+								pac=dtt.getString(0);
 							} catch (Exception e) {
-								dispm=0;
+								pac="A";
 							}
 
-							if (dispm==0) { // abierto
-								montop_a+=totm;
+							if (pac.equalsIgnoreCase("A")) { // abierto
+								monto_a+=totm;
 							} else {		// cerrado
-								montop_c+=totm;
+								monto_c+=totm;
 							}
 
 							dtt.moveToNext();

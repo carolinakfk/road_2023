@@ -1,17 +1,17 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
-apply plugin: 'com.google.firebase.crashlytics'
+//apply plugin: 'com.google.firebase.crashlytics'
 apply plugin: 'com.google.firebase.firebase-perf'
 apply plugin: 'com.google.firebase.appdistribution'
 
 android {
-    compileSdkVersion 34
+    compileSdkVersion 28
 
     defaultConfig {
         applicationId "com.dts.roadp"
-        minSdkVersion 24
+        minSdkVersion 23
         //noinspection ExpiredTargetSdkVersion
-        targetSdkVersion 24
+        targetSdkVersion 28
         renderscriptTargetApi 28
         renderscriptSupportModeEnabled true
     }
@@ -93,7 +93,7 @@ dependencies {
     implementation 'androidx.core:core:1.3.2'
     // Import the BoM for the Firebase platform
     implementation 'com.google.firebase:firebase-core:17.2.1'
-    implementation 'com.google.firebase:firebase-crashlytics:18.2.6'
+    //implementation 'com.google.firebase:firebase-crashlytics:18.2.6'
     implementation 'com.google.firebase:firebase-analytics:20.0.2'
     implementation 'com.google.firebase:firebase-perf:20.0.1'
     implementation 'com.google.firebase:firebase-messaging:23.0.0'

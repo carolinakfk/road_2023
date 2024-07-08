@@ -1033,7 +1033,7 @@ public class CliNuevoT extends PBase {
                     RUCValid ruc = gson.fromJson(jsonItem.toString(), RUCValid.class);
                     ruc_valid=ruc.afiliadoSFE;
 
-                    ruc_estado=ruc_valid;
+                    ruc_estado=true;
                 } catch (Exception e) {
                     runOnUiThread(() -> msgAskRUCInvalido("No se logro validar RUC. Continuar sin validar"));
                     return;
@@ -1044,7 +1044,7 @@ public class CliNuevoT extends PBase {
                     return;
                 }
 
-                runOnUiThread(() -> msgbox("RUC correcto"));
+                //runOnUiThread(() -> msgbox("RUC correcto"));
 
                 GuardarCliente(1);
 
