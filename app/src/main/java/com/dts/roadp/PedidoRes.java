@@ -1036,8 +1036,6 @@ public class PedidoRes extends PBase {
 				"AND (ANULADO='N') AND (FECHAENTR="+fechae+")";
 			dt=Con.OpenDT(sql);
 
-
-
 			mt=0;
 			if (dt.getCount()>0) {
 				dt.moveToFirst();
