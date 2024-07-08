@@ -2433,7 +2433,7 @@ public class BaseDatosScript {
 			database.execSQL(vSQL);
 
 
-			vSQL="CREATE TABLE [P_monto_minimo_cliente] ("+
+			vSQL="CREATE TABLE [P_MONTO_MINIMO_CLIENTE] ("+
 					"CLIENTE TEXT NOT NULL,"+
 					"MM_ESTANDAR REAL NOT NULL,"+
 					"MM_EXTRARUTA REAL NOT NULL,"+
@@ -2441,7 +2441,7 @@ public class BaseDatosScript {
 					");";
 			database.execSQL(vSQL);
 
-			vSQL="CREATE INDEX P_monto_minimo_cliente_idx1 ON P_monto_minimo_cliente(CLIENTE)";database.execSQL(vSQL);
+			vSQL="CREATE INDEX P_MONTO_MINIMO_CLIENTE_IDX1 ON P_MONTO_MINIMO_CLIENTE(CLIENTE)";database.execSQL(vSQL);
 
 			return 1;
 

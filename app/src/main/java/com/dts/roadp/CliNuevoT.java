@@ -984,8 +984,8 @@ public class CliNuevoT extends PBase {
             JSONArray jsonArray = new JSONArray();
 
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("Ruc",RUC);
-            jsonObject.put("TipoRuc", tipo_contib);
+            jsonObject.put("ruc",RUC);
+            jsonObject.put("tiporuc", tipo_contib);
 
             jsonArray.put(jsonObject);
             String jsonInputString = jsonArray.toString();
@@ -994,7 +994,7 @@ public class CliNuevoT extends PBase {
             RequestBody body = RequestBody.create(JSONMedia,jsonInputString);
 
             Request request =new Request.Builder()
-                    .url(gl.url_base+"Ruc/Consulta/Api/LoteRucDV")
+                    .url(gl.url_lote_ruc_dv)
                     .post(body)
                     .addHeader("Content-Type", "application/json")
                     .addHeader("Authorization", "Bearer " + gl.RUC_token)
@@ -1015,7 +1015,6 @@ public class CliNuevoT extends PBase {
             try {
                 Looper.prepare();
             } catch (Exception e) {}
-
 
             pbar.setVisibility(View.INVISIBLE);
 
