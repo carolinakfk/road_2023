@@ -935,14 +935,17 @@ public class PedidoRes extends PBase {
 	//region Monto minimo
 
 	private void validaTotalMontoPedidos() {
-		double mt,mm,mmac;
+		double mt,mm,mmac,mmp;
 
 		try {
 			montoMinimoNuevo();
 			validaCliente();
 			if (!cli_estandar) toastcent("Cliente extraruta");
 
-			mt=montoActual()+montoPedidos();
+			mmac=montoActual();
+			mmp=montoPedidos();
+			mt=mmac+mmp;
+
 			if (!incluye_cerrados) {
 				mt=monto_a+montop_a;
 			}
@@ -1021,10 +1024,12 @@ public class PedidoRes extends PBase {
 
 	private double montoPedidos() {
 		Cursor dt,dtt=null,dtd=null;
-		String pcor,idprodm,pac;
+		String pcor,idprodm,pac,corelexcl;
 		double mt,totm;
 
 		try {
+
+			corelexcl=gl.modpedid;
 
 			montop_a=0;montop_c=0;
 
@@ -1035,8 +1040,15 @@ public class PedidoRes extends PBase {
 			if (!fechaValida()) mu.msgbox("La fecha de entrega ingresada no es válida, no se puede guardar el pedido");
 			fechae=fecha*10000;
 
-			sql="SELECT COREL FROM D_PEDIDO WHERE (CLIENTE='"+gl.cliente+"') " +
-				"AND (ANULADO='N') AND (FECHAENTR="+fechae+")";
+			//JP 20240711
+			if (corelexcl.isEmpty()) {
+				sql="SELECT COREL FROM D_PEDIDO WHERE (CLIENTE='"+gl.cliente+"') " +
+					"AND (ANULADO='N') AND (FECHAENTR="+fechae+")";
+			} else {
+				sql="SELECT COREL FROM D_PEDIDO WHERE (CLIENTE='"+gl.cliente+"') " +
+					"AND (ANULADO='N') AND (FECHAENTR="+fechae+") AND (COREL<>'"+corelexcl+"')";
+			}
+
 			dt=Con.OpenDT(sql);
 
 			mt=0;
