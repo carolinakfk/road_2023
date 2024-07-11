@@ -704,15 +704,20 @@ public class CliDet extends PBase {
                 } catch (Exception e) {}
             } catch (Exception e) {}
 
-			sql="SELECT MM_ESTANDAR, MM_EXTRARUTA FROM P_MONTO_MINIMO_CLIENTE WHERE CLIENTE='"+cod+"'";
-			DT=Con.OpenDT(sql);
-			try {
-				DT.moveToFirst();
-				lblMMEstandar.setText("MM Estándar : "+DT.getDouble(0));
-				lblMMExtraRuta.setText("MM Extraruta : "+DT.getDouble(1));
-			} catch (Exception e) {
-				lblMMEstandar.setText("MM Estándar : 0.00");
-				lblMMExtraRuta.setText("MM Extraruta : 0.00");
+			if (gl.rutatipog.equals("P")){
+				sql="SELECT MM_ESTANDAR, MM_EXTRARUTA FROM P_MONTO_MINIMO_CLIENTE WHERE CLIENTE='"+cod+"'";
+				DT=Con.OpenDT(sql);
+				try {
+					DT.moveToFirst();
+					lblMMEstandar.setText("MM Estándar : "+DT.getDouble(0));
+					lblMMExtraRuta.setText("MM Extraruta : "+DT.getDouble(1));
+				} catch (Exception e) {
+					lblMMEstandar.setText("MM Estándar : 0.00");
+					lblMMExtraRuta.setText("MM Extraruta : 0.00");
+				}
+			}else{
+				lblMMEstandar.setVisibility(View.GONE);
+				lblMMExtraRuta.setVisibility(View.GONE);
 			}
 
       	} catch (Exception e) {
