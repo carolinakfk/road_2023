@@ -673,6 +673,14 @@ public class FinDia extends PBase {
                     }
                 }
 
+                if (rutatipo.equals("P")){
+                    if (get_Cant_Pedidos_SinMM()>0){
+                        msgPedidosNoCumplenMM("Existen pedidos que no cumplen el monto mínimo,se van a anular");
+                        return false;
+                    }
+
+                }
+
                 //#CKFK 20190304 Agregué validación para verificar si ya se generó el cierreZ.
                 if ((claseFinDia.getGeneroCierreZ()!=6) || (claseFinDia.getImprimioCierreZ()!=7)){
                     msgAskGeneraCierreZ();
@@ -732,6 +740,25 @@ public class FinDia extends PBase {
             msgbox(new Object() {
             }.getClass().getEnclosingMethod().getName() + " . " + e.getMessage());
             return false;
+        }
+
+    }
+
+    private int get_Cant_Pedidos_SinMM() {
+        Cursor dt;
+
+        try {
+
+            sql = "SELECT COREL FROM D_PEDIDO  WHERE (CUMPLE_MONTO_MINIMO=0) AND (ANULADO='N')";
+            dt = Con.OpenDT(sql);
+
+            return dt.getCount();
+
+        } catch (Exception e) {
+            addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
+            msgbox(new Object() {
+            }.getClass().getEnclosingMethod().getName() + " . " + e.getMessage());
+            return 0;
         }
 
     }
@@ -2456,19 +2483,11 @@ public class FinDia extends PBase {
 
             dialog1.setPositiveButton("Si", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
-                    String cmsg="CIERRE DEL DIA COMPLETO";
-
-                    //JP 20240520
-                    anularPedidosSinMontoMinimo();
 
                     if ( buildReportsTOL()){
                         if (imprimeCierreZ()){
                             corelz+=1;
                             claseFinDia.updateGrandTotalCorelZ(gSumados,corelz);
-
-                            //JP 20240520
-                            if (pedanul>0) cmsg+="\n\nSE ANULO PEDIDOS: "+pedanul+"\nPOR RAZÓN DE MONTO MINIMO.";
-                            msgExit(cmsg);
                         }
                    } else {
                        msgAskCierreIncompleto("No se pudo generar el reporte Z");
@@ -2668,6 +2687,28 @@ public class FinDia extends PBase {
                 public void onClick(DialogInterface dialog, int which) {
                     gl.filtrocli = 3;
                     startActivity(new Intent(FinDia.this, Clientes.class));
+                }
+            });
+
+            dialog.show();
+        }catch (Exception e){
+            addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
+        }
+
+    }
+
+    private void msgPedidosNoCumplenMM(String msg) {
+        try{
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+
+            dialog.setTitle(R.string.app_name);
+            dialog.setMessage(msg);
+
+            dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    //JP 20240520
+                    anularPedidosSinMontoMinimo();
+                    if (pedanul>0) msgbox("Se anularon "+pedanul+" pedidos por razón de monto mínimo.");
                 }
             });
 

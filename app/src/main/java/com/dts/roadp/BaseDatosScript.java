@@ -2424,7 +2424,7 @@ public class BaseDatosScript {
 					");";
 			database.execSQL(vSQL);
 
-			vSQL="CREATE TABLE [P_tipologia] ("+
+			vSQL="CREATE TABLE [P_TIPOLOGIA] ("+
 					"CODIGO TEXT NOT NULL,"+
 					"CANALSUB TEXT NOT NULL,"+
 					"NOMBRE TEXT NOT NULL,"+

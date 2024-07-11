@@ -976,6 +976,7 @@ public class PedidoRes extends PBase {
 			sql="SELECT SUM(TOTAL) FROM T_VENTA";
 			dt=Con.OpenDT(sql);
 			double mt=dt.getDouble(0);
+			if(dt!=null) dt.close();
 
 			sql="SELECT PRODUCTO,TOTAL FROM T_VENTA";
 			dt=Con.OpenDT(sql);
@@ -997,6 +998,8 @@ public class PedidoRes extends PBase {
 						pac="A";
 					}
 
+					if(dtt!=null) dtt.close();
+
 					if (pac.equalsIgnoreCase("A")) { // abierto
 						monto_a+=totm;
 					} else {		// cerrado
@@ -1008,7 +1011,7 @@ public class PedidoRes extends PBase {
 			}
 
 			if(dt!=null) dt.close();
-			if(dtt!=null) dt.close();
+			if(dtt!=null) dtt.close();
 
 			return mt;
 		} catch (Exception e) {
@@ -1035,7 +1038,6 @@ public class PedidoRes extends PBase {
 			sql="SELECT COREL FROM D_PEDIDO WHERE (CLIENTE='"+gl.cliente+"') " +
 				"AND (ANULADO='N') AND (FECHAENTR="+fechae+")";
 			dt=Con.OpenDT(sql);
-
 
 			mt=0;
 			if (dt.getCount()>0) {

@@ -45,7 +45,7 @@ public class CliDet extends PBase {
 
 	private TextView lblNom,lblRep,lblDir,lblAten,lblTel,lblGPS,lblDescripcionPago,lblTipologia;
 	private TextView lblCLim,lblCUsed,lblCDisp,lblCobro,lblDevol,lblCantDias,lblClientePago;
-	private TextView lblRuta,lblRuta2, lblDespacho, lblCanal, lblCanalsub,lblPrior,lblProv,lblDist;
+	private TextView lblRuta,lblRuta2, lblDespacho, lblCanal, lblCanalsub,lblPrior,lblProv,lblDist,lblMMEstandar, lblMMExtraRuta;
 	private RelativeLayout relV,relP,relD,relCamara,relCanasta;
 	private ImageView imgCobro,imgDevol,imgRoadTit, imgTel, imgWhatsApp, imgWaze, imgVenta, imgPreventa, imgDespacho, imgCamara, imgMap;
 	private EditText txtRuta;
@@ -94,6 +94,8 @@ public class CliDet extends PBase {
         lblProv = findViewById(R.id.textView98);
         lblDist= findViewById(R.id.textView99);
 		lblDescripcionPago=(TextView)findViewById(R.id.lblDescripcionPago);
+		lblMMEstandar= findViewById(R.id.txtMMEstandar);
+		lblMMExtraRuta= findViewById(R.id.txtMMExtraRuta);
 
 		txtRuta = (EditText) findViewById(R.id.txtRuta);
 		txtRuta.setVisibility(View.INVISIBLE);
@@ -682,7 +684,6 @@ public class CliDet extends PBase {
 				lblTipologia.setText("Tipologia : ");
 			}
 
-
             lblPrior.setText("Categorización : "+prior);
 
             lblProv.setText("Provincia : ");lblDist.setText("Distrito/Corregimiento : ");
@@ -702,6 +703,18 @@ public class CliDet extends PBase {
                     lblProv.setText("Provincia : "+DT.getString(0));
                 } catch (Exception e) {}
             } catch (Exception e) {}
+
+			sql="SELECT MM_ESTANDAR, MM_EXTRARUTA FROM P_MONTO_MINIMO_CLIENTE WHERE CLIENTE='"+cod+"'";
+			DT=Con.OpenDT(sql);
+			try {
+				DT.moveToFirst();
+				lblMMEstandar.setText("MM Estándar : "+DT.getDouble(0));
+				lblMMExtraRuta.setText("MM Extraruta : "+DT.getDouble(1));
+			} catch (Exception e) {
+				lblMMEstandar.setText("MM Estándar : 0.00");
+				lblMMExtraRuta.setText("MM Extraruta : 0.00");
+			}
+
       	} catch (Exception e) {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
 			mu.msgbox(e.getMessage());

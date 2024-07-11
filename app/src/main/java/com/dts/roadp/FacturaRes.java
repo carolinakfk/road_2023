@@ -1723,13 +1723,15 @@ public class FacturaRes extends PBase {
 				vfactor=vpeso/(vcant*factpres);
 				vumventa=dt.getString(11);
 
+				String loteTabla = Get_Lote_Prod(vprod);
+
 				if (esProductoConStock(dt.getString(0))) {
 					rebajaStockUM(vprod, vumstock, vcant, vfactor, vumventa,factpres,peso);
 				}
 
 				if (!app.prodBarra(vprod)) {
 
-					if (lotelote.equals("") || !lotePerteneceAProd(lotelote,vprod)){
+					if (lotelote.equals("") || !lotelote.equals(loteTabla)){
 
 						if (lotelote.equals("")){
 							throw new Exception("El lote vacío no es válido para el producto " + vprod);
@@ -2186,6 +2188,7 @@ public class FacturaRes extends PBase {
 
 		} catch (Exception e) {
 			db.endTransaction();
+			if (progress != null) progress.cancel();
             addlog(Objects.requireNonNull(new Object() {
 			}.getClass().getEnclosingMethod()).getName(),e.getMessage(),sql);
             mu.msgbox("Error (factura) " + e.getMessage());
@@ -2592,7 +2595,7 @@ public class FacturaRes extends PBase {
 				sql="UPDATE P_STOCK SET CANT="+dispcant+",PESO="+disppeso+" WHERE (CODIGO='"+prid+"') AND (LOTE='"+lote+"') AND (DOCUMENTO='"+doc+"') AND (STATUS='"+stat+"')";
 				db.execSQL(sql);
 
-				//KM120821 Agregué validacion para no eliminar eliminar el stock de las canastas
+				//KM120821 Agregué validacion para no eliminar el stock de las canastas
 				sql="DELETE FROM P_STOCK WHERE (CANT<=0) AND (CANTM<=0) " +
 					"AND CODIGO NOT IN(SELECT CODIGO FROM P_PRODUCTO WHERE ES_CANASTA = 1)";
 				db.execSQL(sql);
@@ -3069,26 +3072,31 @@ public class FacturaRes extends PBase {
 	    }
 	}
 
-	private boolean lotePerteneceAProd(String vLote,String vProd) {
+	private String Get_Lote_Prod(String vProd) {
 		Cursor DT;
+        String result = "";
 
 		try {
 
-			sql="SELECT lote FROM P_STOCK WHERE CODIGO='"+vProd+"' AND LOTE ='"+vLote+"' ";
+			sql="SELECT lote FROM P_STOCK WHERE CODIGO='"+vProd+"'";
 			DT=Con.OpenDT(sql);
 
 			if (DT!=null){
-				return (DT.getCount()>0);
-			}else{
-				return false;
+				if(DT.getCount()>0) {
+					DT.moveToFirst();
+					result = DT.getString(0);
+				}
+				DT.close();
 			}
 
 		} catch (Exception e) {
 			addlog(Objects.requireNonNull(new Object() {
 			}.getClass().getEnclosingMethod()).getName(),e.getMessage(),sql);
 			mu.msgbox("esProductoConStock: " + e.getMessage());
-			return false;
 		}
+
+		return  result;
+
 	}
 
 	//endregion

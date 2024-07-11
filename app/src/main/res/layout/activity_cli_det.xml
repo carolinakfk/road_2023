@@ -180,6 +180,28 @@
                     android:paddingEnd="5dp"
                     android:text="Distrito"
                     android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/txtMMEstandar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/textView99"
+                    android:background="#F0F0F0"
+                    android:paddingStart="5dp"
+                    android:paddingEnd="5dp"
+                    android:text="MM Estandar"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/txtMMExtraRuta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/txtMMEstandar"
+                    android:background="#F0F0F0"
+                    android:paddingStart="5dp"
+                    android:paddingEnd="5dp"
+                    android:text="MM Extraruta"
+                    android:textSize="18sp" />
             </RelativeLayout>
         </ScrollView>
 
