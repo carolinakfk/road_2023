@@ -100,7 +100,7 @@ public class FacturaRes extends PBase {
 	private boolean porpeso;
 	private boolean pagocompleto=false;
 	private boolean pagando = false;
-	private boolean ingresoOC = false;
+	//private boolean ingresoOC = false;
 	private int opcion = 0;
 	private clsClasses.clsSucursal Sucursal = clsCls.new clsSucursal();
 	private final rFE Factura = new rFE();
@@ -314,7 +314,7 @@ public class FacturaRes extends PBase {
 		saved=false;
 
 		//#CKFK20240325 Inicializar variable para saber si ya entraron a colocar número de orden de compra
-		ingresoOC = false;
+		gl.ingresoOC = false;
 
 		assignCorel();
 
@@ -332,7 +332,7 @@ public class FacturaRes extends PBase {
 		try{
 
 			//#CKFK20240325 Inicializar variable en false cuando salga de la pantalla
-			ingresoOC = false;
+			gl.ingresoOC = false;
 
 			clearGlobals();
 			/*if(gl.dvbrowse!=0){
@@ -353,8 +353,7 @@ public class FacturaRes extends PBase {
 			if (pagando) return;
 
 			//#CKFK20240325 Validación que permite ingresar el número de orden de compra cuando sea vacío
-			if (gl.ordenCompra.equals("") && !ingresoOC){
-				ingresoOC = true;
+			if (gl.ordenCompra.equals("") && !gl.ingresoOC){
 				Intent ordencompra = new Intent(this, OrdenCompra.class);
 				startActivity(ordencompra);
 				return;
@@ -407,8 +406,7 @@ public class FacturaRes extends PBase {
 			if (pagando) return;
 
 			//#CKFK20240325 Validación que permite ingresar el número de orden de compra cuando sea vacío
-			if (gl.ordenCompra.equals("") && !ingresoOC){
-				ingresoOC = true;
+			if (gl.ordenCompra.equals("") && !gl.ingresoOC){
 				Intent ordencompra = new Intent(this, OrdenCompra.class);
 				startActivity(ordencompra);
 				return;
@@ -457,8 +455,7 @@ public class FacturaRes extends PBase {
 			if (pagando) return;
 
 			//#CKFK20240325 Validación que permite ingresar el número de orden de compra cuando sea vacío
-			if (gl.ordenCompra.equals("") && !ingresoOC){
-				ingresoOC = true;
+			if (gl.ordenCompra.equals("") && !gl.ingresoOC){
 				Intent ordencompra = new Intent(this, OrdenCompra.class);
 				startActivity(ordencompra);
 				return;
@@ -650,8 +647,7 @@ public class FacturaRes extends PBase {
 			opcion = 4;
 
 			//#CKFK20240325 Validación que permite ingresar el número de orden de compra cuando sea vacío
-			if (gl.ordenCompra.equals("") && !ingresoOC){
-				ingresoOC = true;
+			if (gl.ordenCompra.equals("") && !gl.ingresoOC){
 				Intent ordencompra = new Intent(this, OrdenCompra.class);
 				startActivity(ordencompra);
 				return;

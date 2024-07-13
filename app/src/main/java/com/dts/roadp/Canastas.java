@@ -10,6 +10,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -27,6 +28,7 @@ public class Canastas extends PBase {
     private AppMethods app;
     private long fecha;
     private int entregado, recibido, iEntregado;
+    private boolean cerrarDialog;
 
     ListAdaptCanasta adapter;
 
@@ -64,20 +66,26 @@ public class Canastas extends PBase {
         txtCanastasRec = (EditText) vistaDialog.findViewById(R.id.txtCanastasRec);
         lblCanastaStock = (TextView) vistaDialog.findViewById(R.id.lblCanastaStock);
 
-        dialog.setPositiveButton("Guardar", new DialogInterface.OnClickListener() {
+        // Configura los botones y sus listeners
+        Button positiveButton = vistaDialog.findViewById(R.id.positiveButton);
+        Button negativeButton = vistaDialog.findViewById(R.id.negativeButton);
+
+        positiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
+            public void onClick(View v) {
                 guardarCanastas();
             }
         });
 
-        dialog.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+        negativeButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
+            public void onClick(View v) {
                 limpiarCanastas();
                 setTitulo();
+                ad.dismiss();
             }
         });
+
         ad = dialog.create();
     }
 
@@ -106,6 +114,32 @@ public class Canastas extends PBase {
                         mu.msgbox(e.getMessage());
                     }
                 };
+            });
+
+            txtCanastasRec.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (hasFocus) {
+                        if (txtCanastasRec.getText().toString().equals("0")){
+                            txtCanastasRec.setText("");
+                        }else{
+                            txtCanastasRec.selectAll();
+                        }
+                    }
+                }
+            });
+
+            txtCanastasEnt.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (hasFocus) {
+                        if (txtCanastasEnt.getText().toString().equals("0")){
+                            txtCanastasEnt.setText("");
+                        }else{
+                            txtCanastasEnt.selectAll();
+                        }
+                    }
+                }
             });
 
             txtCanastasRec.setOnKeyListener(new View.OnKeyListener() {
@@ -229,7 +263,6 @@ public class Canastas extends PBase {
     }
 
     public void guardarCanastas() {
-        boolean cerrarDialog = true;
         double pesoEntr=0;
         double pesoRec=0;
         double pesoProm=0;
@@ -239,24 +272,27 @@ public class Canastas extends PBase {
         try {
             opendb();
             String tabla="D_CANASTA";
-            String txtCanRec = txtCanastasRec.getText().toString();
-            String txtCanEntr = txtCanastasEnt.getText().toString();
+            int cantRec = 0;//txtCanastasRec.getText().toString();
+            int cantEntr = 0;//txtCanastasEnt.getText().toString();
 
-            if (mu.emptystr(txtCanRec) || mu.emptystr(txtCanEntr)) {
-                toast("Los campos recibido y entregado son obligatorios.");
-                cerrarDialog = false;
-                return;
+            if (txtCanastasRec.getText().toString().equals("")) {
+                cantRec = 0;
+            } else {
+                cantRec = Integer.parseInt(txtCanastasRec.getText().toString());
             }
-            int cantRec = Integer.parseInt(txtCanRec);
-            int cantEntr = Integer.parseInt(txtCanEntr);
+
+            txtCanastasRec.setText(String.valueOf(cantRec));
+
+            if (txtCanastasEnt.getText().toString().equals("")) {
+                cantEntr = 0;
+            } else {
+                cantEntr = Integer.parseInt(txtCanastasEnt.getText().toString());
+            }
+
+            txtCanastasEnt.setText(String.valueOf(cantEntr));
 
             recibido = cantRec;
             entregado = cantEntr;
-
-            pesoProm = app.pesoPromedio(gl.prodCanasta);
-            pesoEntr = cantEntr*pesoProm;
-            pesoRec = cantRec*pesoProm;
-            umbas = app.unidBas(gl.prodCanasta);
 
             if (cantRec == 0 && cantEntr == 0) {
                 toast("El campo recibido o entregado debe ser mayor a cero.");
@@ -264,13 +300,19 @@ public class Canastas extends PBase {
                 return;
             }
 
+            pesoProm = app.pesoPromedio(gl.prodCanasta);
+            pesoEntr = cantEntr*pesoProm;
+            pesoRec = cantRec*pesoProm;
+            umbas = app.unidBas(gl.prodCanasta);
+
             if (!mu.emptystr(gl.corelFac)){
                 tabla="T_CANASTA";
-                /*if (cantEntr == 0 && gl.controlCanastas){
-                    toast("La cantidad de canastas entregadas debe ser mayor que cero.");
-                    cerrarDialog=false;
-                    return;
-                }*/
+            }
+
+            if (entregado > 0 && !hayExistencias()) {
+                toast("No hay suficientes canastas para entregar.");
+                cerrarDialog = false;
+                return;
             }
 
             if (editando) {
@@ -280,12 +322,6 @@ public class Canastas extends PBase {
                             umbas,
                             iEntregado*pesoProm,pesoProm);
                 }
-            }
-
-            if (entregado > 0 && !hayExistencias()) {
-                toast("No hay suficientes canastas para entregar.");
-                cerrarDialog = false;
-                return;
             }
 
             if (!editando) {
@@ -327,6 +363,7 @@ public class Canastas extends PBase {
             listItems();
 
             toast("Se guardó correctamente el registro de canastas");
+            ad.dismiss();
         }catch (Exception e) {
             mu.msgbox("Ocurrió un error: "+ e.getMessage());
             addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
@@ -341,8 +378,8 @@ public class Canastas extends PBase {
     }
 
     public void limpiarCanastas() {
-        txtCanastasRec.setText("0");
-        txtCanastasEnt.setText("0");
+        txtCanastasRec.setText("");
+        txtCanastasEnt.setText("");
         txtCanastasEnt.requestFocus();
     }
 
@@ -510,9 +547,31 @@ public class Canastas extends PBase {
             ad.setTitle("Canastas");
             ad.dismiss();
         }else {
-            setTitulo();
-            ad.show();
-            txtCanastasEnt.requestFocus();
+
+            clsClasses.clsCanasta item = null;
+            boolean existe = false;
+
+            for (int i = 0; i < listView.getCount(); i++) {
+                Object lvObj = listView.getItemAtPosition(i);
+                item = (clsClasses.clsCanasta) lvObj;
+
+                if (item.producto.equals(gl.prodCanasta)){
+                    if (item.editar) {
+                        existe = true;
+                        break;
+                    } else {
+                        toastcent("No puede modificar este registro");
+                    }
+                }
+            }
+
+            if (existe){
+                editarRegistro(item);
+            }else{
+                setTitulo();
+                ad.show();
+                txtCanastasEnt.requestFocus();
+            }
         }
     }
 }

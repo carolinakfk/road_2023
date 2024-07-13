@@ -118,20 +118,6 @@ public class desglose extends PBase {
 
         try {
 
-        /*   JP20190508 - causo que en segundo desposito se mostraba desglose da la anterior
-            sql = "SELECT DENOMINACION,CANTIDAD,TIPO,MONEDA " +
-                    "FROM D_DEPOSB";
-
-            DT = Con.OpenDT(sql);
-
-            if (DT.getCount() == 0) {
-                sql = "SELECT * FROM T_DEPOSB";
-                DT = Con.OpenDT(sql);
-            } else {
-                editando = true;
-            }
-            */
-
             sql = "SELECT * FROM T_DEPOSB";
             DT = Con.OpenDT(sql);
 
@@ -1661,25 +1647,6 @@ public class desglose extends PBase {
                         addlog(new Object() {
                         }.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
                     }
-
-                    /*if (impres > 1) {
-
-                        try {
-                            sql = "UPDATE D_DEPOSB SET IMPRES=IMPRES+1 WHERE COREL='" + corel + "'";
-                            db.execSQL(sql);
-                        } catch (Exception e) {
-                            addlog(new Object() {
-                            }.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
-                        }
-
-                        gl.brw = 0;
-                        desglose.super.finish();
-                    } else {
-
-                        prn.printask(printcallback);
-
-                    }
-                    */
 
                     finish();
                 }

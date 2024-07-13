@@ -76,6 +76,7 @@ public class OrdenCompra  extends PBase{
             }
 
             gl.ordenCompra = sOrdenCompra;
+            gl. ingresoOC = true;
 
             finish();
         }catch (Exception e){
@@ -86,6 +87,7 @@ public class OrdenCompra  extends PBase{
     public void cancelar(View view) {
 
         try{
+            gl.ingresoOC = false;
             finish();
         }catch (Exception e){
             addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");

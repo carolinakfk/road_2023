@@ -282,7 +282,7 @@ public class Producto extends PBase {
                         sql="SELECT DISTINCT P_PRODUCTO.CODIGO, P_PRODUCTO.DESCCORTA, P_PRODPRECIO.UNIDADMEDIDA, P_STOCK_PV.ESTADO , P_STOCK_PV.CANT, P_STOCK_PV.PESO  " +
                                 "FROM P_PRODUCTO INNER JOIN	P_STOCK_PV ON P_STOCK_PV.CODIGO=P_PRODUCTO.CODIGO INNER JOIN " +
                                 "P_PRODPRECIO ON (P_STOCK_PV.CODIGO=P_PRODPRECIO.CODIGO)  " +
-                                "WHERE (P_PRODPRECIO.NIVEL = " + gl.nivel +") AND (P_PRODUCTO.ES_VENDIBLE=1) ";
+                                "WHERE (P_PRODPRECIO.NIVEL = " + gl.nivel +") AND (P_PRODUCTO.ES_VENDIBLE=1) AND (ES_CANASTA = 0) ";
                     	if (gl.cliente_extraruta) {
 							 sql=sql+"AND (P_STOCK_PV.CANT=0) ";
 						}
@@ -309,7 +309,7 @@ public class Producto extends PBase {
 					sql="SELECT DISTINCT P_PRODUCTO.CODIGO, P_PRODUCTO.DESCCORTA, P_PRODPRECIO.UNIDADMEDIDA " +
 						"FROM P_PRODUCTO INNER JOIN	P_STOCK ON P_STOCK.CODIGO=P_PRODUCTO.CODIGO INNER JOIN " +
 						"P_PRODPRECIO ON (P_STOCK.CODIGO=P_PRODPRECIO.CODIGO)  " +
-						"WHERE (P_STOCK.CANT > 0) AND (P_PRODPRECIO.NIVEL = " + gl.nivel +") AND (P_PRODUCTO.ES_VENDIBLE=1) ";
+						"WHERE (P_STOCK.CANT > 0) AND (P_PRODPRECIO.NIVEL = " + gl.nivel +") AND (P_PRODUCTO.ES_VENDIBLE=1)  AND (ES_CANASTA = 0) ";
 					if (!mu.emptystr(famid)){
 						if (!famid.equalsIgnoreCase("0")) sql=sql+"AND (P_PRODUCTO.LINEA='"+famid+"') ";
 					}
@@ -320,7 +320,9 @@ public class Producto extends PBase {
 					sql+="SELECT DISTINCT P_PRODUCTO.CODIGO, P_PRODUCTO.DESCCORTA, P_PRODPRECIO.UNIDADMEDIDA " +
 						"FROM P_PRODUCTO INNER JOIN	P_STOCKB ON P_STOCKB.CODIGO=P_PRODUCTO.CODIGO INNER JOIN " +
 						"P_PRODPRECIO ON (P_STOCKB.CODIGO=P_PRODPRECIO.CODIGO)  " +
-						"WHERE (P_STOCKB.CANT > 0) AND (P_PRODPRECIO.NIVEL = " + gl.nivel +") AND (P_PRODUCTO.ES_VENDIBLE=1) ";
+						"WHERE (P_STOCKB.CANT > 0) AND (P_PRODPRECIO.NIVEL = " + gl.nivel +") AND " +
+							  "(P_PRODUCTO.ES_VENDIBLE=1) AND " +
+							  "(P_PRODUCTO.ES_CANASTA = 0) ";
 					if (!mu.emptystr(famid)){
 						if (!famid.equalsIgnoreCase("0")) sql=sql+"AND (P_PRODUCTO.LINEA='"+famid+"') ";
 					}
@@ -329,7 +331,7 @@ public class Producto extends PBase {
 
 					sql+="SELECT DISTINCT P_PRODUCTO.CODIGO,P_PRODUCTO.DESCCORTA,''  " +
 							"FROM P_PRODUCTO "  +
-							"WHERE (P_PRODUCTO.TIPO ='S')  AND (P_PRODUCTO.ES_VENDIBLE=1) ";
+							"WHERE (P_PRODUCTO.TIPO ='S')  AND (P_PRODUCTO.ES_VENDIBLE=1) AND (P_PRODUCTO.ES_CANASTA = 0) ";
 					if (!mu.emptystr(famid)){
 						if (!famid.equalsIgnoreCase("0")) sql=sql+"AND (P_PRODUCTO.LINEA='"+famid+"') ";
 					}
@@ -365,7 +367,7 @@ public class Producto extends PBase {
 					break;
 
                 case 4:
-                    sql="SELECT CODIGO,DESCCORTA,UNIDBAS FROM P_PRODUCTO WHERE (P_PRODUCTO.ES_VENDIBLE=1) ";
+                    sql="SELECT CODIGO,DESCCORTA,UNIDBAS FROM P_PRODUCTO WHERE (P_PRODUCTO.ES_VENDIBLE=1) AND (P_PRODUCTO.ES_CANASTA = 0)  ";
                     if (!famid.equalsIgnoreCase("0")) sql=sql+"AND (LINEA='"+famid+"') ";
                     if (vF.length()>0) sql=sql+"AND ((DESCCORTA LIKE '%" + vF + "%') " +
 							                   "OR (CODIGO LIKE '%" + vF + "%')" +

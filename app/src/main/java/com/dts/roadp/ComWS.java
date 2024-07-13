@@ -1162,6 +1162,12 @@ public class ComWS extends PBase {
 	public void askRecarga(View view) {
 
 		try {
+
+			if (yaInicioFinDia()){
+				msgbox("Ya inició el fin de día, debe enviar los datos pendientes de envío");
+				return;
+			}
+
 			AlertDialog.Builder dialog = new AlertDialog.Builder(this);
 
 			relStock.setVisibility(View.INVISIBLE);
@@ -8955,6 +8961,34 @@ public class ComWS extends PBase {
 
 			}
 		}
+	}
+
+	private boolean yaInicioFinDia(){
+
+		boolean vInicio=false;
+		Cursor DT;
+
+		try{
+
+			sql="SELECT val5 FROM findia ";
+			DT=Con.OpenDT(sql);
+
+			if (DT!=null){
+				if (DT.getCount()>0){
+					DT.moveToFirst();
+
+					vInicio=((DT.getInt(0)==5));
+
+				}
+			}
+
+		}catch (Exception ex){
+			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),ex.getMessage(),sql);
+			mu.msgbox(new Object() {}.getClass().getEnclosingMethod().getName() + " . " + ex.getMessage());
+		}
+
+		return vInicio;
+
 	}
 
 	//region Activity Events
