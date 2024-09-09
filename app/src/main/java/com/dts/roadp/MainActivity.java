@@ -55,9 +55,9 @@ public class MainActivity extends PBase {
     private boolean rutapos, scanning = false;
     //private String cs1, cs2, cs3, barcode;
 
-    private final String parNumVer = "9.9.77 / ";
-    private final String  parFechaVer = "11-07-2024";
-    private final String parTipoVer = "ROAD PRD";
+    private final String parNumVer = "9.9.78 / ";
+    private final String  parFechaVer = "08-09-2024";
+    private final String parTipoVer = "ROAD QAS";
 
     //RUC Token
 
@@ -176,8 +176,8 @@ public class MainActivity extends PBase {
             //#CKFK 20190319 Para facilidades de desarrollo se debe colocar la variable debug en true
             if (gl.debug) {
 
-                txtUser.setText("00008984");
-                txtPass.setText("MARFAUS984");//6055-5
+                txtUser.setText("00100702");
+                txtPass.setText("SALDAÑA100");//P811-1
                 //txtUser.setText("00101080");txtPass.setText("101080NQ");//6055-5
 
                 //txtUser.setText("00110698");txtPass.setText("inicio01"); // Administrador
@@ -685,6 +685,12 @@ public class MainActivity extends PBase {
                     gl.tolsuper = true;
                 }
             }
+
+/*            sql="UPDATE P_STOCK SET Peso=15.591 where codigo = '0427'";
+			db.execSQL(sql);*/
+
+/*            sql="ALTER TABLE D_FACTURA_STOCK ADD PESO_ORIGINAL REAL DEFAULT 0 NOT NULL;";
+            db.execSQL(sql);*/
 
             return true;
 

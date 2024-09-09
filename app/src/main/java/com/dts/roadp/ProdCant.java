@@ -55,6 +55,8 @@ public class ProdCant extends PBase {
 		nivel=gl.nivel;
 		rutatipo=gl.rutatipo;
 
+		umfactor = 1;
+
 		if (rutatipo.equalsIgnoreCase("V")) imgUpd.setVisibility(View.INVISIBLE);
 		if (gl.iddespacho!=null) {
 			rlValoresOriginales.setVisibility(View.VISIBLE);
@@ -437,7 +439,6 @@ public class ProdCant extends PBase {
 				dt.moveToFirst();
 
 				umstock = um;
-				umfactor = 1;
 
 				disp = dt.getDouble(0);
 				ipeso = dt.getDouble(1);
@@ -454,6 +455,13 @@ public class ProdCant extends PBase {
             //#CKFK 20190517 Agregué para que el umfactor sea igual al peso promedio en el pedido y se calcule correctamente
             if(gl.rutatipo.equalsIgnoreCase("P")){
 				umfactor = pesoprom;
+			}
+
+			//#CKFK 20190517 Agregué para que el umfactor sea igual al peso promedio en el pedido y se calcule correctamente
+			if (disp>0){
+				if(gl.rutatipog.equalsIgnoreCase("D")){
+					umfactor = pesostock;
+				}
 			}
 
 			if (disp>0) return disp;
@@ -504,14 +512,6 @@ public class ProdCant extends PBase {
 			dt.close();
 
 			umfactor=umf1/umf2;
-
-			/*
-			if (umf1>=umf2) {
-				umfactor=umf1/umf2;
-			} else {
-				umfactor=umf2/umf1;
-			}
-			*/
 			
 			sql="SELECT IFNULL(SUM(CANT),0) AS CANT,IFNULL(SUM(PESO),0) AS PESO FROM P_STOCK " +
 				" WHERE (CODIGO='"+prodid+"') AND (UNIDADMEDIDA='"+umstock+"')";
@@ -527,6 +527,12 @@ public class ProdCant extends PBase {
 				}
 				ipeso=dt.getDouble(1);
 				pesostock = ipeso/disp;
+
+				//#CKFK20240908 Agregué esta condición para que tome el factor del stock
+				if(gl.rutatipog.equalsIgnoreCase("D")){
+					umfactor = pesostock;
+				}
+
 			} else {
 				pesostock=0;
 			}
@@ -618,6 +624,11 @@ public class ProdCant extends PBase {
 			gl.umstock = umstock;
 			gl.umfactor = umfactor;
 			gl.prectemp = prec;
+			if (porpeso){
+				gl.peso_original = cant*umfactor;
+			}else{
+				gl.peso_original = 0;
+			}
 
 			if (rutatipo.equalsIgnoreCase("P")) {
 				gl.um=um;

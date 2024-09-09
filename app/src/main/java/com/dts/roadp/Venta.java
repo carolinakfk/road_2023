@@ -3032,9 +3032,14 @@ public class Venta extends PBase {
 					if (prec!=0){
 
 						porpeso=prodPorPeso(item.producto);
+
 						//#CKFK 20211004 Agregué esto (item.umventa.equals(gl.umpeso)?item.umstock:item.umventa) para cuando
 						//el producto sea CW y se venda por peso
 						if (getDisp(item.producto, item.umventa) > 0){
+
+							if (porpeso){
+								item.peso = pesostock * item.cant;
+							}
 
 							respuesta=applyCant(item.cant,item.peso);
 
@@ -3082,7 +3087,11 @@ public class Venta extends PBase {
 								ins.add("PESO",item.peso);
 								ins.add("VAL1",i+1);
 								ins.add("VAL2",i+1);
-								ins.add("VAL3",0);
+								if (porpeso) {
+									ins.add("VAL3",gl.peso_original);
+								}else{
+									ins.add("VAL3",0);
+								}
 								ins.add("VAL4","");
 								ins.add("PERCEP",percep);
 								ins.add("SIN_EXISTENCIA",0);
@@ -3120,7 +3129,11 @@ public class Venta extends PBase {
 					ins.add("PESO",item.peso);
 					ins.add("VAL1",i+1);
 					ins.add("VAL2",i+1);
-					ins.add("VAL3",0);
+					if (porpeso) {
+						ins.add("VAL3",gl.peso_original);
+					}else{
+						ins.add("VAL3",0);
+					}
 					ins.add("VAL4","");
 					ins.add("CANTORIGINAL",item.cantOriginal);
 					ins.add("PESOORIGINAL",item.pesoOriginal);

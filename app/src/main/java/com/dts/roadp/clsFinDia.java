@@ -489,20 +489,6 @@ public class clsFinDia extends PBase{
                 }
             }
 
-            //#AT 20220426 Elimina datos de la tabla D_CLINUEVOT_IMAGEN
-            sql="SELECT CODIMAGEN FROM D_CLINUEVOT_IMAGEN WHERE STATCOM='S'";
-            DT=Con.OpenDT(sql);
-            if (DT.getCount()>0) {
-
-                DT.moveToFirst();
-                while (!DT.isAfterLast()) {
-                    corel=DT.getString(0);
-                    sql="DELETE FROM D_CLINUEVOT_IMAGEN WHERE CODIMAGEN='"+corel+"'";db.execSQL(sql);
-                    DT.moveToNext();
-                }
-            }
-
-
             sql="SELECT COREL FROM D_CLIENTE_MODIF WHERE STATCOM='S'";
             DT=Con.OpenDT(sql);
             if (DT.getCount()>0) {
@@ -572,6 +558,21 @@ public class clsFinDia extends PBase{
                     sql="DELETE FROM DS_PEDIDO WHERE COREL='"+corel+"'";db.execSQL(sql);
                     sql="DELETE FROM DS_PEDIDOD WHERE COREL='"+corel+"'";db.execSQL(sql);
                     DT.moveToNext();
+                }
+            }
+
+            //#AT 20220426 Elimina datos de la tabla D_CLINUEVOT_IMAGEN
+            sql="SELECT CODIMAGEN FROM D_CLINUEVOT_IMAGEN WHERE STATCOM='S'";
+            DT=Con.OpenDT(sql);
+            if (DT!=null){
+                if (DT.getCount()>0) {
+
+                    DT.moveToFirst();
+                    while (!DT.isAfterLast()) {
+                        corel=DT.getString(0);
+                        sql="DELETE FROM D_CLINUEVOT_IMAGEN WHERE CODIMAGEN='"+corel+"'";db.execSQL(sql);
+                        DT.moveToNext();
+                    }
                 }
             }
 

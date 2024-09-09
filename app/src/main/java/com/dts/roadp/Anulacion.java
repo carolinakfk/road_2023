@@ -2384,6 +2384,11 @@ public class Anulacion extends PBase {
 			sql="INSERT INTO P_STOCKB SELECT * FROM D_FACTURA_BARRA WHERE Corel='"+itemid+"'";
 			db.execSQL(sql);
 
+			sql="UPDATE P_STOCKB SET PESO = (SELECT PESOORIG FROM T_BARRA " +
+				" WHERE T_BARRA.BARRA = P_STOCKB.BARRA AND T_BARRA.CODIGO = P_STOCKB.CODIGO)" +
+			    " WHERE BARRA IN (SELECT BARRA FROM D_FACTURA_BARRA WHERE Corel='"+itemid+"')";
+			db.execSQL(sql);
+
 			sql="UPDATE P_STOCKB SET Corel='' WHERE Corel='"+itemid+"'";
 			db.execSQL(sql);
 
@@ -2536,7 +2541,8 @@ public class Anulacion extends PBase {
 		doc="";stat="";lot="";
 
 		try{
-			sql = "SELECT CANT,CANTM,PESO,plibra,LOTE,DOCUMENTO,FECHA,ANULADO,CENTRO,STATUS,ENVIADO,CODIGOLIQUIDACION,COREL_D_MOV,CODIGO,UNIDADMEDIDA FROM D_FACTURA_STOCK " +
+			sql = "SELECT CANT,CANTM,PESO_ORIGINAL PESO,plibra,LOTE,DOCUMENTO,FECHA,ANULADO,CENTRO,STATUS,ENVIADO,CODIGOLIQUIDACION," +
+					"COREL_D_MOV,CODIGO,UNIDADMEDIDA FROM D_FACTURA_STOCK " +
 					"WHERE (COREL='" + corel + "') ";
 			dt = Con.OpenDT(sql);
 
@@ -2605,8 +2611,9 @@ public class Anulacion extends PBase {
 		doc="";stat="";lot="";
 
 		try{
-			sql = "SELECT CANT,CANTM,PESO,plibra,LOTE,DOCUMENTO,FECHA,ANULADO,CENTRO,STATUS,ENVIADO,CODIGOLIQUIDACION,COREL_D_MOV FROM D_FACTURA_STOCK " +
-					"WHERE (COREL='" + corel + "') AND (CODIGO='" + pcod + "') AND (UNIDADMEDIDA='" + um + "')";
+			sql = "SELECT CANT,CANTM,PESO_ORIGINAL,plibra,LOTE,DOCUMENTO,FECHA,ANULADO,CENTRO,STATUS,ENVIADO,CODIGOLIQUIDACION,COREL_D_MOV " +
+				  "FROM D_FACTURA_STOCK " +
+				  "WHERE (COREL='" + corel + "') AND (CODIGO='" + pcod + "') AND (UNIDADMEDIDA='" + um + "')";
 			dt = Con.OpenDT(sql);
 
 			if (dt.getCount()==0) return;

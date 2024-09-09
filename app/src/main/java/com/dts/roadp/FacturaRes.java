@@ -2184,7 +2184,9 @@ public class FacturaRes extends PBase {
 
 		} catch (Exception e) {
 			db.endTransaction();
-			if (progress != null) progress.cancel();
+			if (progress != null) {
+				progress.cancel();
+			}
             addlog(Objects.requireNonNull(new Object() {
 			}.getClass().getEnclosingMethod()).getName(),e.getMessage(),sql);
             mu.msgbox("Error (factura) " + e.getMessage());
@@ -2616,6 +2618,7 @@ public class FacturaRes extends PBase {
 				ins.add("CODIGOLIQUIDACION",dt.getInt(11));
 				ins.add("COREL_D_MOV",dt.getString(12));
 				ins.add("UNIDADMEDIDA",umstock);
+				ins.add("PESO_ORIGINAL",speso);
 				db.execSQL(ins.sql());
 
 				dt.moveToNext();
