@@ -9,12 +9,20 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -52,6 +60,7 @@ public class Clientes extends PBase {
 	private EditText txtFiltro;
 	private TextView lblCant;
 	private ImageView cliNuevo;
+	private RecyclerView listaRv;
 
 	private ArrayList<clsCDB> items = new ArrayList<clsCDB>();
 	private ArrayList<String> cobros = new ArrayList<String>();
@@ -62,7 +71,7 @@ public class Clientes extends PBase {
 	private ArrayList<String> listcode = new ArrayList<String>();
 	private ArrayList<String> listname = new ArrayList<String>();
 
-	private ListAdaptCliList adapter;
+	private ListAdaptCliListRv adapter;
 	private clsCDB selitem;
 	private AppMethods app;
 
@@ -98,6 +107,13 @@ public class Clientes extends PBase {
 		txtFiltro = (EditText) findViewById(R.id.txtMonto);
 		lblCant = (TextView) findViewById(R.id.lblCant);
 		cliNuevo = (ImageView) findViewById(R.id.imgImg);
+
+		listaRv = findViewById(R.id.listaRv);
+		listaRv.setLayoutManager(new LinearLayoutManager(this));
+
+		SwipeCallback swipeCallback = new SwipeCallback(adapter);
+		ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeCallback);
+		itemTouchHelper.attachToRecyclerView(listaRv);
 
 		app = new AppMethods(this, gl, Con, db);
 		gl.validimp = app.validaImpresora();
@@ -181,8 +197,7 @@ public class Clientes extends PBase {
 	private void setHandlers() {
 
 		try {
-
-			listView.setOnItemClickListener(new OnItemClickListener() {
+			/*listView.setOnItemClickListener(new OnItemClickListener() {
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
@@ -204,9 +219,9 @@ public class Clientes extends PBase {
 				}
 
 				;
-			});
+			});*/
 
-			listView.setOnItemLongClickListener(new OnItemLongClickListener() {
+			/*listView.setOnItemLongClickListener(new OnItemLongClickListener() {
 				@Override
 				public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 					boolean pedit, pbor;
@@ -233,16 +248,16 @@ public class Clientes extends PBase {
 					}
 					return true;
 				}
-			});
+			});*/
 
-			listView.setOnTouchListener(new SwipeListener(this) {
+			/*listView.setOnTouchListener(new SwipeListener(this) {
 				public void onSwipeRight() {
 					finish();
 				}
 
 				public void onSwipeLeft() {
 				}
-			});
+			});*/
 
 			spinList.setOnItemSelectedListener(new OnItemSelectedListener() {
 				@Override
@@ -477,14 +492,18 @@ public class Clientes extends PBase {
 			mu.msgbox(e.getMessage());
 		}
 
-		adapter = new ListAdaptCliList(this, items);
-		listView.setAdapter(adapter);
+		adapter = new ListAdaptCliListRv(this, items);
+		onClickRv();
+		listaRv.setAdapter(adapter);
 
 		if (selidx > -1) {
 			adapter.setSelectedIndex(selidx);
 			listView.setSelection(selidx);
 		}
 
+	}
+	public void onItemClick(int position) {
+		toast(position);
 	}
 
 	public void showCliente() {
@@ -607,8 +626,8 @@ public class Clientes extends PBase {
 
 		Collections.sort(items, new distanceComparator());
 
-		adapter = new ListAdaptCliList(this, items);
-		listView.setAdapter(adapter);
+		adapter = new ListAdaptCliListRv(this, items);
+		listaRv.setAdapter(adapter);
 
 		adapter.setSelectedIndex(0);
 		listView.setSelection(0);
@@ -1029,6 +1048,98 @@ public class Clientes extends PBase {
 			addlog(new Object() {}.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
 			mu.msgbox(e.getMessage());
 			return false;
+		}
+	}
+
+	//region RecyclerView
+
+	public void onClickRv() {
+		try {
+
+			adapter.setOnItemClickListener(new ClickListener() {
+				@Override
+				public void onItemClick(int position, View v) {
+					Object lvObj = adapter.getItem(position);
+					clsCDB sitem = (clsCDB) lvObj;
+					selitem = sitem;
+
+					selid = sitem.Cod;
+					selidx = position;
+					adapter.setSelectedIndex(position);
+
+					if (gl.incNoLectura == true) {
+						listNoLectura();
+					} else {
+						showCliente();
+					}
+				}
+
+				@Override
+				public void onItemLongClick(int position, View v) {
+					boolean pedit, pbor;
+					try {
+						Object lvObj = adapter.getItem(position);
+						clsClasses.clsCDB item = (clsClasses.clsCDB) lvObj;
+
+						selid = item.Cod;
+						selidx = position;
+						adapter.setSelectedIndex(position);
+
+						pedit = puedeeditarse();
+						pbor = puedeborrarse();
+
+						if (pbor && pedit) {
+							showItemMenu();
+						} else {
+							if (pbor) msgAskBor("Eliminar cliente nuevo");
+							if (pedit) msgAskEdit("Cambiar datos de cliente nuevo");
+						}
+					} catch (Exception e) {
+						addlog(new Object() {
+						}.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
+					}
+				}
+			});
+		} catch (Exception e) {
+			addlog(new Object() {}.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
+			mu.msgbox(e.getMessage());
+		}
+	}
+	//endregion
+
+	public class SwipeCallback extends ItemTouchHelper.SimpleCallback {
+		public SwipeCallback(ListAdaptCliListRv adapter) {
+			super(0, ItemTouchHelper.RIGHT);
+		}
+
+		@Override
+		public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+			return false;
+		}
+
+		@Override
+		public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+			if (direction == ItemTouchHelper.RIGHT) {
+				finish();
+			}
+		}
+
+		@Override
+		public void onChildDraw(@NonNull Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
+								float dX, float dY, int actionState, boolean isCurrentlyActive) {
+
+			if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+				int backgroundColor;
+
+				if (dX > 0) {
+					backgroundColor = Color.parseColor("#1A8AC6");
+				} else {
+					backgroundColor = Color.TRANSPARENT;
+				}
+
+				c.drawColor(backgroundColor);
+				super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+			}
 		}
 	}
 

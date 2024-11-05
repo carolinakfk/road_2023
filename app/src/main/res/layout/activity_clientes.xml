@@ -184,8 +184,19 @@
         android:layout_above="@+id/rellaydn"
         android:layout_below="@+id/relativeLayout1"
         android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp">
+        android:layout_marginRight="5dp"
+        android:visibility="gone"
+        tools:visibility="gone">
 
     </ListView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/listaRv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/rellaydn"
+        android:layout_below="@+id/relativeLayout1"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp" />
 
 </RelativeLayout>
