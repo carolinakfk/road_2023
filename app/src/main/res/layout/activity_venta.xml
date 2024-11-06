@@ -234,17 +234,29 @@
         android:layout_marginTop="3dp"
         android:layout_marginRight="3dp"
         android:layout_marginBottom="5dp"
-        android:clickable="true">
+        android:clickable="true"
+        android:visibility="gone"
+        tools:visibility="gone">
 
     </ListView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvProductos"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/rellaytot"
+        android:layout_below="@+id/reylayprod"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp" />
 
     <ImageView
         android:id="@+id/imgImg"
         android:layout_width="wrap_content"
         android:layout_height="36dp"
-        android:layout_above="@+id/listView1"
+        android:layout_above="@+id/recyclerView"
         android:layout_alignTop="@+id/reylayprod"
         android:layout_alignParentRight="true"
+        android:layout_marginBottom="0dp"
         android:clickable="true"
         android:onClick="showProd"
         android:paddingLeft="10dp"

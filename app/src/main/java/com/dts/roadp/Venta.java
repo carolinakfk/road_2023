@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.graphics.Color;
-import android.inputmethodservice.ExtractEditText;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -28,9 +27,13 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.dts.roadp.clsClasses.clsVenta;
 import java.util.ArrayList;
 
@@ -42,10 +45,10 @@ public class Venta extends PBase {
 	private ImageView imgroad,imgscan;
 	private CheckBox chkBorrar;
 	private Button cmdBarrasDespacho;
-
+	private RecyclerView rvProductos;
 
 	private ArrayList<clsVenta> items= new ArrayList<clsVenta>();
-	private ListAdaptVenta adapter;
+	private ListAdaptVentaRv adapter;
 	private clsVenta selitem;
 	private Precio prc, prcEsp;
 	private PrecioTran prctr;
@@ -89,6 +92,7 @@ public class Venta extends PBase {
 	private boolean isDialogBarraShowed = false;
 
 	private AlertDialog.Builder dialogBarra;
+	private SwipeController swipeController;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -384,7 +388,7 @@ public class Venta extends PBase {
 	private void setHandlers(){
 		try{
 
-			listView.setOnTouchListener(new SwipeListener(this) {
+			/*listView.setOnTouchListener(new SwipeListener(this) {
 				public void onSwipeRight() {
 					onBackPressed();
 				}
@@ -403,7 +407,7 @@ public class Venta extends PBase {
 
 						prodid=vItem.Cod;
 						gl.um=vItem.um;
-						adapter.setSelectedIndex(position);
+						//adapter.setSelectedIndex(position);
 
 						//#CKFK 20190517 Agregué la validación de que esta pantalla solo se levanta cuando sea venta directa
 						if (prodBarra(prodid) && gl.rutatipo.equalsIgnoreCase("V")) {
@@ -431,7 +435,7 @@ public class Venta extends PBase {
 						clsVenta vItem = (clsVenta)lvObj;
 
 						prodid=vItem.Cod;
-						adapter.setSelectedIndex(position);
+						//adapter.setSelectedIndex(position);
 
 						//if (prodBarra(prodid)) return true;
 						//#CKFK 20190517 Agregué la validación de que esta pantalla solo se levanta cuando sea venta directa
@@ -448,7 +452,7 @@ public class Venta extends PBase {
 					}
 					return true;
 				}
-			});
+			});*/
 		}catch (Exception e)
 		{
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
@@ -653,8 +657,9 @@ public class Venta extends PBase {
 		   	mu.msgbox( e.getMessage());
 	    }
 
-		adapter=new ListAdaptVenta(this, items);adapter.cursym=gl.peMon;
-		listView.setAdapter(adapter);
+		adapter=new ListAdaptVentaRv(this, items);adapter.cursym=gl.peMon;
+		rvProductos.setAdapter(adapter);
+		setEventosRecycler();
 
 		if (sinimp) {
 			ttsin=tot-ttimp-ttperc;
@@ -666,8 +671,8 @@ public class Venta extends PBase {
 		}
 
 		if (selidx>-1) {
-			adapter.setSelectedIndex(selidx);
-			listView.smoothScrollToPosition(selidx);
+			adapter.setSelectedPosition(selidx);
+			rvProductos.smoothScrollToPosition(selidx);
 		}
 
 
@@ -3456,7 +3461,7 @@ public class Venta extends PBase {
 	private void setControls() {
 
 		try{
-			
+
 			listView = (ListView) findViewById(R.id.listView1);
 			lblProd= (TextView) findViewById(R.id.lblProd);
 			lblPres= (TextView) findViewById(R.id.lblPres);
@@ -3476,7 +3481,8 @@ public class Venta extends PBase {
 
 			cmdBarrasDespacho=(Button) findViewById(R.id.cmdBarrasDespacho);
 
-
+			rvProductos = findViewById(R.id.rvProductos);
+			rvProductos.setLayoutManager(new LinearLayoutManager(this));
 
 		}catch (Exception e){
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
@@ -3788,10 +3794,10 @@ public class Venta extends PBase {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
 		}
 	}
-	
+
 	private boolean hasCredits(){
 		Cursor DT;
-		
+
 		try {
 			sql="SELECT SALDO FROM P_COBRO WHERE CLIENTE='"+cliid+"'";
 			DT=Con.OpenDT(sql);
@@ -3803,17 +3809,17 @@ public class Venta extends PBase {
 		} catch (Exception e) {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
 			mu.msgbox(e.getMessage());
-	    }			
-		
+	    }
+
 		return false;
 	}
-	
+
 	private void validaNivelPrecio(){
 		Cursor DT;
 		int np;
-		
+
 		np=gl.nivel;
-		
+
 		try {
 			sql="SELECT CODIGO FROM P_PRODPRECIO WHERE NIVEL="+np;
 			DT=Con.OpenDT(sql);
@@ -3823,9 +3829,9 @@ public class Venta extends PBase {
 		} catch (Exception e) {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
 			mu.msgbox(e.getMessage());
-	    }			
+	    }
 	}
-	
+
 	private void doExit(){
 		try{
 			gl.closeCliDet=true;
@@ -3835,12 +3841,12 @@ public class Venta extends PBase {
 		}
 
 	}
-	
+
 	private void cliPorDia() {
 		Cursor DT;
-		
+
 		int dweek=mu.dayofweek();
-		
+
 		try {
 			sql="SELECT DISTINCT CLIENTE FROM P_CLIRUTA WHERE (P_CLIRUTA.DIA ="+dweek+") ";
 			DT=Con.OpenDT(sql);
@@ -3852,9 +3858,9 @@ public class Venta extends PBase {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
 			clidia=0;
 		}
-			
+
 	}
-	
+
 	public String ltrim(String ss,int sw) {
 		try{
 			int l=ss.length();
@@ -4096,8 +4102,76 @@ public class Venta extends PBase {
 
 	//endregion
 
+	public void setEventosRecycler() {
+		adapter.setOnItemClickListener(position -> {
+			try {
+				Object lvObj = adapter.getItem(position);
+				clsVenta vItem = (clsVenta)lvObj;
+
+				prodid=vItem.Cod;
+				gl.um=vItem.um;
+				adapter.setSelectedPosition(position);
+
+				//#CKFK 20190517 Agregué la validación de que esta pantalla solo se levanta cuando sea venta directa
+				if (prodBarra(prodid) && gl.rutatipo.equalsIgnoreCase("V")) {
+					gl.gstr=prodid;
+					gl.gstr2=vItem.Nombre;
+					browse=4;
+					startActivity(new Intent(Venta.this,RepesajeLista.class));
+				} else {
+					setCant();
+				}
+			} catch (Exception e) {
+				addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
+				mu.msgbox( e.getMessage());
+			}
+		});
+
+		adapter.setOnItemLongClickListener(position -> {
+			// Manejar el long click aquí
+			Object lvObj = adapter.getItem(position);
+			clsVenta vItem = (clsVenta)lvObj;
+
+			prodid=vItem.Cod;
+			adapter.setSelectedPosition(position);
+
+			//if (prodBarra(prodid)) return true;
+			//#CKFK 20190517 Agregué la validación de que esta pantalla solo se levanta cuando sea venta directa
+			if (prodRepesaje(prodid) && gl.rutatipo.equalsIgnoreCase("V")) {
+				gl.gstr=prodid;
+				gl.gstr2=vItem.Nombre;
+				showItemMenu();
+			} else {
+				msgAskDel("Borrar producto");
+			}
+
+			return true; // Retornar true indica que el evento fue consumido
+		});
+
+		swipeController = new SwipeController(new SwipeController.SwipeControllerActions() {
+			@Override
+			public void onSwipeLeft() {
+				finishOrder(null);
+
+				rvProductos.stopScroll();
+				adapter.refreshItems();
+			}
+
+			@Override
+			public void onSwipeRight() {
+				onBackPressed();
+
+				rvProductos.stopScroll();
+				adapter.refreshItems();
+			}
+		});
+
+		ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeController);
+		itemTouchHelper.attachToRecyclerView(rvProductos);
+	}
+
 	//region Activity Events
-	
+
 	@Override
 	protected void onResume() {
 		try{
@@ -4139,7 +4213,7 @@ public class Venta extends PBase {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
 		}
 	}
-	
+
 	@Override
 	public void onBackPressed() {
 	    if (gl.devtotal>0) {
