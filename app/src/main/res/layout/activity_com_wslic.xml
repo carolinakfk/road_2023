@@ -245,4 +245,15 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
+    <TextView
+        android:id="@+id/lblDatosLicencia"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/relativeLayout1"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/textView87"
+        android:gravity="center_horizontal"
+        android:text="Medium Text"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textSize="15sp" />
 </RelativeLayout>

@@ -273,9 +273,10 @@ public class CliDet extends PBase {
             }
         }
 
-		if (montoMinimo()==0) {
+		//#CKFK20240928 Puse monto mínimo en comentario
+		/*if (montoMinimo()==0) {
 			msgbox("No está definido monto minimo, no se puede vender.");return;
-		}
+		}*/
 
 		if (!permiteVenta) {
 			if (gl.peVentaGps == 1) {

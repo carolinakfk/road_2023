@@ -2326,7 +2326,8 @@ public class Anulacion extends PBase {
             db.setTransactionSuccessful();
             db.endTransaction();
 
-			validaTotalMontoPedidos();
+			//#CKFK20240928 Puse monto mínimo en comentario
+			//validaTotalMontoPedidos();
         } catch (Exception e) {
             db.endTransaction();
             msgbox(e.getMessage());
@@ -2657,7 +2658,7 @@ public class Anulacion extends PBase {
 					//mu.msgbox(e.getMessage());
 				}
 
-				sql = "UPDATE P_STOCK SET CANT=CANT+"+cant+",PESO=PESO+"+ppeso+"  WHERE (CODIGO='" + pcod + "') AND (UNIDADMEDIDA='" + um + "') AND (LOTE='" + lot + "') AND (DOCUMENTO='" + doc + "') AND (STATUS='" + stat + "')";
+				sql = "UPDATE P_STOCK SET CANT=CANT+"+cant+",PESO=PESO+"+(ppeso*cant)+"  WHERE (CODIGO='" + pcod + "') AND (UNIDADMEDIDA='" + um + "') AND (LOTE='" + lot + "') AND (DOCUMENTO='" + doc + "') AND (STATUS='" + stat + "')";
 				db.execSQL(sql);
 
 				dt.moveToNext();

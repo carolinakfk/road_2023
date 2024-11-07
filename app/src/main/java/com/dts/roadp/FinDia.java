@@ -674,10 +674,11 @@ public class FinDia extends PBase {
                 }
 
                 if (rutatipo.equals("P")){
-                    if (get_Cant_Pedidos_SinMM()>0){
+                    //#CKFK20240928 Puse monto mínimo en comentario
+                    /*if (get_Cant_Pedidos_SinMM()>0){
                         msgPedidosNoCumplenMM("Existen pedidos que no cumplen el monto mínimo,se van a anular");
                         return false;
-                    }
+                    }*/
 
                 }
 
@@ -2707,8 +2708,9 @@ public class FinDia extends PBase {
             dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     //JP 20240520
-                    anularPedidosSinMontoMinimo();
-                    if (pedanul>0) msgbox("Se anularon "+pedanul+" pedidos por razón de monto mínimo.");
+                    //#CKFK20240928 Puse monto mínimo en comentario
+                    //anularPedidosSinMontoMinimo();
+                    //if (pedanul>0) msgbox("Se anularon "+pedanul+" pedidos por razón de monto mínimo.");
                 }
             });
 

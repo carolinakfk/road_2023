@@ -21,7 +21,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -406,7 +408,6 @@ public class ComWS extends PBase {
 				if ((du.getActDate() == fechaUltimoCierre) && ExistenDatos()) {
 					//claseFindia.
 					claseFindia.eliminarTablasD();
-					claseFindia.eliminarTablasD();
 				}
 
 			}
@@ -424,6 +425,10 @@ public class ComWS extends PBase {
 	}
 
 	public void askSend(View view) {
+		EnviarDatos();
+	}
+
+	public void EnviarDatos(){
 		try {
 
 			gl.enviaPedidosParcial = false;
@@ -1239,6 +1244,26 @@ public class ComWS extends PBase {
 			public void onSwipeLeft() {
 			}
 		});
+		txtRuta.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+				// No hacer nada
+			}
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+				// No hacer nada
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				String text = s.toString().toUpperCase();
+				if (!text.equals(s.toString())) {
+					txtRuta.setText(text);
+					txtRuta.setSelection(text.length());
+				}
+			}
+		});
 	}
 
 	//endregion
@@ -1285,7 +1310,12 @@ public class ComWS extends PBase {
     // JP20211018
     private void runRecep() {
 		modo_recepcion=1;
-		runRecepion();
+		//#CKFK20241012 Agregué esta validación porque a veces ocurre que los datos no se envían a ROAD
+		if (ExistenDatosSinEnviar()) {
+			EnviarDatos();
+		}else{
+			runRecepion();
+		}
     }
 
     // JP20211018
@@ -1412,7 +1442,10 @@ public class ComWS extends PBase {
 		try {
 
 			pend = pend + getDocCount("SELECT IFNULL(COUNT(COREL),0) FROM D_FACTURA WHERE STATCOM<>'S'", "Fact: ");
-			pend = pend + getDocCount("SELECT IFNULL(COUNT(COREL),0) FROM D_PEDIDO WHERE (STATCOM='N') AND ((ANULADO='S') OR (CUMPLE_MONTO_MINIMO=1))", "Ped: ");
+
+			//#CKFK20240928 Puse monto mínimo en comentario
+			//pend = pend + getDocCount("SELECT IFNULL(COUNT(COREL),0) FROM D_PEDIDO WHERE (STATCOM='N') AND ((ANULADO='S') OR (CUMPLE_MONTO_MINIMO=1))", "Ped: ");
+			pend = pend + getDocCount("SELECT IFNULL(COUNT(COREL),0) FROM D_PEDIDO WHERE (STATCOM='N') AND ((ANULADO='S'))", "Ped: ");
 			pend = pend + getDocCount("SELECT IFNULL(COUNT(COREL),0) FROM D_COBRO WHERE STATCOM<>'S'", "Rec: ");
 			pend = pend + getDocCount("SELECT IFNULL(COUNT(COREL),0) FROM D_DEPOS WHERE STATCOM<>'S'", "Dep: ");
 			pend = pend + getDocCount("SELECT IFNULL(COUNT(COREL),0) FROM D_MOV WHERE STATCOM<>'S'", "Inv : ");
@@ -3826,7 +3859,7 @@ public class ComWS extends PBase {
 		}
 
 		if (TN.equalsIgnoreCase("P_CODATEN")) {
-			SQL = "SELECT * FROM P_CODATEN WHERE ACTIVO = 1";
+			SQL = "SELECT CODIGO, NOMBRE FROM P_CODATEN ";
 			return SQL;
 		}
 
@@ -3841,7 +3874,7 @@ public class ComWS extends PBase {
 		}
 
 		if (TN.equalsIgnoreCase("P_RAZON_DESP_INCOMP")) {
-			SQL = "SELECT IDRAZON, DESCRIPCION FROM P_RAZON_DESP_INCOMP";
+			SQL = "SELECT IDRAZON, DESCRIPCION, ACTIVO FROM P_RAZON_DESP_INCOMP WHERE ACTIVO = 1 ";
 			return SQL;
 		}
 
@@ -5790,7 +5823,9 @@ public class ComWS extends PBase {
 		String Aux;
 
 		try {
-			sql = "SELECT COREL FROM D_PEDIDO WHERE (STATCOM='N') AND ((ANULADO='S') OR (CUMPLE_MONTO_MINIMO=1))";
+			sql = "SELECT COREL FROM D_PEDIDO WHERE (STATCOM='N')";
+			//#CKFK20240928 Puse monto mínimo en comentario
+			//sql = "SELECT COREL FROM D_PEDIDO WHERE (STATCOM='N') AND ((ANULADO='S') OR (CUMPLE_MONTO_MINIMO=1))";
 			DT = Con.OpenDT(sql);
 			if (DT.getCount() == 0) {
 				senv += "Pedidos : " + pc + "\n";
@@ -6495,7 +6530,9 @@ public class ComWS extends PBase {
 
 		try {
 
-			sql = "SELECT COREL FROM D_PEDIDO WHERE (STATCOM='N') AND ((ANULADO='S') OR (CUMPLE_MONTO_MINIMO=1))";
+			sql = "SELECT COREL FROM D_PEDIDO WHERE (STATCOM='N') AND ((ANULADO='S'))";
+			//#CKFK20240928 Puse monto mínimo en comentario
+			// sql = "SELECT COREL FROM D_PEDIDO WHERE (STATCOM='N') AND ((ANULADO='S') OR (CUMPLE_MONTO_MINIMO=1))";
 			DT = Con.OpenDT(sql);
 
 			if (DT.getCount() == 0) {
@@ -8374,6 +8411,32 @@ public class ComWS extends PBase {
 			CantInventario = clsAppM.getDocCountTipo("Inventario", true);
 
 			return ((cantFact > 0) || (CantCobros > 0) || (CantDevol > 0) || (CantPedidos > 0) || (CantInventario > 0));
+
+		} catch (Exception e) {
+			addlog(new Object() {
+			}.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
+			msgbox(e.getMessage());
+			return false;
+		}
+
+	}
+
+	//CKFK 20190222 Se creó esta función para saber si existen datos en la base de datos
+	public boolean ExistenDatosEnviados() {
+
+		try {
+
+			int cantFact, CantPedidos, CantCobros, CantDevol, CantDepos;
+
+			clsAppM = new AppMethods(this, gl, Con, db);
+
+			cantFact = clsAppM.getDocCountTipoEnviados("Facturas");
+			CantPedidos = clsAppM.getDocCountTipoEnviados("Pedidos");
+			CantCobros = clsAppM.getDocCountTipoEnviados("Cobros");
+			CantDevol = clsAppM.getDocCountTipoEnviados("Devoluciones");
+			CantDepos = clsAppM.getDocCountTipoEnviados("Deposito");
+
+			return ((cantFact > 0) || (CantCobros > 0) || (CantDevol > 0) || (CantPedidos > 0) || (CantDepos > 0));
 
 		} catch (Exception e) {
 			addlog(new Object() {

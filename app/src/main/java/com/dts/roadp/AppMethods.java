@@ -143,6 +143,74 @@ public class AppMethods {
 		return cnt;
 	}
 
+
+	//Función para saber la cantidad de registros en una tabla específica
+	public int getDocCountTipoEnviados(String tipo){
+
+		Cursor DT;
+		int cnt = 0;
+		String st, ss;
+		String pps = "";
+
+		try {
+
+			switch(tipo) {
+				case "Facturas":
+
+					sql="SELECT IFNULL(COUNT(COREL),0) AS CANT FROM D_FACTURA";
+					sql += " WHERE STATCOM = 'S'";
+					break;
+
+				case "Pedidos":
+
+					sql="SELECT IFNULL(COUNT(COREL),0) AS CANT FROM D_PEDIDO";
+					sql += " WHERE STATCOM = 'S'";
+					break;
+
+				case "Cobros":
+
+					sql="SELECT IFNULL(COUNT(COREL),0) AS CANT FROM D_COBRO";
+					sql += " WHERE STATCOM = 'S'";
+					break;
+
+				case "Devolucion":
+
+					sql="SELECT IFNULL(COUNT(COREL),0) AS CANT FROM D_NOTACRED";
+					sql += " WHERE STATCOM = 'S'";
+					break;
+
+				case "Deposito":
+
+					sql="SELECT IFNULL(COUNT(COREL),0) AS CANT FROM D_DEPOS";
+					sql += " WHERE STATCOM = 'S'";
+					break;
+
+				case "Canastas":
+					sql="SELECT COUNT(IDCANASTA) AS CANT FROM D_CANASTA WHERE STATCOM = 'S'";
+					break;
+
+				case "Atenciones":
+					sql="SELECT COUNT(RUTA) AS CANT FROM D_ATENCION";
+					sql += " WHERE STATCOM = 'S'";
+					break;
+			}
+
+			DT=Con.OpenDT(sql);
+
+			if (DT.getCount()>0){
+				DT.moveToFirst();
+				cnt=DT.getInt(0);
+			}
+
+			st=pps+" "+cnt;
+			sp=sp+st+"\n";
+
+		} catch (Exception e) {
+
+		}
+		return cnt;
+	}
+
 	// Public
 	
 	public void parametrosExtra() {

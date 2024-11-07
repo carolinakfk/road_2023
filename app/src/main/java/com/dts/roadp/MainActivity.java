@@ -55,11 +55,11 @@ public class MainActivity extends PBase {
     private boolean rutapos, scanning = false;
     //private String cs1, cs2, cs3, barcode;
 
-    private final String parNumVer = "9.9.78 / ";
-    private final String  parFechaVer = "08-09-2024";
+    private final String parNumVer = "9.9.88 / ";
+    private final String  parFechaVer = "06-11-2024";
     private final String parTipoVer = "ROAD QAS";
 
-    //RUC Token
+    //RUC Token00100833
 
     private Token token = new Token();
     private HttpClientAPI htclient;
@@ -686,7 +686,7 @@ public class MainActivity extends PBase {
                 }
             }
 
-/*            sql="UPDATE P_STOCK SET Peso=15.591 where codigo = '0427'";
+/*            sql="UPDATE findia SET val6=0, val7=0, val8 = 0";
 			db.execSQL(sql);*/
 
 /*            sql="ALTER TABLE D_FACTURA_STOCK ADD PESO_ORIGINAL REAL DEFAULT 0 NOT NULL;";

@@ -71,7 +71,7 @@ public class LicRegis extends PBase {
 		txtRuta= (EditText) findViewById(R.id.txtRuta);
 		txtWS= (EditText) findViewById(R.id.txtWS);
 		txtEmp= (EditText) findViewById(R.id.txtEmp);
-		
+
 		isbusy=0;
 		
 		lblInfo.setText("");lblParam.setText("");
@@ -98,7 +98,7 @@ public class LicRegis extends PBase {
 		
 		lblMac.setText(mac);
 		lblDevName.setText(dname);
-		
+
 	}
 	
 
@@ -401,7 +401,7 @@ public class LicRegis extends PBase {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
 		}
 	}
-	
+
 	
 	// Web Service handling Methods
 	
@@ -509,7 +509,7 @@ public class LicRegis extends PBase {
 			AlertDialog.Builder dialog = new AlertDialog.Builder(this);
 
 			dialog.setTitle("Registro");
-			dialog.setMessage("Enviar registro ?");
+			dialog.setMessage("Enviar registro?");
 
 			dialog.setPositiveButton("Enviar", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
@@ -643,7 +643,7 @@ public class LicRegis extends PBase {
 			return "*";
 		}
 	}
-	
+
 	private String encodeValue(int val) {
 		int mval;
 		

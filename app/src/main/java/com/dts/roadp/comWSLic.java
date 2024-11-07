@@ -33,7 +33,7 @@ import java.util.ArrayList;
 
 public class comWSLic extends PBase {
 
-    private TextView lblInfo, lblParam, lblEnv,lblDev;
+    private TextView lblInfo, lblParam, lblEnv,lblDev,lblDatosLicencia;
     private ProgressBar barInfo;
     private EditText txtRuta, txtWS, txtEmp;
     private ImageView imgEnv;
@@ -97,6 +97,7 @@ public class comWSLic extends PBase {
         imgEnv = (ImageView) findViewById(R.id.imageView6);
         lblDev = (TextView) findViewById(R.id.textView87);
         ralBack = (RelativeLayout) findViewById(R.id.relwsmail);
+        lblDatosLicencia = (TextView) findViewById(R.id.lblDatosLicencia);
 
         isbusy = 0;
 
@@ -119,6 +120,8 @@ public class comWSLic extends PBase {
         setHandlers();
 
         validaLicencia();
+
+        datosLicencia();
 
     }
 
@@ -999,7 +1002,43 @@ public class comWSLic extends PBase {
 
     }
 
+    private void datosLicencia() {
 
+        CryptUtil cu = new CryptUtil();
+        Cursor dt;
+        String lic, lickey, licruta, rutaencrypt, rutades,licdes ;
+        Integer msgLic = 0;
+
+        try {
+
+            lickey = cu.encrypt(gl.deviceId);
+            rutaencrypt = cu.encrypt(gl.ruta);
+
+            sql = "SELECT lic, licparam FROM Params";
+            dt = Con.OpenDT(sql);
+            dt.moveToFirst();
+            lic = dt.getString(0);
+            licruta = dt.getString(1);
+            rutades = cu.decrypt(licruta);
+            licdes = cu.decrypt(lic);
+
+            lblDatosLicencia.setText("gl.deviceId: " + gl.deviceId +
+                    " gl.ruta: " + gl.ruta +
+                    " lickey: " + lickey +
+                    " rutaencrypt: " + rutaencrypt  +
+                    " Params lic: " + lic +
+                    " Params licruta: " + licruta  +
+                    " Params licdes: " + licdes +
+                    " Params rutades: " + rutades);
+
+        } catch (Exception e) {
+            addlog(new Object() {
+            }.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
+            mu.msgbox(new Object() {
+            }.getClass().getEnclosingMethod().getName() + " : " + e.getMessage());
+        }
+
+    }
 
     //endregion
 

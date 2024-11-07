@@ -132,6 +132,7 @@
             android:label="@string/title_activity_venta"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:launchMode="singleTask"
             android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".ComDrop"
@@ -162,6 +163,7 @@
             android:label="@string/title_activity_pedido_res"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:launchMode="singleTask"
             android:windowSoftInputMode="stateAlwaysVisible" />
         <activity
             android:name=".ObjRuta"
@@ -242,6 +244,7 @@
             android:label="@string/title_activity_com_ws"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:launchMode="singleTask"
             android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".DevolCli"
@@ -296,6 +299,7 @@
             android:name=".CliNuevo"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_cli_nuevo"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait" />
         <activity
             android:name=".Recarga"
@@ -313,6 +317,7 @@
             android:name=".FacturaRes"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_factura_res"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
         <activity
@@ -437,12 +442,14 @@
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:launchMode="singleTask"
             android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".Repesaje"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar"
+            android:launchMode="singleTask"
             android:windowSoftInputMode="stateAlwaysVisible" />
         <activity
             android:name=".DevolBodTol"
@@ -544,6 +551,7 @@
             android:name=".despacho_barras"
             android:label="Despacho Barras"
             android:screenOrientation="portrait"
+            android:launchMode="singleTask"
             android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
         <activity
             android:name=".OrdenCompra"

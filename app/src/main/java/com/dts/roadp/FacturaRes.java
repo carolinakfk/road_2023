@@ -2540,7 +2540,7 @@ public class FacturaRes extends PBase {
 	private void rebajaStockUM(String prid,String umstock,double cant,double factor, String umventa,double factpres,double ppeso) {
 
 		Cursor dt;
-		double cantapl,dispcant,umfactor,actcant,pesoapl,disppeso,actpeso,speso;
+		double cantapl,dispcant,umfactor,actcant,pesoapl,disppeso,actpeso,speso, vPesoOriginal;
 		String lote,doc,stat;
 
 		umfactor=1;
@@ -2600,6 +2600,7 @@ public class FacturaRes extends PBase {
 
 				// Factura Stock
 				lotelote = "";
+				vPesoOriginal = mu.round((speso/((cantapl + dispcant)!=0?(cantapl + dispcant):1)),3);
 
 				ins.init("D_FACTURA_STOCK");
 				ins.add("COREL",corel);
@@ -2618,7 +2619,7 @@ public class FacturaRes extends PBase {
 				ins.add("CODIGOLIQUIDACION",dt.getInt(11));
 				ins.add("COREL_D_MOV",dt.getString(12));
 				ins.add("UNIDADMEDIDA",umstock);
-				ins.add("PESO_ORIGINAL",speso);
+				ins.add("PESO_ORIGINAL",vPesoOriginal);
 				db.execSQL(ins.sql());
 
 				dt.moveToNext();

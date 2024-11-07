@@ -55,7 +55,7 @@ public class PedidoRes extends PBase {
 	
 	private long fecha,fechae;
 	private String itemid,cliid,corel;
-	private int cyear, cmonth, cday,dweek,impres, presday,bandera_monto;
+	private int cyear, cmonth, cday,dweek,impres, presday,bandera_monto=0;
 	
 	private double dmax,dfinmon,descpmon,descg,descgmon,tot,stot0,stot,monto_minimo;
 	private double descmon,totimp,totperc,dispventa,nue_monto,nue_monto_ext;
@@ -134,7 +134,8 @@ public class PedidoRes extends PBase {
 
 		dweek = mu.dayofweek();
 
-		validaTotalMontoPedidos();
+		//#CKFK20240928 Puse monto mínimo en comentario
+		//validaTotalMontoPedidos();
 	}
 
 	//region Events
@@ -147,9 +148,10 @@ public class PedidoRes extends PBase {
 			prodstandby=validaStandby();
 			if (prodstandby) ss="Guardar pedido con producto cerrado?";else ss="Guardar pedido ?";
 
-			if (cli_nuevo) {
+			//#CKFK20240928 Puse monto mínimo en comentario
+			/*if (cli_nuevo) {
 				if (bandera_monto==0) ss="Guardar pedido de un cliente nuevo sin alcanzar el monto minimo?";
-			}
+			}*/
 
 			AlertDialog.Builder dialog = new AlertDialog.Builder(this);
 
@@ -1052,43 +1054,51 @@ public class PedidoRes extends PBase {
 			dt=Con.OpenDT(sql);
 
 			mt=0;
-			if (dt.getCount()>0) {
-				dt.moveToFirst();
-				while (!dt.isAfterLast()) {
-					pcor=dt.getString(0);
+			if(dt!=null){
+				if (dt.getCount()>0) {
+					dt.moveToFirst();
+					while (!dt.isAfterLast()) {
+						pcor=dt.getString(0);
 
-					sql="SELECT PRODUCTO,TOTAL FROM D_PEDIDOD WHERE (COREL='"+pcor+"')";
-					dtt=Con.OpenDT(sql);
+						sql="SELECT PRODUCTO,TOTAL FROM D_PEDIDOD WHERE (COREL='"+pcor+"')";
+						dtt=Con.OpenDT(sql);
 
-					if (dtt.getCount()>0) {
-						dtt.moveToFirst();
-						while (!dtt.isAfterLast()) {
-
-							idprodm=dtt.getString(0);
-							totm=dtt.getDouble(1);
-							mt+=totm;
-
-							sql="SELECT ESTADO FROM P_STOCK_PV WHERE (CODIGO='"+idprodm+"')";
-							dtt=Con.OpenDT(sql);
-
-							try {
+						if(dtt!=null){
+							if (dtt.getCount()>0) {
 								dtt.moveToFirst();
-								pac=dtt.getString(0);
-							} catch (Exception e) {
-								pac="A";
-							}
+								while (!dtt.isAfterLast()) {
 
-							if (pac.equalsIgnoreCase("A")) { // abierto
-								monto_a+=totm;
-							} else {		// cerrado
-								monto_c+=totm;
-							}
+									idprodm=dtt.getString(0);
+									totm=dtt.getDouble(1);
+									mt+=totm;
 
-							dtt.moveToNext();
+									sql="SELECT ESTADO FROM P_STOCK_PV WHERE (CODIGO='"+idprodm+"')";
+									dtd=Con.OpenDT(sql);
+
+									if (dtd!=null){
+										try {
+											dtd.moveToFirst();
+											pac=dtd.getString(0);
+										} catch (Exception e) {
+											pac="A";
+										}
+
+										if (pac.equalsIgnoreCase("A")) { // abierto
+											monto_a+=totm;
+										} else {		// cerrado
+											monto_c+=totm;
+										}
+
+										dtd.close();
+									}
+
+									dtt.moveToNext();
+								}
+							}
 						}
-					}
 
-					dt.moveToNext();
+						dt.moveToNext();
+					}
 				}
 			}
 
@@ -1197,7 +1207,9 @@ public class PedidoRes extends PBase {
 					String diaFormateado = (dayOfMonth < 10)? CERO + String.valueOf(dayOfMonth):String.valueOf(dayOfMonth);
 					String mesFormateado = (mesActual < 10)? CERO + String.valueOf(mesActual):String.valueOf(mesActual);
 					lblFecha.setText(diaFormateado + BARRA + mesFormateado + BARRA + year);
-					validaTotalMontoPedidos();
+
+					//#CKFK20240928 Puse monto mínimo en comentario
+					//validaTotalMontoPedidos();
 				}
 			},anio, mes, dia);
 

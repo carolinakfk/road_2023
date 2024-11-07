@@ -1452,6 +1452,12 @@ public class Venta extends PBase {
 			}
 
 			if (porpeso && (gl.rutatipo.equalsIgnoreCase("V") || gl.rutatipo.equalsIgnoreCase("D"))) {
+
+
+				if (gl.rutatipo.equalsIgnoreCase("V")){
+					umfactor = pesostock;
+				}
+
 				if (!checkLimits(ppeso,cantDesp*umfactor)) {
 					respuesta = "Peso incorrecto";
 					return respuesta;
@@ -1506,7 +1512,7 @@ public class Venta extends PBase {
 			}
 
 			if (vpeso>pmax) {
-				ss="El repesaje ("+mu.frmdecimal(vpeso, gl.peDecImp)+") está por encima de los percentajes permitidos," +
+				ss="El repesaje ("+mu.frmdecimal(vpeso, gl.peDecImp)+") está por encima de los porcentajes permitidos," +
 						" máximo : "+mu.frmdecimal(pmax, gl.peDecImp)+", no se puede aplicar.";
 				msgbox(ss);return false;
 			}
