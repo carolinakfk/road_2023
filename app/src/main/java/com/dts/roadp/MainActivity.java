@@ -55,9 +55,9 @@ public class MainActivity extends PBase {
     private boolean rutapos, scanning = false;
     //private String cs1, cs2, cs3, barcode;
 
-    private final String parNumVer = "9.9.88 / ";
-    private final String  parFechaVer = "06-11-2024";
-    private final String parTipoVer = "ROAD QAS";
+    private final String parNumVer = "9.9.90 / ";
+    private final String  parFechaVer = "12-11-2024";
+    private final String parTipoVer = "ROAD PRD";
 
     //RUC Token00100833
 
@@ -94,7 +94,8 @@ public class MainActivity extends PBase {
                         && checkSelfPermission(Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED
                         && checkCallingOrSelfPermission(Manifest.permission.WAKE_LOCK) == PackageManager.PERMISSION_GRANTED
                         && checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-                        && checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+                        && checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
+                        && checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED) {
                     startApplication();
                 } else {
                     ActivityCompat.requestPermissions(this,
@@ -103,7 +104,8 @@ public class MainActivity extends PBase {
                                     Manifest.permission.CALL_PHONE,
                                     Manifest.permission.CAMERA,
                                     Manifest.permission.WAKE_LOCK,
-                                    Manifest.permission.READ_PHONE_STATE
+                                    Manifest.permission.READ_PHONE_STATE,
+                                    Manifest.permission.BLUETOOTH_SCAN
                             }, 1);
                 }
             }

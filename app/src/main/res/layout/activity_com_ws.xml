@@ -147,9 +147,9 @@
             android:layout_alignParentRight="true"
             android:layout_marginTop="40dp"
             android:ems="10"
-            android:hint="http://movil.toledano.com/RDC7_SAP_QAS_ANDR/wsAndr.asmx"
+            android:hint="http://movil.toledano.com/RDC7_SAP_PRD_ANDR/wsAndr.asmx"
             android:nextFocusForward="@id/txtEmp"
-            android:text="http://movil.toledano.com/RDC7_SAP_QAS_ANDR/wsAndr.asmx" />
+            android:text="http://movil.toledano.com/RDC7_SAP_PRD_ANDR/wsAndr.asmx" />
 
         <TextView
             android:id="@+id/textView3"

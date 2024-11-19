@@ -174,8 +174,8 @@ public class Reimpresion extends PBase {
 			mdoc=new clsDocMov(this,prn.prw,"Recarga",gl.ruta,gl.vendnom,gl.peMon,gl.peDecImp, "");
 			lblTipo.setText("Recarga");break;
 		case 5:  
-			mdoc=new clsDocMov(this,prn.prw,"Dvolucion a bodega",gl.ruta,gl.vendnom,gl.peMon,gl.peDecImp, "");
-			lblTipo.setText("Devolución a bodega");break;
+			mdoc=new clsDocMov(this,prn.prw,"Devolucion paseante",gl.ruta,gl.vendnom,gl.peMon,gl.peDecImp, "");
+			lblTipo.setText("Devolución paseante");break;
 		case 6:  
 			fdev=new clsDocDevolucion(this,prn_nc.prw,gl.peMon,gl.peDecImp, "printnc.txt");
 			fdev.deviceid =gl.numSerie;
@@ -185,6 +185,9 @@ public class Reimpresion extends PBase {
 			fdev=new clsDocDevolucion(this,prn_nc.prw,gl.peMon,gl.peDecImp, "printnc.txt");
 			fdev.deviceid =gl.numSerie;
 			lblTipo.setText("Nota Débito");break;
+		case 8:
+			mdoc=new clsDocMov(this,prn.prw,"Devolucion canastas",gl.ruta,gl.vendnom,gl.peMon,gl.peDecImp, "");
+			lblTipo.setText("Devolución canastas");break;
 		case 99:  
 			lblTipo.setText("Cierre de día");break;
 		}		
@@ -366,8 +369,8 @@ public class Reimpresion extends PBase {
 				}
 			}
 				
-			if (tipo==4 || tipo==5) {
-				tm="R";if (tipo==5) tm="D";
+			if (tipo==4 || tipo==5 || tipo==8) {
+				tm="R";if (tipo==5 || tipo==8) tm="D";
 				sql="SELECT COREL,COREL,FECHA,0 AS TOTAL "+
 					 "FROM D_MOV WHERE (TIPO='"+tm+"') AND (ANULADO='N')  ORDER BY COREL DESC ";	
 			}
@@ -436,7 +439,7 @@ public class Reimpresion extends PBase {
 						val=DT.getDouble(3);sval=""+val;
 						vItem.Valor=sval;	  
 
-						if (tipo==4 || tipo==5) {
+						if (tipo==4 || tipo==5 || tipo==8) {
 							vItem.Valor="";
 						} else {
 							vItem.Valor=mu.frmcur(val);
@@ -517,11 +520,13 @@ public class Reimpresion extends PBase {
 				case 4:
 					imprRecarga();break;
 				case 5:
-					imprDevol();break;
+					imprDevolP();break;
 				case 6:
 					imprUltNotaCredito();break;
 				case 7:
 					imprUltNotaDebito();break;
+				case 8:
+					imprDevolC();break;
 				case 99:
 					imprFindia();break;
 			}
@@ -646,7 +651,7 @@ public class Reimpresion extends PBase {
 		}
 	}
 
-	private void imprDevol() {
+	private void imprDevolC() {
 		try {
 
 			corel = itemid;
@@ -654,11 +659,77 @@ public class Reimpresion extends PBase {
 			impres=0;
 
 			existenciaC=tieneCanasta(corel);
+			existenciaP = "";
+			//existenciaP=tienePaseante(corel);
+
+			//if(existenciaC.isEmpty() && !existenciaP.isEmpty()) impres=1;
+			if(!existenciaC.isEmpty() && existenciaP.isEmpty()) impres=2;
+			//if(existenciaC.isEmpty() && existenciaP.isEmpty()) impres=3;
+
+			if (prn_can.isEnabled()) {
+
+				String vModo=(gl.peModal.equalsIgnoreCase("TOL")?"TOL":"*");
+				/*try {
+					if(impres==0 || impres==1){
+						fpaseantebod.buildPrint(corel,0,vModo);
+					}
+				} catch (Exception e) {
+				}*/
+
+				try {
+					if(impres==0 || impres==2){
+						imprimecan=true;
+						fcanastabod.buildPrint(corel,0, vModo);
+					}
+				} catch (Exception e) {
+				}
+
+				/*if(impres==0) {
+					prn_paseante.printask(printcallback, "printpaseante.txt");
+				}else if(impres==1) {
+					prn_paseante.printask(printcallback, "printpaseante.txt");
+				}else */
+
+					if(impres==2) {
+					prn_can.printask(printcallback, "printdevcan.txt");
+				}
+
+			}else if(!prn_can.isEnabled()){
+
+				String vModo=(gl.peModal.equalsIgnoreCase("TOL")?"TOL":"*");
+
+				/*if(impres==0 || impres==1){
+					fpaseantebod.buildPrint(corel,0,vModo);
+				}*/
+
+				if(impres==0 || impres==2){
+					imprimecan=true;
+					fcanastabod.buildPrint(corel,0, vModo);
+				}
+
+			}
+
+		} catch (Exception e) {
+			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
+			mu.msgbox(e.getMessage());
+		}
+	}
+
+	private void imprDevolP() {
+		try {
+
+			corel = itemid;
+
+			impres=0;
+
+			existenciaC="";
 			existenciaP=tienePaseante(corel);
 
 			if(existenciaC.isEmpty() && !existenciaP.isEmpty()) impres=1;
-			if(!existenciaC.isEmpty() && existenciaP.isEmpty()) impres=2;
-			if(existenciaC.isEmpty() && existenciaP.isEmpty()) impres=3;
+			/*if(!existenciaC.isEmpty() && existenciaP.isEmpty()) impres=2;
+			if(existenciaC.isEmpty() && existenciaP.isEmpty()) impres=3;*/
+
+			impres=1;
 
 			if (prn_can.isEnabled()) {
 
@@ -670,23 +741,25 @@ public class Reimpresion extends PBase {
 				} catch (Exception e) {
 				}
 
-				try {
+				/*try {
 					if(impres==0 || impres==2){
 						imprimecan=true;
 						fcanastabod.buildPrint(corel,0, vModo);
 					}
 				} catch (Exception e) {
-				}
+				}*/
 
 				if(impres==0) {
 					prn_paseante.printask(printcallback, "printpaseante.txt");
 				}else if(impres==1) {
 					prn_paseante.printask(printcallback, "printpaseante.txt");
-				}else if(impres==2) {
+				}
+				/*else if(impres==2) {
 					prn_can.printask(printcallback, "printdevcan.txt");
 				}
-
-			}else if(!prn_can.isEnabled()){
+*/
+			}
+			/*else if(!prn_can.isEnabled()){
 
 				String vModo=(gl.peModal.equalsIgnoreCase("TOL")?"TOL":"*");
 
@@ -699,7 +772,7 @@ public class Reimpresion extends PBase {
 					fcanastabod.buildPrint(corel,0, vModo);
 				}
 
-			}
+			}*/
 
 		} catch (Exception e) {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");

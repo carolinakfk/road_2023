@@ -524,7 +524,7 @@ public class Menu extends PBase {
 
 		try{
 			final AlertDialog Dialog;
-			final String[] selitems = {"Factura","Pedido","Recibo","Deposito","Recarga","Devolución a bodega","Cierre de dia", "Nota crédito"};
+			final String[] selitems = {"Factura","Pedido","Recibo","Deposito","Recarga","Devolución paseante","Devolución canastas","Cierre de dia", "Nota crédito"};
 
 			menudlg = new AlertDialog.Builder(this);
 			menudlg.setIcon(R.drawable.reimpresion48);
@@ -579,7 +579,7 @@ public class Menu extends PBase {
 
 		try{
 			final AlertDialog Dialog;
-			final String[] selitems = {"Factura","Recibo","Deposito","Recarga","Devolución a bodega","Cierre de dia", "Nota de crédito", "Nota débito"};
+			final String[] selitems = {"Factura","Recibo","Deposito","Recarga","Devolución paseante","Devolución canastas","Cierre de dia", "Nota de crédito", "Nota débito"};
 
 			menudlg = new AlertDialog.Builder(this);
 			menudlg.setIcon(R.drawable.reimpresion48);
@@ -600,10 +600,12 @@ public class Menu extends PBase {
 						case 4:
 							menuImprDoc(5);break;
 						case 5:
-							menuImprDoc(99);break;
+							menuImprDoc(8);break;
 						case 6:
-							menuImprDoc(6);break;
+							menuImprDoc(99);break;
 						case 7:
+							menuImprDoc(6);break;
+						case 8:
 							menuImprDoc(7);break;
 					}
 
@@ -634,7 +636,7 @@ public class Menu extends PBase {
 
 		try{
 			final AlertDialog Dialog;
-			final String[] selitems = {"Factura","Recibo","Deposito","Recarga","Devolución a bodega","Cierre de dia","Nota de crédito"};
+			final String[] selitems = {"Factura","Recibo","Deposito","Recarga","Devolución paseante","Devolución canastas","Cierre de dia","Nota de crédito"};
 
 			menudlg = new AlertDialog.Builder(this);
 			menudlg.setIcon(R.drawable.reimpresion48);
@@ -654,9 +656,9 @@ public class Menu extends PBase {
 							menuImprDoc(4);break;
 						case 4:
 							menuImprDoc(5);break;
-						case 5:
-							menuImprDoc(99);break;
 						case 6:
+							menuImprDoc(99);break;
+						case 7:
 							menuImprDoc(6);break;
 					}
 

@@ -2345,6 +2345,8 @@ public class Anulacion extends PBase {
 
 		try{
 
+			db.beginTransaction();
+
 			sql="SELECT PRODUCTO,UMSTOCK FROM D_FACTURAD WHERE Corel='"+itemid+"'";
 			dt=Con.OpenDT(sql);
 
@@ -2435,9 +2437,12 @@ public class Anulacion extends PBase {
 
 			if(dt!=null) dt.close();
 
+			db.setTransactionSuccessful();
+
 			vAnulFactura=true;
 
 		} catch (Exception e) {
+			db.endTransaction();
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
 			vAnulFactura=false;
 		}

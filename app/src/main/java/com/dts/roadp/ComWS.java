@@ -1311,7 +1311,7 @@ public class ComWS extends PBase {
     private void runRecep() {
 		modo_recepcion=1;
 		//#CKFK20241012 Agregué esta validación porque a veces ocurre que los datos no se envían a ROAD
-		if (ExistenDatosSinEnviar()) {
+		if (ValidaSiExistenDatosSinEnviar()) {
 			EnviarDatos();
 		}else{
 			runRecepion();
@@ -8421,8 +8421,8 @@ public class ComWS extends PBase {
 
 	}
 
-	//CKFK 20190222 Se creó esta función para saber si existen datos en la base de datos
-	public boolean ExistenDatosEnviados() {
+	//CKFK20241108 Se creó esta función para saber si existen sin enviar en la base datos antes de recibir datos
+	public boolean ValidaSiExistenDatosSinEnviar() {
 
 		try {
 
