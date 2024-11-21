@@ -2438,6 +2438,7 @@ public class BaseDatosScript {
 					"CLIENTE TEXT NOT NULL,"+
 					"MM_ESTANDAR REAL NOT NULL,"+
 					"MM_EXTRARUTA REAL NOT NULL,"+
+					"SETUP INTEGER DEFAULT 0,"+
 					"PRIMARY KEY ([CLIENTE])"+
 					");";
 			database.execSQL(vSQL);
