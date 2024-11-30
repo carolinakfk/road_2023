@@ -55,8 +55,8 @@ public class MainActivity extends PBase {
     private boolean rutapos, scanning = false;
     //private String cs1, cs2, cs3, barcode;
 
-    private final String parNumVer = "9.9.90 / ";
-    private final String  parFechaVer = "12-11-2024";
+    private final String parNumVer = "9.9.91 / ";
+    private final String  parFechaVer = "27-11-2024";
     private final String parTipoVer = "ROAD PRD";
 
     //RUC Token00100833

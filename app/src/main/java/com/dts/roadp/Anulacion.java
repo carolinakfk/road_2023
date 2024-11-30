@@ -638,14 +638,14 @@ public class Anulacion extends PBase {
 
 			}else{
 
-				db.setTransactionSuccessful();
 				db.endTransaction();
-
+				mu.msgbox("Ocurrió un error al anular la factura.");
 			}
 
 			listItems();
 
 		} catch (Exception e) {
+			db.endTransaction();
 			mu.msgbox(new Object() {}.getClass().getEnclosingMethod().getName() +" - "+ e.getMessage());
 		}
 	}
@@ -685,14 +685,14 @@ public class Anulacion extends PBase {
 
 			}else{
 
-				db.setTransactionSuccessful();
 				db.endTransaction();
-
+				mu.msgbox("Ocurrió un error al anular la factura.");
 			}
 
 			listItems();
 
 		} catch (Exception e) {
+			db.endTransaction();
 			mu.msgbox(new Object() {}.getClass().getEnclosingMethod().getName() +" - "+ e.getMessage());
 		}
 	}
@@ -2345,7 +2345,7 @@ public class Anulacion extends PBase {
 
 		try{
 
-			db.beginTransaction();
+			//db.beginTransaction();
 
 			sql="SELECT PRODUCTO,UMSTOCK FROM D_FACTURAD WHERE Corel='"+itemid+"'";
 			dt=Con.OpenDT(sql);
@@ -2387,8 +2387,8 @@ public class Anulacion extends PBase {
 			sql="INSERT INTO P_STOCKB SELECT * FROM D_FACTURA_BARRA WHERE Corel='"+itemid+"'";
 			db.execSQL(sql);
 
-			sql="UPDATE P_STOCKB SET PESO = (SELECT PESOORIG FROM T_BARRA " +
-				" WHERE T_BARRA.BARRA = P_STOCKB.BARRA AND T_BARRA.CODIGO = P_STOCKB.CODIGO)" +
+			sql="UPDATE P_STOCKB SET PESO =COALESCE((SELECT PESOORIG FROM T_BARRA " +
+				" WHERE T_BARRA.BARRA = P_STOCKB.BARRA AND T_BARRA.CODIGO = P_STOCKB.CODIGO),PESO)" +
 			    " WHERE BARRA IN (SELECT BARRA FROM D_FACTURA_BARRA WHERE Corel='"+itemid+"')";
 			db.execSQL(sql);
 
@@ -2414,20 +2414,6 @@ public class Anulacion extends PBase {
 			anulBonif(itemid);
 			anularCanastas(itemid);
 
-			// Nota credito
-//
-//			sql="SELECT COREL FROM D_NOTACRED WHERE FACTURA='"+itemid+"'";
-//			dt=Con.OpenDT(sql);
-//			if (dt.getCount()>0) {
-//				dt.moveToFirst();ncred=dt.getString(0);
-//
-//				sql = "UPDATE D_CXC SET ANULADO='S' WHERE COREL='" + ncred + "' ";
-//				db.execSQL(sql);
-//
-//				sql = "UPDATE D_NOTACRED SET ANULADO='S' WHERE COREL='" + ncred + "'";
-//				db.execSQL(sql);
-//			}
-
 			//ImpresionFactura();
 
 			//Despacho
@@ -2437,12 +2423,12 @@ public class Anulacion extends PBase {
 
 			if(dt!=null) dt.close();
 
-			db.setTransactionSuccessful();
+			//db.setTransactionSuccessful();
 
 			vAnulFactura=true;
 
 		} catch (Exception e) {
-			db.endTransaction();
+			//db.endTransaction();
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
 			vAnulFactura=false;
 		}
