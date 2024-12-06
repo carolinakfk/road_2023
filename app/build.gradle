@@ -5,7 +5,7 @@ apply plugin: 'com.google.firebase.firebase-perf'
 apply plugin: 'com.google.firebase.appdistribution'
 
 android {
-    compileSdk 34
+    compileSdkVersion 34
 
     defaultConfig {
         applicationId "com.dts.roadp"

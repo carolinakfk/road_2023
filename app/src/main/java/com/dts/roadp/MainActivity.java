@@ -39,6 +39,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 import Facturacion.HttpClientAPI;
 import Facturacion.Token;
@@ -55,8 +57,8 @@ public class MainActivity extends PBase {
     private boolean rutapos, scanning = false;
     //private String cs1, cs2, cs3, barcode;
 
-    private final String parNumVer = "9.9.91 / ";
-    private final String  parFechaVer = "27-11-2024";
+    private final String parNumVer = "9.9.92 / ";
+    private final String  parFechaVer = "06-12-2024";
     private final String parTipoVer = "ROAD PRD";
 
     //RUC Token00100833
@@ -84,6 +86,7 @@ public class MainActivity extends PBase {
 
     // Grant permissions
 
+/*
     private void grantPermissions() {
 
         try {
@@ -115,6 +118,64 @@ public class MainActivity extends PBase {
             }.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
             msgbox(new Object() {
             }.getClass().getEnclosingMethod().getName() + " . " + e.getMessage());
+        }
+    }
+*/
+
+    private void grantPermissions() {
+        try {
+            // Lista para permisos faltantes
+            List<String> permissionsNeeded = new ArrayList<>();
+
+            // Permisos comunes (Android <12 y Android 12+)
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            }
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION);
+            }
+            if (checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(Manifest.permission.CALL_PHONE);
+            }
+            if (checkCallingOrSelfPermission(Manifest.permission.WAKE_LOCK) != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(Manifest.permission.WAKE_LOCK);
+            }
+            if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(Manifest.permission.CAMERA);
+            }
+            if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(Manifest.permission.READ_PHONE_STATE);
+            }
+
+            // Permisos específicos de Bluetooth según versión de Android
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12+
+                if (checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                    permissionsNeeded.add(Manifest.permission.BLUETOOTH_SCAN);
+                }
+                if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    permissionsNeeded.add(Manifest.permission.BLUETOOTH_CONNECT);
+                }
+            } else { // Android <= 11
+                if (checkSelfPermission(Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+                    permissionsNeeded.add(Manifest.permission.BLUETOOTH);
+                }
+                if (checkSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
+                    permissionsNeeded.add(Manifest.permission.BLUETOOTH_ADMIN);
+                }
+            }
+
+            // Solicitar permisos si es necesario
+            if (!permissionsNeeded.isEmpty()) {
+                ActivityCompat.requestPermissions(this, permissionsNeeded.toArray(new String[0]), 1);
+                startApplication();
+            } else {
+                // Iniciar aplicación si ya se tienen todos los permisos
+                startApplication();
+            }
+
+        } catch (Exception e) {
+            Log.e("grantPermissions", "Error al conceder permisos", e);
+            msgbox("Error: " + e.getMessage());
         }
     }
 
@@ -199,9 +260,19 @@ public class MainActivity extends PBase {
                 gl.PathDataDir = this.getApplicationContext().getDataDir().getPath();
             }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+           /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH}, 1);
+                }
+            }*/
+
+            //#CKFK20241114 Agregué esta validación para los permisos por el Bluetooth
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_SCAN}, 1);
+                }
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
                 }
             }
 
