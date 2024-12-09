@@ -115,7 +115,7 @@ public class BaseDatosScript {
 					"[ANULADO_POR_MONTO_MINIMO] INTEGER NOT NULL,"+
 					"[CUMPLE_MONTO_MINIMO] INTEGER NOT NULL,"+
 					"[TIPO_PEDIDO] TEXT NOT NULL,"+
-					"[TOTAL_MONTO_MINIMO] INTEGER NOT NULL,"+
+					"[TOTAL_MONTO_MINIMO] REAL NOT NULL,"+
 					"PRIMARY KEY ([COREL])"+
 					");";
 			database.execSQL(vSQL);
