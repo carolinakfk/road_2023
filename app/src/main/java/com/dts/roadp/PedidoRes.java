@@ -62,6 +62,8 @@ public class PedidoRes extends PBase {
 	private double monto_a,monto_c,montop_a,montop_c;
 	private boolean acum,cleandprod,toledano,porpeso,prodstandby,impprecio;
 	private boolean cli_estandar,cli_nuevo,incluye_cerrados;
+
+	private clsClasses.clsMmCliente mm_cliente = null;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -134,6 +136,8 @@ public class PedidoRes extends PBase {
 
 		dweek = mu.dayofweek();
 
+		//AT20241107 Validar Monto Minimo por cliente
+		getMontoMinimoCliente();
 		//#CKFK20240928 Puse monto mínimo en comentario
 		//validaTotalMontoPedidos();
 	}
@@ -153,6 +157,55 @@ public class PedidoRes extends PBase {
 				if (bandera_monto==0) ss="Guardar pedido de un cliente nuevo sin alcanzar el monto minimo?";
 			}*/
 
+			//#AT20241111 Solo se debe hacer este proceso si gl.rutatipog.equals("P")
+			if (gl.rutatipog.equals("P")) {
+				monto_minimo = gl.es_extraruta == true ? mm_cliente.mm_extaruta : mm_cliente.mm_estandar;
+				bandera_monto = 1;
+
+				if (!CumpleMontoMinimo()) {
+					if (mm_cliente != null) {
+						boolean esMontoValido = tot >= monto_minimo;
+
+						switch (mm_cliente.setup) {
+							case 0:
+								if (!esMontoValido) {
+									msgbox("El monto del pedido es menor al mínimo establecido:" + monto_minimo);
+									return;
+								}
+								Guardar(ss);
+								break;
+							case 1:
+								String mensaje = "";
+								if (!esMontoValido) {
+									mensaje = "El monto del pedido es menor al mínimo establecido: "+ monto_minimo+". \n\n";
+									bandera_monto = 0;
+								}
+								mensaje += ss;
+
+								Guardar(mensaje);
+								break;
+							case 2:
+								if (!esMontoValido) {
+									bandera_monto = 0;
+								}
+								Guardar(ss);
+								break;
+						}
+					}
+				} else {
+					Guardar(ss);
+				}
+			} else {
+				Guardar(ss);
+			}
+
+		} catch (Exception e){
+			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
+		}
+	}
+
+	public void Guardar(String ss) {
+		try {
 			AlertDialog.Builder dialog = new AlertDialog.Builder(this);
 
 			dialog.setTitle("Road");
@@ -167,8 +220,7 @@ public class PedidoRes extends PBase {
 			dialog.setNegativeButton("Salir", null);
 
 			dialog.show();
-
-		} catch (Exception e){
+		} catch (Exception e) {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
 		}
 	}
@@ -323,7 +375,7 @@ public class PedidoRes extends PBase {
 				
 				item = clsCls.new clsCDB();
 				item.Cod="TOTAL";item.Desc=mu.frmcur(tot);item.Bandera=1;
-				items.add(item);			
+				items.add(item);
 				
 			}
 					
@@ -936,6 +988,53 @@ public class PedidoRes extends PBase {
 
 	//region Monto minimo
 
+	private void getMontoMinimoCliente() {
+		Cursor dt;
+		try {
+			sql="SELECT * FROM P_MONTO_MINIMO_CLIENTE WHERE CLIENTE = '"+cliid+"'";
+			dt=Con.OpenDT(sql);
+
+			if (dt.getCount() > 0) {
+				dt.moveToFirst();
+
+				mm_cliente = clsCls.new clsMmCliente();
+				mm_cliente.mm_estandar = dt.getDouble(1);
+				mm_cliente.mm_extaruta = dt.getDouble(2);
+				mm_cliente.setup = dt.getInt(3);
+			}
+
+			if (dt != null)	dt.close();
+
+		} catch (Exception e) {
+			msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+		}
+	}
+
+	private boolean CumpleMontoMinimo() {
+		Cursor dt;
+		try {
+			sql="SELECT * FROM D_PEDIDO " +
+					" WHERE CLIENTE = '"+cliid+"' " +
+					" AND ANULADO = 'N' " +
+					" AND STATCOM ='N'" +
+					" AND TOTAL >=" + monto_minimo +"" +
+					" AND CUMPLE_MONTO_MINIMO = 1";
+			dt=Con.OpenDT(sql);
+
+			if (dt.getCount() > 0) {
+				return true;
+			}
+
+			if (dt != null)	dt.close();
+
+		} catch (Exception e) {
+			msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+			return false;
+		}
+
+		return false;
+	}
+
 	private void validaTotalMontoPedidos() {
 		double mt,mm,mmac,mmp;
 
@@ -956,8 +1055,7 @@ public class PedidoRes extends PBase {
 			bandera_monto=0;
 			if (mt>=mm) bandera_monto=1;
 
-			if (bandera_monto==0) msgbox("El total de prefacturas ("+mu.frmcur(mt)+") es menor que " +
-				"monto mínimo ("+mu.frmcur(mm)+"). ");
+			if (bandera_monto==0) msgbox("El total del pedido ("+mu.frmcur(mt)+") es menor al pedido mínimo ("+mu.frmcur(mm)+"). ");
 
 			sql="UPDATE D_PEDIDO SET CUMPLE_MONTO_MINIMO="+bandera_monto+" "+
 				"WHERE (CLIENTE='"+gl.cliente+"') AND (ANULADO='N') AND (FECHAENTR="+fechae+")";

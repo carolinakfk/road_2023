@@ -280,4 +280,9 @@ public class clsClasses {
 		public long Fecha;
 		public Double Total;
 	}
+
+	public class  clsMmCliente {
+		public double mm_estandar, mm_extaruta;
+		public int setup;
+	}
 }

@@ -57,7 +57,7 @@ public class CliDet extends PBase {
 	private String cod,tel, Nombre, NIT, sgp1, sgp2, canal, canalsub,prior,idtipo;
 	private String imagenbase64,path,fechav;
 	private Boolean imgPath, imgDB, ventaGPS,flagGPS=true,permiteVenta=true,clicred;
-	private double gpx,gpy,credito,clim,cused,cdisp,cred;
+	private double gpx,gpy,credito,clim,cused,cdisp,cred, cx_cliente, cy_cliente, cx_suc, cy_suc, distancia_km;
 	private int nivel,browse,merc,rangoGPS,modoGPS;
 	private boolean porcentaje = false,clinue,pedclinue, diaCorrecto;
 	private byte[] imagenBit;
@@ -123,6 +123,7 @@ public class CliDet extends PBase {
 		cod=gl.cliente;
 		gl.cobroPendiente = false;
 		gl.pagocobro = false;
+		gl.es_extraruta = false;
 		//#CKFK20230904 Quité esta inicialización porque afectaba la impresión.
         //gl.tiponcredito = 0;
 
@@ -278,16 +279,22 @@ public class CliDet extends PBase {
 			msgbox("No está definido monto minimo, no se puede vender.");return;
 		}*/
 
-		if (!permiteVenta) {
-			if (gl.peVentaGps == 1) {
-				msgbox("¡Distancia del cliente "+ sgp1 +" es mayor que la permitida "+ sgp2 + "!\nPara realizar la venta debe acercarse más al cliente.");
-				return;
-			} else {
-				modoGPS = 2;
-				msgAskGPSVenta();
-			}
-		} else {
+		//#AT20241118 Si es extraruta mostrar directamente la pantalla pedido
+		if (gl.es_extraruta) {
 			doPreventa();
+		} else {
+			permiteVenta = true;
+			if (!permiteVenta) {
+				if (gl.peVentaGps == 1) {
+					msgbox("¡Distancia del cliente " + sgp1 + " es mayor que la permitida " + sgp2 + "!\nPara realizar la venta debe acercarse más al cliente.");
+					return;
+				} else {
+					modoGPS = 2;
+					msgAskGPSVenta();
+				}
+			} else {
+				doPreventa();
+			}
 		}
 	}
 
@@ -581,6 +588,12 @@ public class CliDet extends PBase {
 			georefPrefactura = (DT.getInt(25) == 1 ? true : false);
 			georefAutoVenta  = (DT.getInt(26) == 1 ? true : false);
 			permitePedidoExtraRuta = (DT.getInt(28) == 1 ? true : false);
+			cx_cliente = DT.getDouble(9);
+			cy_cliente = DT.getDouble(10);
+
+			//#AT20241118 Calcular la distancia entre el CD y Cliente
+			getSucursal();
+			distancia_km = calcularDistancia(cy_suc, cx_suc, cy_cliente, cx_cliente);
 
 			tel=DT.getString(4);
 			lblTel.setText(DT.getString(4));
@@ -710,11 +723,11 @@ public class CliDet extends PBase {
 				DT=Con.OpenDT(sql);
 				try {
 					DT.moveToFirst();
-					lblMMEstandar.setText("MM Estándar : "+DT.getDouble(0));
-					lblMMExtraRuta.setText("MM Extraruta : "+DT.getDouble(1));
+					lblMMEstandar.setText("Pedido Mínimo Normal: "+DT.getDouble(0));
+					lblMMExtraRuta.setText("Pedido Mínimo Extraruta: "+DT.getDouble(1));
 				} catch (Exception e) {
-					lblMMEstandar.setText("MM Estándar : 0.00");
-					lblMMExtraRuta.setText("MM Extraruta : 0.00");
+					lblMMEstandar.setText("Pedido Mínimo Normal: 0.00");
+					lblMMExtraRuta.setText("Pedido Mínimo Extraruta: 0.00");
 				}
 			}else{
 				lblMMEstandar.setVisibility(View.GONE);
@@ -1368,8 +1381,20 @@ public class CliDet extends PBase {
 			if (flag) relV.setVisibility(View.VISIBLE);else relV.setVisibility(View.GONE);
 
 			flag=false;
-			if ((rt.equalsIgnoreCase("P") || rt.equalsIgnoreCase("T")) && ((diaCorrecto) ||
-					(!diaCorrecto && permitePedidoExtraRuta))) flag=true;
+			if ((rt.equalsIgnoreCase("P") || rt.equalsIgnoreCase("T")) &&
+				((diaCorrecto) || (!diaCorrecto && distancia_km <= 50))) {
+				flag=true;
+
+				//#AT20241118 Variable para saber si es extraruta
+				if (!diaCorrecto && distancia_km <= 50) {
+					gl.es_extraruta = true;
+				}
+			} else {
+				if (!diaCorrecto && distancia_km > 50) {
+					toastcent("La distancia es mayor a 50km del CD.");
+				}
+			}
+
 			if (flag) relP.setVisibility(View.VISIBLE);else relP.setVisibility(View.GONE);
 
 			flag=false;
@@ -1548,6 +1573,55 @@ public class CliDet extends PBase {
 			return montomin;
 		} catch (Exception e) {
 			return 0;
+		}
+	}
+
+	public double calcularDistancia(double cy_suc, double cx_suc, double cy_cliente, double cx_cliente) {
+		double distancia = 0;
+		double radio_tierra = 6371.0;
+
+		try {
+			double lat1Rad = Math.toRadians(cy_suc);
+			double lon1Rad = Math.toRadians(cx_suc);
+			double lat2Rad = Math.toRadians(cy_cliente);
+			double lon2Rad = Math.toRadians(cx_cliente);
+
+			double dlat = lat2Rad - lat1Rad;
+			double dlon = lon2Rad - lon1Rad;
+
+			double a = Math.sin(dlat / 2) * Math.sin(dlat / 2) +
+					Math.cos(lat1Rad) * Math.cos(lat2Rad) *
+							Math.sin(dlon / 2) * Math.sin(dlon / 2);
+			double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+			return radio_tierra * c;
+		} catch (Exception e) {
+			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
+		}
+
+		return distancia;
+	}
+
+	public void getSucursal() {
+		clsClasses.clsSucursal Sucursal = clsCls.new clsSucursal();
+		Cursor dt;
+
+		try {
+			sql="SELECT COORDENADA_X, COORDENADA_Y FROM P_SUCURSAL WHERE CODIGO = '"+gl.sucur+"'";
+			dt=Con.OpenDT(sql);
+			dt.moveToFirst();
+
+			if (dt.getCount() > 0) {
+				dt.moveToFirst();
+
+				cx_suc = dt.getDouble(0);
+				cy_suc = dt.getDouble(1);
+			}
+
+			if (dt != null) dt.close();
+
+		} catch (Exception e) {
+			msgbox(new Object() {}.getClass().getEnclosingMethod().getName() + " - " + e.getMessage());
 		}
 	}
 
