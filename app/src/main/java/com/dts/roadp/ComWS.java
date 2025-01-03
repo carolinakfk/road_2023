@@ -6529,8 +6529,8 @@ public class ComWS extends PBase {
 		int i, pc = 0, pcc = 0;
 
 		try {
-
-			sql = "SELECT COREL FROM D_PEDIDO WHERE (STATCOM='N') AND ((ANULADO='S'))";
+			//#CKFK20241230 Corregí error en el envío del pedido mínimo
+			sql = "SELECT COREL FROM D_PEDIDO WHERE (STATCOM='N')";
 			//#CKFK20240928 Puse monto mínimo en comentario
 			// sql = "SELECT COREL FROM D_PEDIDO WHERE (STATCOM='N') AND ((ANULADO='S') OR (CUMPLE_MONTO_MINIMO=1))";
 			DT = Con.OpenDT(sql);
