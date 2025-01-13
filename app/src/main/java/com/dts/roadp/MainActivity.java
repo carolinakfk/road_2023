@@ -57,6 +57,7 @@ public class MainActivity extends PBase {
     private boolean rutapos, scanning = false;
     //private String cs1, cs2, cs3, barcode;
 
+    //Código con monto mínimo
     private final String parNumVer = "9.9.95 / ";
     private final String  parFechaVer = "30-12-2024";
     private final String parTipoVer = "ROAD PRD";
