@@ -1615,7 +1615,7 @@ public class CliDet extends PBase {
 				dt.moveToFirst();
 
 				cx_suc = dt.getDouble(0);
-				cy_suc = dt.getDouble(1);
+				cy_suc = -dt.getDouble(1);
 			}
 
 			if (dt != null) dt.close();
