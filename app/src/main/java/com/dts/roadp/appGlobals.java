@@ -103,6 +103,9 @@ public class appGlobals extends Application {
 	public String pPrefijoBarra;
 	public int pCantImpresion;
 
+	//Parámetro distancia hacia el CD
+	public int pDistanciaCD = 0;
+
 	//Path instalación app
 	public String PathDataDir = "";
 

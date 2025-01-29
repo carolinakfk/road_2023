@@ -1382,16 +1382,16 @@ public class CliDet extends PBase {
 
 			flag=false;
 			if ((rt.equalsIgnoreCase("P") || rt.equalsIgnoreCase("T")) &&
-				((diaCorrecto) || (!diaCorrecto && distancia_km <= 50))) {
+				((diaCorrecto) || (!diaCorrecto && distancia_km <= gl.pDistanciaCD))) {
 				flag=true;
 
 				//#AT20241118 Variable para saber si es extraruta
-				if (!diaCorrecto && distancia_km <= 50) {
+				if (!diaCorrecto && distancia_km <= gl.pDistanciaCD) {
 					gl.es_extraruta = true;
 				}
 			} else {
-				if (!diaCorrecto && distancia_km > 50) {
-					toastcent("La distancia es mayor a 50km del CD.");
+				if (!diaCorrecto && distancia_km > gl.pDistanciaCD) {
+					toastcent("La distancia es mayor a " + gl.pDistanciaCD + " km del CD.");
 				}
 			}
 

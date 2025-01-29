@@ -188,6 +188,8 @@ public class Reimpresion extends PBase {
 		case 8:
 			mdoc=new clsDocMov(this,prn.prw,"Devolucion canastas",gl.ruta,gl.vendnom,gl.peMon,gl.peDecImp, "");
 			lblTipo.setText("Devolución canastas");break;
+		case 98://#CKFK20241127
+				lblTipo.setText("Prueba de impresión");break;
 		case 99:  
 			lblTipo.setText("Cierre de día");break;
 		}		
@@ -396,8 +398,9 @@ public class Reimpresion extends PBase {
 						" WHERE (D_NOTACRED.STATCOM='N') AND (D_FACTURA_CONTROL_CONTINGENCIA.TIPODOCUMENTO IN ('05','07')) AND (D_NOTACRED.TIPO_DOCUMENTO = 'ND')" +
 						" ORDER BY D_NOTACRED.COREL DESC ";
 			}
-			
-			if (tipo<99) {
+
+			//#CKFK20241127
+			if (tipo<98) {
 				
 				DT=Con.OpenDT(sql);
 	
@@ -482,7 +485,17 @@ public class Reimpresion extends PBase {
 					vItem.Valor="";	  
 
 					items.add(vItem);				
-				}		
+				}else if (tipo==98) {
+                    //#CKFK20241127
+					vItem =clsCls.new clsCFDV();
+
+					vItem.Cod="";
+					vItem.Desc="";
+					vItem.Fecha="Prueba de impresión";
+					vItem.Valor="";
+
+					items.add(vItem);
+				}
 			}
 			
 		} catch (Exception e) {
@@ -527,6 +540,8 @@ public class Reimpresion extends PBase {
 					imprUltNotaDebito();break;
 				case 8:
 					imprDevolC();break;
+				case 98://#CKFK20241127
+					imprTest();break;
 				case 99:
 					imprFindia();break;
 			}
@@ -846,11 +861,26 @@ public class Reimpresion extends PBase {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
 			mu.msgbox(e.getMessage());
 		}
-	}	
-	
-	
+	}
+
+	//#CKFK20241127
+	private void imprTest() {
+		try {
+			if(prn.isEnabled()){
+				buildReports();
+				prn=new printer(this,printclose,gl.validimp);
+				prn.printask("/test.txt");
+			}else if(!prn.isEnabled()){
+				toast("No hay impresora configurada");
+			}
+
+		} catch (Exception e) {
+			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
+			mu.msgbox(e.getMessage());
+		}
+	}
+
 	// Ultima factura + nota credito
-	
 	private void imprUltFactura() {
 		Cursor dt;
 		String id,serie;
@@ -1433,5 +1463,29 @@ public class Reimpresion extends PBase {
 		return uniqueID;
 	}
 
+	//#CKFK20241127
+	private void buildReports() {
 
+		try {
+
+			rep=new clsRepBuilder(this,prn.prw,true,gl.peMon,gl.peDecImp, "test.txt");
+
+			rep.empty();
+
+			rep.add("PRUEBA DE IMPRESION");
+			rep.line();
+			rep.add("Vendedor: "+ gl.vend+" "+gl.vendnom);
+			rep.add("Ruta: "+ gl.ruta+" "+gl.rutanom);
+			rep.add("Fecha: "+du.sfecha(fecha)+" "+du.shora(fecha));
+			rep.empty();
+
+			rep.save();
+
+		} catch (Exception e) {
+			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
+			msgbox(new Object() {
+			}.getClass().getEnclosingMethod().getName() + " . " + e.getMessage());
+		}
+
+	}
 }

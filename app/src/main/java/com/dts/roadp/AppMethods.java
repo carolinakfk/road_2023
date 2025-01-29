@@ -610,6 +610,15 @@ public class AppMethods {
 		} catch (Exception e) {
 			gl.pCantImpresion = 2;
 		}
+
+		try {
+			sql="SELECT VALOR FROM P_PARAMEXT WHERE ID=38";
+			dt=Con.OpenDT(sql);
+			dt.moveToFirst();
+			gl.pDistanciaCD =  dt.getInt(0);
+		} catch (Exception e) {
+			gl.pDistanciaCD = 50;
+		}
 	}
 
 	public void parametrosBarras() {
