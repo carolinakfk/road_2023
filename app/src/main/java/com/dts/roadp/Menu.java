@@ -524,7 +524,8 @@ public class Menu extends PBase {
 
 		try{
 			final AlertDialog Dialog;
-			final String[] selitems = {"Factura","Pedido","Recibo","Deposito","Recarga","Devolución paseante","Devolución canastas","Cierre de dia", "Nota crédito"};
+			//#CKFK20241127
+			final String[] selitems = {"Factura","Pedido","Recibo","Deposito","Recarga","Devolución paseante","Devolución canastas","Cierre de dia", "Nota crédito", "Prueba de impresión"};
 
 			menudlg = new AlertDialog.Builder(this);
 			menudlg.setIcon(R.drawable.reimpresion48);
@@ -550,6 +551,9 @@ public class Menu extends PBase {
 							menuImprDoc(99);break;
 						case 7:
 							menuImprDoc(6);break;
+						//#CKFK20241127
+						case 8:
+							menuImprDoc(98);break;
 					}
 
 					dialog.cancel();
@@ -579,7 +583,8 @@ public class Menu extends PBase {
 
 		try{
 			final AlertDialog Dialog;
-			final String[] selitems = {"Factura","Recibo","Deposito","Recarga","Devolución paseante","Devolución canastas","Cierre de dia", "Nota de crédito", "Nota débito"};
+			//#CKFK20241127
+			final String[] selitems = {"Factura","Recibo","Deposito","Recarga","Devolución paseante","Devolución canastas","Cierre de dia", "Nota de crédito", "Nota débito", "Prueba de impresión"};
 
 			menudlg = new AlertDialog.Builder(this);
 			menudlg.setIcon(R.drawable.reimpresion48);
@@ -607,6 +612,8 @@ public class Menu extends PBase {
 							menuImprDoc(6);break;
 						case 8:
 							menuImprDoc(7);break;
+						case 9://#CKFK20241127
+							menuImprDoc(98);break;
 					}
 
 					dialog.cancel();
@@ -636,7 +643,8 @@ public class Menu extends PBase {
 
 		try{
 			final AlertDialog Dialog;
-			final String[] selitems = {"Factura","Recibo","Deposito","Recarga","Devolución paseante","Devolución canastas","Cierre de dia","Nota de crédito"};
+			//#CKFK20241127
+			final String[] selitems = {"Factura","Recibo","Deposito","Recarga","Devolución paseante","Devolución canastas","Cierre de dia","Nota de crédito", "Prueba de impresión"};
 
 			menudlg = new AlertDialog.Builder(this);
 			menudlg.setIcon(R.drawable.reimpresion48);
@@ -660,6 +668,8 @@ public class Menu extends PBase {
 							menuImprDoc(99);break;
 						case 7:
 							menuImprDoc(6);break;
+						case 8://#CKFK20241127
+							menuImprDoc(98);break;
 					}
 
 					dialog.cancel();
@@ -689,7 +699,8 @@ public class Menu extends PBase {
 
 		try{
 			final AlertDialog Dialog;
-			final String[] selitems = {"Pedido","Recibo","Deposito","Nota de crédito"};
+			//#CKFK20241127
+			final String[] selitems = {"Pedido","Recibo","Deposito","Nota de crédito", "Prueba de impresión"};
 
 			menudlg = new AlertDialog.Builder(this);
 			menudlg.setIcon(R.drawable.reimpresion48);
@@ -707,6 +718,8 @@ public class Menu extends PBase {
 							menuImprDoc(2);break;
 						case 3:
 							menuImprDoc(6);break;
+						case 4://#CKFK20241127
+							menuImprDoc(98);break;
 					}
 
 					dialog.cancel();
