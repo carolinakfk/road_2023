@@ -928,6 +928,10 @@ public class Venta extends PBase {
 			sql="DELETE FROM T_VENTA WHERE (PRODUCTO='"+prodid+"')";
 			db.execSQL(sql);
 
+			//#CKFK20250204 Agregué el delete T_BARRA
+			sql="DELETE FROM T_BARRA WHERE (PRODUCTO='"+prodid+"')";
+			db.execSQL(sql);
+
 			sql="DELETE FROM T_BARRA_BONIF WHERE (PRODUCTO='"+prodid+"')";
 			db.execSQL(sql);
 
@@ -1214,6 +1218,38 @@ public class Venta extends PBase {
 	private void delItem(){
 		try {
 	    	db.execSQL("DELETE FROM T_VENTA WHERE PRODUCTO='"+prodid+"'");
+			db.execSQL("DELETE FROM T_BARRA WHERE CODIGO='"+prodid+"'");
+
+			clsBonif clsBoniftr;
+			int bcant,bontotal,boncant,bfaltcant,bon;
+			String bprod="";
+
+			if (gl.iddespacho !=null ){
+				if (!gl.iddespacho.isEmpty()) actualizaTotalesBarraDespacho();
+			}
+
+			gl.bonbarprod=prodid;
+
+			bcant=cantBolsa();
+			boncant=cantBonif();
+			bfaltcant=cantFalt();
+
+			clsBoniftr = new clsBonif(this, prodid, bcant, 0);
+			if (clsBoniftr.tieneBonif()) {
+				bon=(int) clsBoniftr.items.get(0).valor;
+				bprod=clsBoniftr.items.get(0).lista;
+				gl.bonbarid=clsBoniftr.items.get(0).lista;
+			} else {
+				bon=0;gl.bonbarid="";
+			}
+
+			bontotal=boncant+bfaltcant;
+
+			//toast("Bolsas : "+bcant+" bon : "+bon+"  / "+bontotal);
+			if (bon<bontotal) {
+				removerBonif(bprod,(bontotal-bon));
+			}
+
 	    	listItems();
 		} catch (SQLException e) {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
@@ -2519,6 +2555,7 @@ public class Venta extends PBase {
 			dt=Con.OpenDT(sql);
 			dt.moveToFirst();
 			unfactor=dt.getDouble(0);
+			if(dt!=null) dt.close();
 
 			sql="SELECT SUM(CANTIDAD),SUM(PESO),SUM(PRECIO) FROM T_BARRA WHERE CODIGO='"+prodid+"'";
 			dt=Con.OpenDT(sql);
