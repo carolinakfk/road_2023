@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.database.SQLException;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -58,8 +59,8 @@ public class MainActivity extends PBase {
     //private String cs1, cs2, cs3, barcode;
 
     //Código con monto mínimo
-    private final String parNumVer = "9.9.97 / ";
-    private final String  parFechaVer = "29-01-2025";
+    private final String parNumVer = "10.0.04 / ";
+    private final String  parFechaVer = "21-02-2025";
     private final String parTipoVer = "ROAD PRD";
 
     //RUC Token00100833
@@ -123,6 +124,16 @@ public class MainActivity extends PBase {
     }
 */
 
+   /* try {
+        Uri uri = Uri.parse("package:com.dts.posprintusb");
+        Intent intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri);
+        startActivity(intent);
+    } catch (ex: java.lang.Exception) {
+        Intent intent = Intent();
+        intent.action = Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION;
+        startActivity(intent);
+    }*/
+
     private void grantPermissions() {
         try {
             // Lista para permisos faltantes
@@ -156,12 +167,35 @@ public class MainActivity extends PBase {
                 if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                     permissionsNeeded.add(Manifest.permission.BLUETOOTH_CONNECT);
                 }
+
+                if  (!Environment.isExternalStorageManager()){
+
+                }
+
             } else { // Android <= 11
                 if (checkSelfPermission(Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
                     permissionsNeeded.add(Manifest.permission.BLUETOOTH);
                 }
                 if (checkSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
                     permissionsNeeded.add(Manifest.permission.BLUETOOTH_ADMIN);
+                }
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+
+                if (!Environment.isExternalStorageManager()){
+                    try{
+
+                        Uri uri = Uri.parse("package:com.dts.roadp");
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri);
+                        startActivity(intent);
+
+
+                    }catch (Exception e){
+                        Intent intent = new Intent();
+                        intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                        startActivity(intent);
+                    }
                 }
             }
 

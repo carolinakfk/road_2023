@@ -929,7 +929,7 @@ public class Venta extends PBase {
 			db.execSQL(sql);
 
 			//#CKFK20250204 Agregué el delete T_BARRA
-			sql="DELETE FROM T_BARRA WHERE (PRODUCTO='"+prodid+"')";
+			sql="DELETE FROM T_BARRA WHERE (CODIGO='"+prodid+"')";
 			db.execSQL(sql);
 
 			sql="DELETE FROM T_BARRA_BONIF WHERE (PRODUCTO='"+prodid+"')";

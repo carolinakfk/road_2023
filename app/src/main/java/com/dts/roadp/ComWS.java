@@ -4062,7 +4062,9 @@ public class ComWS extends PBase {
 		}
 
 		if (TN.equalsIgnoreCase("P_MONTO_MINIMO_CLIENTE")) {
-			SQL = "SELECT CLIENTE,MM_ESTANDAR,MM_EXTRARUTA,SETUP FROM P_MONTO_MINIMO_CLIENTE";
+			SQL = "SELECT CLIENTE,MM_ESTANDAR,MM_EXTRARUTA,SETUP " +
+				  "FROM P_MONTO_MINIMO_CLIENTE " +
+				  "WHERE CLIENTE IN (SELECT CLIENTE FROM P_CLIRUTA WHERE (RUTA='" + ActRuta + "'))";
 			return SQL;
 		}
 
@@ -8506,7 +8508,7 @@ public class ComWS extends PBase {
 
 			dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
-					startActivity(new Intent(ComWS.this, rating.class));
+					//startActivity(new Intent(ComWS.this, rating.class));
 					ComWS.super.finish();
 				}
 			});

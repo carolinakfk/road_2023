@@ -63,6 +63,7 @@ public class CliDet extends PBase {
 	private byte[] imagenBit;
 	private Boolean georefCanasta, georefPreventa, georefPrefactura, georefAutoVenta, permitePedidoExtraRuta;
 
+	private clsClasses.clsMmCliente mm_cliente = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -178,6 +179,8 @@ public class CliDet extends PBase {
 		//browse=0;
 		merc=1;
 
+		getMontoMinimoCliente();
+
 		habilitaOpciones();
 
 		miniFachada();
@@ -275,9 +278,9 @@ public class CliDet extends PBase {
         }
 
 		//#CKFK20240928 Puse monto mínimo en comentario
-		/*if (montoMinimo()==0) {
-			msgbox("No está definido monto minimo, no se puede vender.");return;
-		}*/
+		if (mm_cliente==null) {
+			msgbox("Cliente no configurado para Mínimo Drop Size.");return;
+		}
 
 		//#AT20241118 Si es extraruta mostrar directamente la pantalla pedido
 		if (gl.es_extraruta) {
@@ -1382,11 +1385,11 @@ public class CliDet extends PBase {
 
 			flag=false;
 			if ((rt.equalsIgnoreCase("P") || rt.equalsIgnoreCase("T")) &&
-				((diaCorrecto) || (!diaCorrecto && distancia_km <= gl.pDistanciaCD))) {
+				((diaCorrecto) || (!diaCorrecto && distancia_km <= gl.pDistanciaCD && permitePedidoExtraRuta))) {
 				flag=true;
 
 				//#AT20241118 Variable para saber si es extraruta
-				if (!diaCorrecto && distancia_km <= gl.pDistanciaCD) {
+				if (!diaCorrecto && distancia_km <= gl.pDistanciaCD && permitePedidoExtraRuta) {
 					gl.es_extraruta = true;
 				}
 			} else {
@@ -1870,7 +1873,27 @@ public class CliDet extends PBase {
 		}
 	}
 
+	private void getMontoMinimoCliente() {
+		Cursor dt;
+		try {
+			sql="SELECT * FROM P_MONTO_MINIMO_CLIENTE WHERE CLIENTE = '"+cod+"'";
+			dt=Con.OpenDT(sql);
 
+			if (dt.getCount() > 0) {
+				dt.moveToFirst();
+
+				mm_cliente = clsCls.new clsMmCliente();
+				mm_cliente.mm_estandar = dt.getDouble(1);
+				mm_cliente.mm_extaruta = dt.getDouble(2);
+				mm_cliente.setup = dt.getInt(3);
+			}
+
+			if (dt != null)	dt.close();
+
+		} catch (Exception e) {
+			msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+		}
+	}
 	//endregion
 
 	//region Activity Events
