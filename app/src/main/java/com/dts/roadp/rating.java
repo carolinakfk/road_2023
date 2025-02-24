@@ -9,6 +9,7 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -38,23 +39,26 @@ public class rating  extends PBase {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_rating);
+        try{
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_rating);
 
-        super.InitBase();
+            super.InitBase();
 
-        addlog("Rating",""+du.getActDateTime(),gl.vend);
+            addlog("Rating",""+du.getActDateTime(),gl.vend);
 
-        ratingBar =(RatingBar) findViewById(R.id.rbROAD);
-        cmdEnviar =(Button) findViewById(R.id.cmdEnviar);
-        cmbTransError = (Spinner) findViewById(R.id.cmbTransError);
-        txtComentarioU = (EditText) findViewById(R.id.txtComentarioU);
-        lblCaracteres = (TextView) findViewById(R.id.lblCaracteres);
+            ratingBar =(RatingBar) findViewById(R.id.rbROAD);
+            cmdEnviar =(Button) findViewById(R.id.cmdEnviar);
+            cmbTransError = (Spinner) findViewById(R.id.cmbTransError);
+            txtComentarioU = (EditText) findViewById(R.id.txtComentarioU);
+            lblCaracteres = (TextView) findViewById(R.id.lblCaracteres);
 
-        setHandlers();
+            setHandlers();
 
-        fillSpinner();
-
+            fillSpinner();
+        }catch (Exception e){
+            Log.e("Mnu", e.getMessage());
+        }
     }
 
     public void GuardaRating(View view) {

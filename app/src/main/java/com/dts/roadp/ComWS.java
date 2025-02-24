@@ -7529,7 +7529,7 @@ public class ComWS extends PBase {
 
 		try {
 
-			msgbox("Envio de pedidos parciales " + gl.enviaPedidosParcial);
+			//msgbox("Envio de pedidos parciales " + gl.enviaPedidosParcial);
 
 			if (getTest() == 1) {
 				scon = 1;
@@ -8508,7 +8508,7 @@ public class ComWS extends PBase {
 
 			dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
-					//startActivity(new Intent(ComWS.this, rating.class));
+					startActivity(new Intent(ComWS.this, rating.class));
 					ComWS.super.finish();
 				}
 			});

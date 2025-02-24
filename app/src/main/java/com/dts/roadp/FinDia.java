@@ -3094,7 +3094,9 @@ public class FinDia extends PBase {
 	//region Activity Events
 	@Override
 	public void onBackPressed() {
-		if (idle) super.onBackPressed();
+		if (idle){
+            super.onBackPressed();
+        }
 	}
 
     @Override
