@@ -473,7 +473,8 @@ public class Repesaje extends PBase {
 
                 umstk=app.umStock(prodid);
                 umven=app.umVenta(prodid);
-                factbolsa = app.factorPres(prodid,umven,umstk);
+                //factbolsa = app.factorPres(prodid,umven,umstk);
+                factbolsa = DameProporcionVenta(prodid, gl.cliente, gl.nivel);//#CKFK Modifiqué la forma de obtener el factor de conversion
 
                 if (factbolsa > 1) {
                     ttotal = tcantidad * factbolsa * tprecio;
@@ -504,7 +505,8 @@ public class Repesaje extends PBase {
 
             umstk=app.umStock(prodid);
             umven=app.umVenta(prodid);
-            factbolsa = app.factorPres(prodid,umven,umstk);
+            //factbolsa = app.factorPres(prodid,umven,umstk);
+            factbolsa = DameProporcionVenta(prodid, gl.cliente, gl.nivel);//#CKFK Modifiqué la forma de obtener el factor de conversion
 
             if (factbolsa > 1) {
                 ttotal = tcantidad * factbolsa * tprecio;
@@ -529,7 +531,8 @@ public class Repesaje extends PBase {
 
             umstk=app.umStock(prodid);
             umven=app.umVenta(prodid);
-            factbolsa = app.factorPres(prodid,umven,umstk);
+            //factbolsa = app.factorPres(prodid,umven,umstk);
+            factbolsa = DameProporcionVenta(prodid, gl.cliente, gl.nivel);//#CKFK Modifiqué la forma de obtener el factor de conversion
 
             if (factbolsa > 1) {
                 ttotal = tcantidad * factbolsa * tprecio;
@@ -690,6 +693,101 @@ public class Repesaje extends PBase {
         }
 
         return true;
+    }
+
+    private double DameProporcionVenta(String vProd , String vCliente , int vNivelPrec) {
+        String UnidadInventario="",UnidadVentaCliente="";
+        double varZ=0,varP=0,proporcion=0;
+
+        try {
+            UnidadInventario = DameUnidadMinimaVenta(vProd);//Depende de la unidad mínima de venta del producto
+            UnidadVentaCliente = app.umVenta(vProd);//'Depende de la lista de precio del cliente
+
+            if ((!UnidadInventario.equalsIgnoreCase(UnidadVentaCliente)) && (EsUnidadSuperior(UnidadInventario, vProd))
+                    && (EsUnidadSuperior(UnidadVentaCliente, vProd)) && (!gl.umpeso.equalsIgnoreCase(UnidadVentaCliente))) {
+                varZ = DameFactor(UnidadInventario, vProd);
+                varP = DameFactor(UnidadVentaCliente, vProd);
+                if (varP>0) proporcion = varZ / varP;
+            } else if ((UnidadInventario.equalsIgnoreCase(UnidadVentaCliente)) | (UnidadVentaCliente.equalsIgnoreCase(gl.umpeso))) {
+                proporcion = 1;
+            } else{
+                proporcion = DameFactor(UnidadInventario, vProd);
+            }
+        } catch (Exception e) {
+            msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+        }
+
+        return proporcion;
+    }
+
+    public String DameUnidadMinimaVenta(String vProd )  {
+        Cursor dt;
+        String ss;
+
+        try {
+            sql = "SELECT UNIDBAS FROM P_PRODUCTO WHERE (CODIGO='"+vProd+"') AND (ES_PROD_BARRA=0)";
+            dt = Con.OpenDT(sql);
+            if (dt.getCount()>0) {
+                dt.moveToFirst();
+                ss=dt.getString(0);
+                if(dt!=null) dt.close();
+
+                return ss;
+            }
+
+            sql="SELECT UM_SALIDA FROM P_PRODUCTO WHERE (CODIGO='"+vProd+"') AND (ES_PROD_BARRA=1)";
+            dt = Con.OpenDT(sql);
+            if (dt.getCount()>0) {
+                dt.moveToFirst();
+                ss=dt.getString(0);
+                if (dt!=null) dt.close();
+
+                return ss;
+            } else {
+                return "";
+            }
+        } catch (Exception e) {
+            msgbox("Ocurrió un error obteniendo la unidad mínima de venta "+e.getMessage());
+            return "";
+        }
+    }
+
+    public boolean EsUnidadSuperior(String vUM,String vProd )  {
+        Cursor dt;
+        int cnt;
+
+        try {
+            sql = "SELECT * FROM P_FACTORCONV WHERE (UNIDADSUPERIOR='"+vUM+"') AND (PRODUCTO='"+vProd+"') AND (UNIDADSUPERIOR<>'"+gl.umpeso+"')";
+            dt = Con.OpenDT(sql);
+            cnt=dt.getCount();
+            if (dt!=null) dt.close();
+
+            return (cnt>0);
+        } catch (Exception e) {
+            msgbox(e.getMessage());
+            return false;
+        }
+    }
+
+    public double DameFactor(String vUM,String vProd) {
+        Cursor dt;
+        double val;
+
+        try {
+            sql = "SELECT FACTORCONVERSION FROM P_FACTORCONV WHERE (UNIDADSUPERIOR='"+vUM+"')  AND (PRODUCTO='"+vProd+"')";
+            dt = Con.OpenDT(sql);
+            if(dt.getCount()>0) {
+                dt.moveToFirst();
+                val=dt.getDouble(0);
+                if (dt!=null) dt.close();
+
+                return val;
+            } else {
+                return 0;
+            }
+        } catch (Exception e) {
+            msgbox(e.getMessage());return 0;
+        }
     }
 
     //endregion

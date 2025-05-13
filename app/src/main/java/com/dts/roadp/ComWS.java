@@ -5503,6 +5503,8 @@ public class ComWS extends PBase {
 
 					if (envioparcial) dbld.clear();
 
+					dbld.add("IF NOT EXISTS(SELECT COREL FROM D_FACTURA WHERE COREL = '" + cor + "')  " +
+							" BEGIN ");
 					dbld.insert("D_FACTURA", "WHERE COREL='" + cor + "'");
 					dbld.insert("D_FACTURAD", "WHERE COREL='" + cor + "'");
 					dbld.insert("D_FACTURAP", "WHERE COREL='" + cor + "'");
@@ -5520,6 +5522,7 @@ public class ComWS extends PBase {
 
 					dbld.add("UPDATE P_COREL SET CORELULT=" + ccorel + "  WHERE RUTA='" + fruta + "' " +
 							"AND CORELULT<" + ccorel);
+					dbld.add(" END ");
 
 					if (envioparcial && !esEnvioManual) {
 						if (commitSQL() == 1) {
@@ -6045,6 +6048,9 @@ public class ComWS extends PBase {
 
 					if (envioparcial) dbld.clear();
 
+					dbld.add("IF NOT EXISTS(SELECT COREL FROM D_NOTACRED WHERE COREL = '" + cor + "' " +
+							" AND TIPO_DOCUMENTO = '"+tipodocumento+"') " +
+							" BEGIN ");
 					dbld.insert("D_NOTACRED", "WHERE COREL='" + cor + "' AND TIPO_DOCUMENTO = '"+tipodocumento+"'");
 					dbld.insert("D_NOTACREDD", "WHERE COREL='" + cor + "' AND TIPO_DOCUMENTO = '"+tipodocumento+"'");
 
@@ -6059,6 +6065,7 @@ public class ComWS extends PBase {
 						dbld.add("UPDATE P_CORREL_OTROS SET ACTUAL=" + ccorel + "  WHERE RUTA='" + fruta + "' AND TIPO = 'ND' " +
 								"AND ACTUAL <" + ccorel);
 					}
+					dbld.add(" END ");
 
 					if (envioparcial && !esEnvioManual) {
 						if (commitSQL() == 1) {
@@ -6140,8 +6147,11 @@ public class ComWS extends PBase {
 
 					if (envioparcial) dbld.clear();
 
+					dbld.add("IF NOT EXISTS(SELECT COREL FROM D_FACTURA WHERE COREL = '" + cor + "')  " +
+							" BEGIN ");
 					dbld.insert("D_CXC", "WHERE COREL='" + cor + "'");
 					dbld.insert("D_CXCD", "WHERE COREL='" + cor + "'");
+					dbld.add(" END ");
 
 					if (envioparcial && !esEnvioManual) {
 						if (commitSQL() == 1) {
@@ -6243,8 +6253,11 @@ public class ComWS extends PBase {
 
 					if (envioparcial) dbld.clear();
 
+					dbld.add("IF NOT EXISTS(SELECT COREL FROM D_DEPOS WHERE COREL = '" + cor + "') " +
+							" BEGIN ");
 					dbld.insert("D_DEPOS", "WHERE COREL='" + cor + "'");
 					dbld.insert("D_DEPOSD", "WHERE COREL='" + cor + "'");
+					dbld.add(" END ");
 
 					if (envioparcial && !esEnvioManual) {
 						if (commitSQL() == 1) {

@@ -299,58 +299,78 @@ public class activity_despacho_list extends PBase {
 
     }
 
-    private void setModificacion(String scna){
+    private void setModificacion(String scna) {
 
-        try
-        {
+        gl.coddespacho = gl.iddespacho;
 
-            if (scna=="" || scna.isEmpty()){
-                msgbox("Seleccione una razón de modificación");
-            }else{
-                gl.coddespacho=gl.iddespacho;
+        if (scna == null || scna.trim().isEmpty()) {
+            msgbox("⚠️ Seleccione una razón de modificación.");
+            return;
+        }
 
-                clsClasses.clsDs_pedidod item;
-                clsClasses.clsDs_pedido iteme;
+        if (gl.coddespacho == null || gl.coddespacho.trim().isEmpty()) {
+            msgbox("⚠️ El ID del despacho no es válido.");
+            return;
+        }
 
-                clsDs_pedidodObj Ds_pedidodObj=new clsDs_pedidodObj(this,Con,db);
-                Ds_pedidodObj.fill("WHERE COREL='"+gl.coddespacho+"'");
+        clsClasses.clsDs_pedidod item;
+        clsClasses.clsDs_pedido iteme;
 
-                clsDs_pedidoObj Ds_pedidoObj=new clsDs_pedidoObj(this,Con,db);
-                Ds_pedidoObj.fill("WHERE COREL='"+gl.coddespacho+"'");
+        db.beginTransaction();
+        try {
+            // Eliminar registros anteriores de forma segura
+            int deletedRows = db.delete("D_DESPACHOD_NO_ENTREGADO", "COREL = ?", new String[]{gl.coddespacho});
+            addlog("setModificacion", "Registros eliminados: " + deletedRows, "");
 
-                iteme=Ds_pedidoObj.items.get(0);
+            // Cargar detalles y encabezado del pedido
+            clsDs_pedidodObj Ds_pedidodObj = new clsDs_pedidodObj(this, Con, db);
+            Ds_pedidodObj.fill("WHERE COREL = '" + gl.coddespacho + "'");
 
-                for (int i = 0; i <Ds_pedidodObj.count; i++) {
+            clsDs_pedidoObj Ds_pedidoObj = new clsDs_pedidoObj(this, Con, db);
+            Ds_pedidoObj.fill("WHERE COREL = '" + gl.coddespacho + "'");
 
-                    item=Ds_pedidodObj.items.get(i);
-
-                    ins.init("D_DESPACHOD_NO_ENTREGADO");
-                    ins.add("COREL",item.corel);
-                    ins.add("ANULADO",item.anulado);
-                    ins.add("PRODUCTO",item.producto);
-                    ins.add("CANTSOLICITADA",item.cant);
-                    ins.add("UMVENTASOLICITADA",item.umventa);
-                    ins.add("PESOSOLICITADO",item.peso);
-                    ins.add("CANTENTREGADA",0);
-                    ins.add("UMVENTAENTREGADA","");
-                    ins.add("PESOENTREGADO",0);
-                    ins.add("IDRAZON",scna);
-                    ins.add("STATCOM","N");
-
-                    db.execSQL(ins.sql());
-
-                }
-
-                iteme.bandera = "S";
-                Ds_pedidoObj.updateBandera(iteme);
-
-                listItems();
-
+            if (Ds_pedidoObj.items.isEmpty()) {
+                msgbox("⚠️ No se encontró información del encabezado del pedido.");
+                return;
             }
 
+            iteme = Ds_pedidoObj.items.get(0);
+
+            // Insertar nuevos registros de no entregado
+            for (int i = 0; i < Ds_pedidodObj.count; i++) {
+                item = Ds_pedidodObj.items.get(i);
+
+                ins.init("D_DESPACHOD_NO_ENTREGADO");
+                ins.add("COREL", item.corel);
+                ins.add("ANULADO", item.anulado);
+                ins.add("PRODUCTO", item.producto);
+                ins.add("CANTSOLICITADA", item.cant);
+                ins.add("UMVENTASOLICITADA", item.umventa);
+                ins.add("PESOSOLICITADO", item.peso);
+                ins.add("CANTENTREGADA", 0);
+                ins.add("UMVENTAENTREGADA", "");
+                ins.add("PESOENTREGADO", 0);
+                ins.add("IDRAZON", scna);
+                ins.add("STATCOM", "N");
+
+                db.execSQL(ins.sql());
+            }
+
+            // Marcar el encabezado como modificado
+            iteme.bandera = "S";
+            Ds_pedidoObj.updateBandera(iteme);
+
+            db.setTransactionSuccessful();
+
+            // Confirmación al usuario
+            msgbox("✅ Modificación registrada exitosamente.");
+            addlog("setModificacion", "Modificación completada para despacho " + gl.coddespacho, "");
+            listItems();
         } catch (SQLException e) {
-            addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
-            mu.msgbox("Error : " + e.getMessage());
+            addlog("setModificacion", "Error: " + e.getMessage(), sql);
+            mu.msgbox("❌ Error durante la modificación: " + e.getMessage());
+        } finally {
+            db.endTransaction(); // Siempre ejecutar
         }
     }
 

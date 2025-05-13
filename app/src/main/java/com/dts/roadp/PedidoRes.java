@@ -138,8 +138,9 @@ public class PedidoRes extends PBase {
 
 		//AT20241107 Validar Monto Minimo por cliente
 		getMontoMinimoCliente();
-		//#CKFK20240928 Puse monto mínimo en comentario
-		//validaTotalMontoPedidos();
+
+		validaTotalMontoPedidos();
+
 	}
 
 	//region Events
@@ -534,7 +535,6 @@ public class PedidoRes extends PBase {
             }
 			if (cli_estandar) tipo_pedido="REGULAR";else tipo_pedido="EXTRARUTA";
 
-			
 			ins.init("D_PEDIDO");
 
 			ins.add("COREL",corel);
@@ -1036,7 +1036,7 @@ public class PedidoRes extends PBase {
 	}
 
 	private void validaTotalMontoPedidos() {
-		double mt,mm,mmac,mmp;
+		double mt,mm,mmac;//,mmp;
 
 		try {
 			montoMinimoNuevo();
@@ -1044,18 +1044,20 @@ public class PedidoRes extends PBase {
 			if (!cli_estandar) toastcent("Cliente extraruta");
 
 			mmac=montoActual();
-			mmp=montoPedidos();
-			mt=mmac+mmp;
+			//mmp=montoPedidos();
+			mt=mmac;//+mmp;
 
 			if (!incluye_cerrados) {
 				mt=monto_a+montop_a;
 			}
 			mm=montoMinimo();monto_minimo=mm;
 
+			tot=mt;
 			bandera_monto=0;
 			if (mt>=mm) bandera_monto=1;
 
-			if (bandera_monto==0) msgbox("El total del pedido ("+mu.frmcur(mt)+") es menor al pedido mínimo ("+mu.frmcur(mm)+"). ");
+			//#CKFK20250314 Quité el mensaje
+			//if (bandera_monto==0) msgbox("El total del pedido ("+mu.frmcur(mt)+") es menor al pedido mínimo ("+mu.frmcur(mm)+"). ");
 
 			sql="UPDATE D_PEDIDO SET CUMPLE_MONTO_MINIMO="+bandera_monto+" "+
 				"WHERE (CLIENTE='"+gl.cliente+"') AND (ANULADO='N') AND (FECHAENTR="+fechae+")";
@@ -1306,8 +1308,7 @@ public class PedidoRes extends PBase {
 					String mesFormateado = (mesActual < 10)? CERO + String.valueOf(mesActual):String.valueOf(mesActual);
 					lblFecha.setText(diaFormateado + BARRA + mesFormateado + BARRA + year);
 
-					//#CKFK20240928 Puse monto mínimo en comentario
-					//validaTotalMontoPedidos();
+					validaTotalMontoPedidos();
 				}
 			},anio, mes, dia);
 
