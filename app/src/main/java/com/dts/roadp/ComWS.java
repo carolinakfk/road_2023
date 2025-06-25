@@ -6147,7 +6147,7 @@ public class ComWS extends PBase {
 
 					if (envioparcial) dbld.clear();
 
-					dbld.add("IF NOT EXISTS(SELECT COREL FROM D_FACTURA WHERE COREL = '" + cor + "')  " +
+					dbld.add("IF NOT EXISTS(SELECT COREL FROM D_CXC WHERE COREL = '" + cor + "')  " +
 							" BEGIN ");
 					dbld.insert("D_CXC", "WHERE COREL='" + cor + "'");
 					dbld.insert("D_CXCD", "WHERE COREL='" + cor + "'");
