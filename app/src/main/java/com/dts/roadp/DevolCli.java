@@ -559,6 +559,7 @@ public class DevolCli extends PBase {
 				ins.add("IMPRES",0);
 				ins.add("CERTIFICADA_DGI", 0);
 				ins.add("TIPO_DOCUMENTO", "NC");
+				ins.add("FECHA_SISTEMA", du.getActDateTime());
 
 				db.execSQL(ins.sql());
 
@@ -568,7 +569,11 @@ public class DevolCli extends PBase {
 				int vNroDF;
 				String vSerie;
 
-				vNroDF = Integer.valueOf(gl.dvcorrelnc.substring(3,9));
+				// asegura que el substring no se pase del largo de la cadena
+				String parteNumerica = gl.dvcorrelnc.substring(3, Math.min(9, gl.dvcorrelnc.length()));
+				vNroDF = Integer.valueOf(parteNumerica);
+
+// la serie se mantiene igual (3 primeros caracteres, rellenados a la derecha si hace falta)
 				vSerie = StringUtils.right("000" + gl.dvcorrelnc.substring(0,3), 3);
 
 				NotaCredito.gDGen.iTpEmis = "01";

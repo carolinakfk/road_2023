@@ -21,12 +21,14 @@
 
     <TextView
         android:id="@+id/lblPNum"
-        android:layout_width="match_parent"
+        android:layout_width="351dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/lblETipo"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:layout_marginEnd="36dp"
+        android:layout_marginEnd="3dp"
+        android:layout_marginRight="60dp"
+        android:layout_toStartOf="@+id/imageView30"
         android:layout_weight="1"
         android:width="0dip"
         android:maxLines="2"
@@ -57,11 +59,22 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_below="@+id/lblPValor"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="0dp"
-        android:layout_marginEnd="10dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginEnd="5dp"
+        android:layout_toStartOf="@+id/imgEnviado"
         android:padding="3dp"
         android:src="@drawable/standby" />
+
+    <ImageView
+        android:id="@+id/imgEnviado"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_below="@+id/lblPValor"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="3dp"
+        android:layout_marginEnd="5dp"
+        android:padding="3dp"
+        android:src="@drawable/icok" />
 
     <TextView
         android:id="@+id/lblCufe"
@@ -72,7 +85,7 @@
         android:text="CUFE: "
         android:textColor="#000000"
         android:textStyle="bold"
-        tools:visibility="gone" />
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/textCufe"

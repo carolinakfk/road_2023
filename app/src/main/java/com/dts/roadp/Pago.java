@@ -1,7 +1,11 @@
 package com.dts.roadp;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Objects;
 
 import com.dts.roadp.clsClasses.clsCobro;
 
@@ -12,13 +16,17 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.TextView;
@@ -524,10 +532,78 @@ public class Pago extends PBase {
 	    }
 		
 	}
-	
+
+	private AlertDialog DialogB = null;
 	public void showBancoDialog() {
+		try {
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setTitle("Banco");
+			builder.setCancelable(false);
+
+			final EditText input = new EditText(this);
+			input.setHint("Filtrar banco...");
+			input.setInputType(InputType.TYPE_CLASS_TEXT);
+			LinearLayout.LayoutParams params =
+					new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
+			params.setMargins(20, 20, 20, 30);
+			input.setLayoutParams(params);
+
+			// 2. Adaptador con filtro
+			final ArrayAdapter<String> adapter = new ArrayAdapter<>(
+					this,
+					android.R.layout.simple_list_item_single_choice,
+					new ArrayList<>(bname)
+			);
+
+			final ListView listView = new ListView(this);
+			listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+			listView.setAdapter(adapter);
+
+			LinearLayout layout = new LinearLayout(this);
+			layout.setOrientation(LinearLayout.VERTICAL);
+			layout.addView(input);
+			layout.addView(listView);
+
+			builder.setView(layout);
+
+			input.addTextChangedListener(new TextWatcher() {
+				@Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+				@Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+					adapter.getFilter().filter(s);
+				}
+				@Override public void afterTextChanged(Editable s) {}
+			});
+
+			listView.setOnItemClickListener((parent, view, position, id) -> {
+				try {
+					String seleccionado = adapter.getItem(position);
+					int originalIndex = bname.indexOf(seleccionado);
+
+					bc = bcode.get(originalIndex);
+					bn = bname.get(originalIndex);
+					inputNumero();
+
+					DialogB.dismiss();
+				} catch (Exception e) {
+					addlog(Objects.requireNonNull(new Object() {
+                    }.getClass().getEnclosingMethod()).getName(), e.getMessage(), sql);
+					DialogB.dismiss();
+				}
+			});
+
+			builder.setPositiveButton("Salir", (dialog, which) -> dialog.dismiss());
+
+			DialogB = builder.create();
+			DialogB.show();
+		} catch (Exception e) {
+			addlog(Objects.requireNonNull(new Object() {
+            }.getClass().getEnclosingMethod()).getName(), e.getMessage(), "");
+		}
+	}
+
+	public void showBancoDialog_() {
 		final AlertDialog Dialog;
-		   
+
 	    final String[] selitems = new String[bname.size()];
 	    for (int i = 0; i < bname.size(); i++) {
 	    	selitems[i] = bname.get(i);
@@ -539,26 +615,21 @@ public class Pago extends PBase {
 			mMenuDlg.setCancelable(false);
 
 			mMenuDlg.setSingleChoiceItems(selitems , -1,
-					new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int item) {
-							try {
-								bc=bcode.get(item);
-								bn=bname.get(item);
-								inputNumero();
+                    (dialog, item) -> {
+                        try {
+                            bc=bcode.get(item);
+                            bn=bname.get(item);
+                            inputNumero();
 
-								dialog.dismiss();
-							} catch (Exception e) {
-								addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
-								dialog.dismiss();
-							}
-						}
-					});
+                            dialog.dismiss();
+                        } catch (Exception e) {
+                            addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
+                            dialog.dismiss();
+                        }
+                    });
 
-			mMenuDlg.setPositiveButton("Salir", new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-				}
-			});
+			mMenuDlg.setPositiveButton("Salir", (dialog, which) -> {
+            });
 
 			Dialog = mMenuDlg.create();
 			Dialog.show();

@@ -2482,25 +2482,21 @@ public class FinDia extends PBase {
 
             dialog1.setIcon(R.drawable.ic_quest);
 
-            dialog1.setPositiveButton("Si", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
+            dialog1.setPositiveButton("Si", (dialog, which) -> {
 
-                    if ( buildReportsTOL()){
-                        if (imprimeCierreZ()){
-                            corelz+=1;
-                            claseFinDia.updateGrandTotalCorelZ(gSumados,corelz);
-                        }
-                   } else {
-                       msgAskCierreIncompleto("No se pudo generar el reporte Z");
-                   }
-                }
+                if ( buildReportsTOL()){
+                    if (imprimeCierreZ()){
+                        corelz+=1;
+                        claseFinDia.updateGrandTotalCorelZ(gSumados,corelz);
+                    }
+               } else {
+                   msgAskCierreIncompleto("No se pudo generar el reporte Z");
+               }
             });
 
-            dialog1.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    msgAskCierreIncompleto("Proceso de fin de día incompleto");
-                }
-            });
+            dialog1.setNegativeButton("No", (dialog, which) ->
+                    msgAskCierreIncompleto("Proceso de fin de día incompleto")
+            );
 
             dialog1.show();
         } catch (Exception e) {

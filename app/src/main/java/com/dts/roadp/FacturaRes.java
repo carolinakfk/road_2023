@@ -1357,6 +1357,7 @@ public class FacturaRes extends PBase {
 				ins.add("IMPRES",0);
 				ins.add("CERTIFICADA_DGI", 0);
 				ins.add("TIPO_DOCUMENTO", "NC");
+				ins.add("FECHA_SISTEMA", du.getActDateTime());
 
 				db.execSQL(ins.sql());
 

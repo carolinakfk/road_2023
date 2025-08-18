@@ -401,6 +401,35 @@
         android:visibility="invisible" />
 
     <RelativeLayout
+        android:id="@+id/relImpClientes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/relativeLayout1"
+        android:layout_marginEnd="5dp"
+        android:layout_toStartOf="@+id/relPrecio">
+
+        <ImageView
+            android:id="@+id/ImageView03"
+            android:layout_width="80dp"
+            android:layout_height="56dp"
+            android:layout_alignParentTop="true"
+            android:clickable="true"
+            android:onClick="askClientes"
+            android:src="@drawable/transfer" />
+
+        <TextView
+            android:id="@+id/TextView01"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/ImageView03"
+            android:layout_alignRight="@+id/ImageView03"
+            android:layout_alignParentLeft="true"
+            android:gravity="center_horizontal"
+            android:text="Clientes"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+    </RelativeLayout>
+
+    <RelativeLayout
         android:id="@+id/relExist"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -497,7 +526,7 @@
 
     <RelativeLayout
         android:id="@+id/relClientes"
-        android:layout_width="88dp"
+        android:layout_width="95dp"
         android:layout_height="113dp"
         android:layout_alignTop="@id/textView1"
         android:layout_alignBottom="@id/textView1"
@@ -517,7 +546,7 @@
             android:layout_alignParentBottom="true"
             android:layout_marginBottom="0dp"
             android:gravity="center_horizontal"
-            android:text="Clientes"
+            android:text="Enviar Clientes"
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <ImageView
@@ -527,7 +556,7 @@
             android:layout_above="@+id/txtCliente"
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="0dp"
-            android:layout_marginBottom="0dp"
+            android:layout_marginBottom="1dp"
             android:padding="5dp"
             android:src="@drawable/clientes" />
     </RelativeLayout>

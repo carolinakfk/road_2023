@@ -66,6 +66,7 @@ public class ListAdaptCFDVB extends BaseAdapter {
 			holder.lblCertificada = (TextView) convertView.findViewById(R.id.lblCertificada);
 			holder.lblEstadoDGI = (TextView) convertView.findViewById(R.id.lblEstadoDGI);
 			holder.lblmontominimo= (TextView) convertView.findViewById(R.id.textView108);
+			holder.imgEnviado = convertView.findViewById(R.id.imgEnviado);
 
 
 			convertView.setTag(holder);
@@ -103,8 +104,18 @@ public class ListAdaptCFDVB extends BaseAdapter {
 			holder.lblCufe.setVisibility(View.GONE);
 			holder.lblCertificada.setVisibility(View.GONE);
 			holder.lblEstadoDGI.setVisibility(View.GONE);
+			holder.imgEnviado.setVisibility(View.GONE);
 
 			if (items.get(position).tipodoc==0) {
+				if (!items.get(position).Statcom.isEmpty()) {
+					holder.imgEnviado.setVisibility(View.VISIBLE);
+					if (items.get(position).Statcom.equalsIgnoreCase("S")) {
+						holder.imgEnviado.setImageResource(R.drawable.icok);
+					} else {
+						holder.imgEnviado.setImageResource(R.drawable.del_48);
+					}
+				}
+
 				if (items.get(position).banderamonto>0) {
 					if (items.get(position).banderamonto==1) {
 						holder.lblmontominimo.setTextColor(Color.RED);
@@ -124,7 +135,7 @@ public class ListAdaptCFDVB extends BaseAdapter {
 		if (items.get(position).bandera==1) {
             holder.img1.setVisibility(View.VISIBLE);
         } else {
-            holder.img1.setVisibility(View.INVISIBLE);
+            holder.img1.setVisibility(View.GONE);
         }
 
 		if (selectedIndex!= -1 && position == selectedIndex) {
@@ -140,7 +151,7 @@ public class ListAdaptCFDVB extends BaseAdapter {
 	static class ViewHolder {
 		TextView  lblFecha,lblDesc,lblValor, txtCufe, txtEstadoDGI, txtCertificada,
 				  lblCufe, lblEstadoDGI,lblCertificada,lblmontominimo;
-		ImageView img1;
+		ImageView img1, imgEnviado;
 	}
 
 }

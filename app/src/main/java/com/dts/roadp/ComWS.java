@@ -73,6 +73,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Objects;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -91,7 +92,7 @@ public class ComWS extends PBase {
 	private RelativeLayout ralBack;
 	private RelativeLayout relExist, relPedidos;
 	private RelativeLayout relPrecio;
-	private RelativeLayout relStock, relClientes;
+	private RelativeLayout relStock, relClientes, relImpClientes;
 	private TextView lblUser, lblPassword, txtVersion;
 	private EditText txtUser, txtPassword;
 	private CheckBox cbSuper;
@@ -130,6 +131,7 @@ public class ComWS extends PBase {
 	public AsyncCallRec wsRtask;
 	public AsyncCallSend wsStask;
 	public AsyncCallConfirm wsCtask;
+	public AsyncCallSendBitacora wsStaskBit;
 
 	private static String sstr, fstr, fprog, finf, ferr, fterr, idbg, dbg, ftmsg, esql, ffpos;
 	private int scon, running, pflag, stockflag, conflag;
@@ -195,6 +197,7 @@ public class ComWS extends PBase {
 		relStock = (RelativeLayout) findViewById(R.id.relStock);
 		RelativeLayout relPedidos = (RelativeLayout) findViewById(R.id.relPedidos);
 		relClientes = (RelativeLayout) findViewById(R.id.relClientes);
+		relImpClientes = findViewById(R.id.relImpClientes);
 
 		relPedidos.setVisibility(View.INVISIBLE);
 
@@ -466,18 +469,12 @@ public class ComWS extends PBase {
 			dialog.setMessage("¿Enviar datos?");
 			dialog.setCancelable(false);
 
-			dialog.setPositiveButton("Enviar", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					runSend();
-				}
-			});
+			dialog.setPositiveButton("Enviar", (dialog1, which) -> runSend());
 
-			dialog.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					lblEnv.setVisibility(View.VISIBLE);
-					imgEnv.setVisibility(View.VISIBLE);
-				}
-			});
+			dialog.setNegativeButton("Cancelar", (dialog2, which) -> {
+                lblEnv.setVisibility(View.VISIBLE);
+                imgEnv.setVisibility(View.VISIBLE);
+            });
 
 			dialog.show();
 		} catch (Exception e) {
@@ -1055,6 +1052,7 @@ public class ComWS extends PBase {
 
 			claseFindia.updateFinDia(du.getActDate());
 			claseFindia.updateComunicacion(2);
+			SetBitacora(2, 3);
 
 			ActualizaStatcom();
 			Eliminadas = claseFindia.eliminarTablasD();
@@ -1066,7 +1064,8 @@ public class ComWS extends PBase {
 			visibilidadBotones();
 
 		} catch (Exception e) {
-
+			msgbox(Objects.requireNonNull(new Object() {
+			}.getClass().getEnclosingMethod()).getName() + " - " + e.getMessage());
 		}
 	}
 
@@ -1129,6 +1128,34 @@ public class ComWS extends PBase {
 
 	}
 
+	public void askClientes(View view) {
+
+		try {
+			AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+
+			relImpClientes.setVisibility(View.INVISIBLE);
+
+			dialog.setTitle("Clientes Ruta");
+			dialog.setMessage("¿Actualizar clientes?");
+			dialog.setCancelable(false);
+
+			dialog.setPositiveButton("Actualizar", (dialog1, which) -> runClientes());
+
+			dialog.setNegativeButton("Cancelar", (dialog2, which) -> relImpClientes.setVisibility(View.VISIBLE));
+
+
+			dialog.show();
+		} catch (Exception e) {
+			addlog(new Object() {
+			}.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
+		}
+		if (isbusy == 1) {
+			toastcent("Por favor, espere que se termine la tarea actual.");
+			return;
+		}
+
+	}
+
 	public void askPrecios(View view) {
 
 		try {
@@ -1140,17 +1167,9 @@ public class ComWS extends PBase {
 			dialog.setMessage("¿Actualizar precios?");
 			dialog.setCancelable(false);
 
-			dialog.setPositiveButton("Actualizar", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					runPrecios();
-				}
-			});
+			dialog.setPositiveButton("Actualizar", (dialog1, which) -> runPrecios());
 
-			dialog.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					relPrecio.setVisibility(View.VISIBLE);
-				}
-			});
+			dialog.setNegativeButton("Cancelar", (dialog2, which) -> relPrecio.setVisibility(View.VISIBLE));
 
 			dialog.show();
 		} catch (Exception e) {
@@ -1181,37 +1200,31 @@ public class ComWS extends PBase {
 			dialog.setMessage("¿Recargar inventario?");
 			dialog.setCancelable(false);
 
-			dialog.setPositiveButton("Actualizar", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
+			dialog.setPositiveButton("Actualizar", (dialog1, which) -> {
 
-					long vfecha = clsAppM.fechaFactTol(du.getActDate());
-					long aFecha = du.getActDate();
-					String fechav = du.sfecha(vfecha);
-					String fechaa = du.sfecha(aFecha);
+                long vfecha = clsAppM.fechaFactTol(du.getActDate());
+                long aFecha = du.getActDate();
+                String fechav = du.sfecha(vfecha);
+                String fechaa = du.sfecha(aFecha);
 
-					SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
-					Date strDate = null;
-					Date strDatea =null;
-					try {
-						strDate = sdf.parse(fechav);
-						strDatea = sdf.parse(fechaa);
-					} catch (ParseException e) {
-						e.printStackTrace();
-					}
-					if (strDatea.getTime() == strDate.getTime()) {
-						runRecarga();
-					}else{
-						msgbox("Las recargas de inventario deben corresponnder al mismo día de la carga inicial del inventario");
-					}
-				}
-			});
+                Date strDate = null;
+                Date strDatea =null;
+                try {
+                    strDate = sdf.parse(fechav);
+                    strDatea = sdf.parse(fechaa);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                if (strDatea.getTime() == strDate.getTime()) {
+                    runRecarga();
+                }else{
+                    msgbox("Las recargas de inventario deben corresponnder al mismo día de la carga inicial del inventario");
+                }
+            });
 
-			dialog.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					relStock.setVisibility(View.VISIBLE);
-				}
-			});
+			dialog.setNegativeButton("Cancelar", (dialog2, which) -> relStock.setVisibility(View.VISIBLE));
 
 
 			dialog.show();
@@ -1342,6 +1355,15 @@ public class ComWS extends PBase {
 	private void runRecarga() {
 		if(tieneCatalogo()) {
 			modo_recepcion = 4;
+			runRecepion();
+		} else {
+			msgbox("No tiene datos de la ruta, clientes y productos, debe hacer una carga de datos completa");
+		}
+	}
+
+	private void runClientes() {
+		if (tieneCatalogo()) {
+			modo_recepcion=5;
 			runRecepion();
 		} else {
 			msgbox("No tiene datos de la ruta, clientes y productos, debe hacer una carga de datos completa");
@@ -1487,6 +1509,18 @@ public class ComWS extends PBase {
     }
 
     // AT20211019
+	private void cargarTablasCliente() {
+		try	{
+			listItems.clear();
+			indicetabla=0; nombretabla="P_CLIENTE";
+			executaTabla();
+		} catch (Exception e) {
+			String ss = e.getMessage();
+			visibilidadBotones();
+		}
+
+	}
+
 	private void cargaTablasPrecio() {
 		try	{
 			listItems.clear();
@@ -3161,6 +3195,8 @@ public class ComWS extends PBase {
 			lblRec.setVisibility(View.VISIBLE);
 			imgRec.setVisibility(View.VISIBLE);
 
+			//#AT20250811 Guardar fecha carga, se crea el registro.
+			SetBitacora(1);
 			return true;
 
 		} catch (Exception e) {
@@ -3182,6 +3218,63 @@ public class ComWS extends PBase {
 			visibilidadBotones();
 		}
 
+	}
+
+	private void SetBitacora(int... fechas) {
+		try {
+			String vendedor = (gl.vend != null && !gl.vend.isEmpty()) ? gl.vend : "";
+			String ahora = du.getFechaCompleta();
+
+			ins.init("P_BITACORA_HH");
+			ins.add("IDDISPOSITIVO", gl.deviceId);
+			ins.add("RUTA", gl.ruta);
+			ins.add("VENDEDOR", vendedor);
+
+			String[] campos = { "FECHA_CARGA", "FECHA_FIN_DIA", "FECHA_ENVIO" };
+
+			for (int i = 0; i < campos.length; i++) {
+				boolean ponerFecha = false;
+				if (fechas != null) {
+					for (int f : fechas) {
+						if (f == (i + 1)) {
+							ponerFecha = true;
+							break;
+						}
+					}
+				}
+				ins.add(campos[i], ponerFecha ? ahora : "");
+			}
+
+			db.execSQL(ins.sql());
+		} catch (Exception e) {
+			msgbox(Objects.requireNonNull(new Object() {}.getClass().getEnclosingMethod()).getName()+" . "+e.getMessage());
+		}
+	}
+
+	public int GetIdBitacora() {
+		Cursor dt;
+		int IdBitacoraHH = 0;
+		try {
+
+			sql="SELECT IDBITACORAHH FROM P_BITACORA_HH " +
+					"WHERE IDDISPOSITIVO =  '"+gl.deviceId+"' " +
+					" AND RUTA = '"+gl.ruta+"'" +
+					" AND VENDEDOR = '"+gl.vend+"'";
+			dt=Con.OpenDT(sql);
+			dt.moveToFirst();
+
+			if (dt.getCount() > 0) {
+				IdBitacoraHH = dt.getInt(0);
+			}
+
+			if (dt != null) dt.close();
+
+		} catch (Exception e) {
+			msgbox(Objects.requireNonNull(new Object() {
+            }.getClass().getEnclosingMethod()).getName() + " - " + e.getMessage());
+		}
+
+		return IdBitacoraHH;
 	}
 
 	private void procesaParamsExt() {
@@ -4596,7 +4689,9 @@ public class ComWS extends PBase {
 					cargaTablasPrecio();
 				} else if(modo_recepcion == 4) {
 					cargaTablasRec();
-                }
+                } else if(modo_recepcion == 5) {
+					cargarTablasCliente();
+				}
 
             } else {
                 lblInfo.setText(fstr);
@@ -4729,6 +4824,8 @@ public class ComWS extends PBase {
 					wsCallbackPrecio();
 				} else if (modo_recepcion == 4) {
 			    	wsCallbackExist();
+				} else if (modo_recepcion == 5) {
+					wsCallbackCliente();
 				}
 			} catch (Exception e) {
 				Log.d("onPostExecute", e.getMessage());
@@ -5029,6 +5126,32 @@ public class ComWS extends PBase {
 				case 3:
 					nombretabla = "P_FACTORCONV"; break;
 				case 4:
+					procesaDatos();
+					ejecutar = false;
+					break;
+			}
+
+			if (ejecutar) executaTabla();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void wsCallbackCliente() {
+		boolean ejecutar=true;
+
+		cargastockpv=false;
+
+		try {
+			indicetabla++;
+
+			switch (indicetabla) {
+				case 1:
+					nombretabla = "P_CLIENTE"; break;
+				case 2:
+					nombretabla = "P_CLIRUTA"; break;
+				case 3:
 					procesaDatos();
 					ejecutar = false;
 					break;
@@ -7180,6 +7303,78 @@ public class ComWS extends PBase {
 
 	}
 
+	public boolean envioBitacora() {
+		Cursor DT;
+
+		try {
+			sql = "SELECT IDDISPOSITIVO, RUTA, VENDEDOR," +
+					"FECHA_CARGA, FECHA_FIN_DIA " +
+					"FROM P_BITACORA_HH";
+
+			DT = Con.OpenDT(sql);
+			if (DT.getCount() == 0) return false;
+
+			dbld.clear();
+			DT.moveToFirst();
+			while (!DT.isAfterLast()) {
+
+				String IdDispositivo = DT.getString(0);
+				String Ruta = DT.getString(1);
+				String Vendedor = DT.getString(2);
+				String Carga = DT.getString(3);
+				String FinDia = DT.getString(4);
+
+
+				String ss = "INSERT INTO P_BITACORA_HH " +
+						"(IDDISPOSITIVO, RUTA, VENDEDOR, FECHA_CARGA, FECHA_FIN_DIA, FECHA_ENVIO) VALUES (" +
+						"'" + IdDispositivo + "'," +
+						"'" + Ruta + "'," +
+						"'" + Vendedor + "'," +
+						"'" + Carga + "'," +
+						"'" + FinDia + "'," +
+						"'" + du.getFechaCompleta() + "'" +
+						")";
+
+				dbld.add(ss);
+
+				DT.moveToNext();
+			}
+
+			if (DT != null) DT.close();
+
+			if (getTest() == 1) {
+				scon = 1;
+			} else {
+				URL = URL_Remota;
+				if (getTest() == 1) scon = 1;
+			}
+
+			if (scon == 1) {
+				if (commitSQL() == 1) {
+					errflag = false;
+					db.execSQL("DELETE FROM P_BITACORA_HH");
+					return true;
+				} else {
+					errflag = true;
+					fterr += "\n" + sstr;
+					return false;
+				}
+			} else {
+				errflag = true;
+				fstr = "No se puede conectar al web service : " + sstr;
+				fterr += "\n" + fstr;
+				return false;
+			}
+		} catch (Exception e) {
+			errflag = true;
+			addlog(Objects.requireNonNull(new Object() {
+            }.getClass().getEnclosingMethod()).getName(), e.getMessage(), sql);
+			fstr = e.getMessage();
+		}
+
+		return false;
+	}
+
 	public void updateInventario() {
 		DU = new DateUtils();
 		String sFecha;
@@ -7614,6 +7809,7 @@ public class ComWS extends PBase {
 
 						claseFindia.updateComunicacion(2);
 						claseFindia.updateFinDia(du.getActDate());
+						SetBitacora(2, 3);
 
 						findiaactivo = gl.findiaactivo;
 						if (ultimoCierreFecha() == du.getActDate()) findiaactivo = true;
@@ -7625,6 +7821,7 @@ public class ComWS extends PBase {
 					}
 
 					fstr = "Envio completo ";
+
 					msgResultEnvio(senv);
 
 				} else {
@@ -7771,7 +7968,49 @@ public class ComWS extends PBase {
 		}
 
 	}
+	private class AsyncCallSendBitacora extends AsyncTask<String, Void, Void> {
 
+		@Override
+		protected Void doInBackground(String... params) {
+
+			try {;
+				envioBitacora();
+			} catch (Exception e) {
+				if (scon == 0) {
+					fstr = "No se puede conectar al web service : " + sstr;
+					//lblInfo.setText(fstr);
+				}
+			}
+
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			try {
+				startActivity(new Intent(ComWS.this, rating.class));
+				ComWS.super.finish();
+			} catch (Exception e) {
+				Log.d("onPostExecute", e.getMessage());
+			}
+		}
+
+		@Override
+		protected void onPreExecute() {
+			try {
+			} catch (Exception e) {
+			}
+		}
+
+		@Override
+		protected void onProgressUpdate(Void... values) {
+			try {
+				lblInfo.setText(fprog);
+			} catch (Exception e) {
+			}
+		}
+
+	}
 	//endregion
 
 	//region WS Confirm Methods
@@ -8519,12 +8758,13 @@ public class ComWS extends PBase {
 			dialog.setCancelable(false);
 			dialog.setIcon(R.drawable.ic_quest);
 
-			dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					startActivity(new Intent(ComWS.this, rating.class));
-					ComWS.super.finish();
-				}
-			});
+			dialog.setPositiveButton("OK", (dialog1, which) -> {
+
+				wsStaskBit = new AsyncCallSendBitacora();
+				wsStaskBit.execute();
+                //startActivity(new Intent(ComWS.this, rating.class));
+                //ComWS.super.finish();
+            });
 
 			dialog.show();
 		} catch (Exception e) {

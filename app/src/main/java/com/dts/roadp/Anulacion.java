@@ -373,7 +373,7 @@ public class Anulacion extends PBase {
 			
 			if (tipo==0) {
 				sql="SELECT D_PEDIDO.COREL,P_CLIENTE.NOMBRE,D_PEDIDO.FECHA,D_PEDIDO.TOTAL," +
-						"D_PEDIDO.BANDERA,D_PEDIDO.CUMPLE_MONTO_MINIMO,D_PEDIDO.FECHAENTR,D_PEDIDO.CLIENTE "+
+						"D_PEDIDO.BANDERA,D_PEDIDO.CUMPLE_MONTO_MINIMO,D_PEDIDO.FECHAENTR,D_PEDIDO.CLIENTE, D_PEDIDO.STATCOM "+
 					 "FROM D_PEDIDO INNER JOIN P_CLIENTE ON D_PEDIDO.CLIENTE=P_CLIENTE.CODIGO "+
 					 "WHERE (D_PEDIDO.ANULADO='N') AND (D_PEDIDO.STATCOM='N') ORDER BY D_PEDIDO.COREL DESC ";	
 			}
@@ -484,6 +484,7 @@ public class Anulacion extends PBase {
 						if (DT.getInt(5)==0) vItem.banderamonto=1;
 						fechae=DT.getLong(6);
 						cliid=DT.getString(7);
+						vItem.Statcom = DT.getString(8);
 					}
 
 					if (tipo==4 || tipo==5) vItem.Valor="";
@@ -2231,6 +2232,7 @@ public class Anulacion extends PBase {
 				ins.add("COREL_REFERENCIA", NotaDebitoEnc.Corel);
 				ins.add("ES_ANULACION", NotaDebitoEnc.EsAnulacion);
 				ins.add("CUFE_FACTURA", NotaDebitoEnc.CufeFactura);
+				ins.add("FECHA_SISTEMA", du.getActDateTime());
 
 				db.execSQL(ins.sql());
 

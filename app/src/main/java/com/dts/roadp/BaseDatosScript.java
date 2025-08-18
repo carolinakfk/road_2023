@@ -1083,6 +1083,7 @@ public class BaseDatosScript {
 					"[COREL_REFERENCIA] TEXT,"+
 					"[ES_ANULACION] INTEGER,"+
 					"[CUFE_FACTURA] TEXT,"+
+					"[FECHA_SISTEMA] INTEGER,"+
 					"PRIMARY KEY ([COREL], [TIPO_DOCUMENTO])"+
 					");";
 			database.execSQL(vSQL);
@@ -2726,6 +2727,17 @@ public class BaseDatosScript {
 			vSQL="CREATE INDEX T_FACTURAD_MODIF_IDX1 ON T_FACTURAD_MODIF(PRODUCTO)";
 			database.execSQL(vSQL);
 			vSQL="CREATE INDEX T_FACTURAD_MODIF_IDX2 ON T_FACTURAD_MODIF(ANULADO)";
+			database.execSQL(vSQL);
+
+			vSQL="CREATE TABLE [P_BITACORA_HH] ("+
+					"IDBITACORAHH INTEGER PRIMARY KEY AUTOINCREMENT,"+
+					"IDDISPOSITIVO TEXT,"+
+					"RUTA TEXT,"+
+					"VENDEDOR TEXT,"+
+					"FECHA_CARGA TEXT,"+
+					"FECHA_FIN_DIA TEXT,"+
+					"FECHA_ENVIO TEXT"+
+					");";
 			database.execSQL(vSQL);
 
 			return 1;

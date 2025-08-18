@@ -701,6 +701,7 @@ public class PedidoRes extends PBase {
                     ins.add("SERIEFACT",0);
                     ins.add("CORELFACT",0);
                     ins.add("IMPRES",0);
+					ins.add("FECHA_SISTEMA", du.getActDateTime());
 
                     db.execSQL(ins.sql());
 

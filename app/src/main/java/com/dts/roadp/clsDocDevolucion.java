@@ -131,7 +131,7 @@ public class clsDocDevolucion extends clsDocument {
         }
 
         try {
-            sql="SELECT N.RUTA,N.VENDEDOR,N.CLIENTE,N.TOTAL,N.FECHA,N.COREL, N.ANULADO, N.IMPRES "+
+            sql="SELECT N.RUTA,N.VENDEDOR,N.CLIENTE,N.TOTAL,N.FECHA_SISTEMA,N.COREL, N.ANULADO, N.IMPRES "+
                 "FROM D_NOTACRED N "+
                 "WHERE N.COREL = '"+corel+"'";
 
