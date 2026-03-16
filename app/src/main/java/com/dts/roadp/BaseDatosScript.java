@@ -1609,6 +1609,8 @@ public class BaseDatosScript {
 					"[CODDESC] INTEGER NOT NULL,"+
 					"[NOMBRE] TEXT NOT NULL,"+
 					"[ES_RECARGO] INT NOT NULL,"+
+					"[PORPORCENTAJE] TEXT NOT NULL,"+
+					"[PRIORIDAD] INT NOT NULL,"+
 					"PRIMARY KEY ([CLIENTE],[CTIPO],[PRODUCTO],[PTIPO],[TIPORUTA],[RANGOINI])"+
 					");";
 			database.execSQL(vSQL);
@@ -2530,6 +2532,9 @@ public class BaseDatosScript {
 					"[GLOBDESC] TEXT NOT NULL,"+
 					"[PORCANT] TEXT NOT NULL,"+
 					"[NOMBRE] TEXT NOT NULL,"+
+					"[ES_RECARGO] INT NOT NULL,"+
+					"[PORPORCENTAJE] INT NOT NULL,"+
+					"[PRIORIDAD] INT NOT NULL,"+
 					"PRIMARY KEY ([ID])"+
 					");";
 			database.execSQL(vSQL);
