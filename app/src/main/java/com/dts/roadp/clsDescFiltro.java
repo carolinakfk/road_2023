@@ -79,7 +79,8 @@ public class clsDescFiltro {
 		
 		try {
 			
-			vSQL="SELECT CLIENTE,CTIPO,PRODUCTO,PTIPO,TIPORUTA,RANGOINI,RANGOFIN,DESCTIPO,VALOR,GLOBDESC,PORCANT,FECHAINI,FECHAFIN,CODDESC,NOMBRE "+
+			vSQL="SELECT CLIENTE,CTIPO,PRODUCTO,PTIPO,TIPORUTA,RANGOINI,RANGOFIN,DESCTIPO,VALOR,GLOBDESC,PORCANT,FECHAINI,FECHAFIN,CODDESC, " +
+					"NOMBRE, ES_RECARGO, PORPORCENTAJE, PRIORIDAD "+
 				 "FROM P_DESCUENTO WHERE (CTIPO=0) OR "+
 				  "((CTIPO=1) AND (CLIENTE='" + cliid + "')) OR "+
 				  "((CTIPO=2) AND (CLIENTE='" + CTipoNeg + "')) OR "+
@@ -112,6 +113,9 @@ public class clsDescFiltro {
 						ins.add("GLOBDESC",DT.getString(9));
 						ins.add("PORCANT",DT.getString(10));
 						ins.add("NOMBRE",DT.getString(14));
+						ins.add("ES_RECARGO",DT.getInt(15));
+						ins.add("PORPORCENTAJE",DT.getString(16));
+						ins.add("PRIORIDAD",DT.getInt(17));
 						
 				    	db.execSQL(ins.sql());
 				    	
@@ -132,7 +136,7 @@ public class clsDescFiltro {
 		
 		
 		try {
-			vSQL="SELECT CLIENTE,CTIPO,PRODUCTO,PTIPO,TIPORUTA,RANGOINI,RANGOFIN,DESCTIPO,VALOR,GLOBDESC,PORCANT,FECHAINI,FECHAFIN,CODDESC,NOMBRE "+
+			vSQL="SELECT CLIENTE,CTIPO,PRODUCTO,PTIPO,TIPORUTA,RANGOINI,RANGOFIN,DESCTIPO,VALOR,GLOBDESC,PORCANT,FECHAINI,FECHAFIN,CODDESC,NOMBRE, ES_RECARGO* "+
 				 "FROM P_DESCUENTO WHERE (CTIPO=10) "+
 				 "AND (CLIENTE IN (SELECT DISTINCT CODIGO FROM P_CLIGRUPO WHERE CLIENTE='"+cliid+"'))  "+
 				 " AND ((FECHAINI<="+fecha+") AND (FECHAFIN>="+fecha+")) ";
@@ -159,6 +163,7 @@ public class clsDescFiltro {
 						ins.add("GLOBDESC",DT.getString(9));
 						ins.add("PORCANT",DT.getString(10));
 						ins.add("NOMBRE",DT.getString(14));
+						ins.add("ES_RECARGO",DT.getInt(15));
 						
 				    	db.execSQL(ins.sql());
 				    	
