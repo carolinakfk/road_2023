@@ -3,6 +3,7 @@ package com.dts.roadp;
         import java.io.BufferedReader;
         import java.io.BufferedWriter;
         import java.io.ByteArrayInputStream;
+        import java.io.File;
         import java.io.FileWriter;
         import java.io.IOException;
         import java.io.InputStream;
@@ -789,7 +790,8 @@ public class ComWSRec extends PBase {
             if (rc == 0) return true;
 
             try {
-                String fname = Environment.getExternalStorageDirectory() + "/roadcarga.txt";
+                //String fname = Environment.getExternalStorageDirectory() + "/roadcarga.txt";
+                String fname = new File( AppPaths.syncFold(appGlobals.app()),  "roadcarga.txt").getAbsolutePath();
                 wfile = new FileWriter(fname, false);
                 writer = new BufferedWriter(wfile);
             } catch (IOException e) {}

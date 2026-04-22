@@ -724,4 +724,22 @@ public class clsFinDia extends PBase{
         return  vFinDia;
     }
 
+    public int getCantDevoluciones(){
+        Cursor DT;
+        int result=0;
+
+        try
+        {
+            sql="SELECT COUNT(COREL) FROM D_NOTACRED";
+            DT=Con.OpenDT(sql);
+            DT.moveToFirst();
+            result = DT.getInt(0);
+        }catch (Exception e){
+            addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
+            msgbox("getCantFactura: " + e.getMessage());
+        }
+
+        return result;
+    }
+
 }

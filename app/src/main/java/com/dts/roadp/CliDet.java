@@ -46,7 +46,7 @@ public class CliDet extends PBase {
 	private TextView lblNom,lblRep,lblDir,lblAten,lblTel,lblGPS,lblDescripcionPago,lblTipologia;
 	private TextView lblCLim,lblCUsed,lblCDisp,lblCobro,lblDevol,lblCantDias,lblClientePago;
 	private TextView lblRuta,lblRuta2, lblDespacho, lblCanal, lblCanalsub,lblPrior,lblProv,lblDist,lblMMEstandar, lblMMExtraRuta;
-	private RelativeLayout relV,relP,relD,relCamara,relCanasta;
+	private RelativeLayout relV,relP,relD,relCamara,relCanasta,rlCobros;
 	private ImageView imgCobro,imgDevol,imgRoadTit, imgTel, imgWhatsApp, imgWaze, imgVenta, imgPreventa, imgDespacho, imgCamara, imgMap;
 	private EditText txtRuta;
 	private RadioButton chknc,chkncv;
@@ -113,6 +113,7 @@ public class CliDet extends PBase {
 		relD=(RelativeLayout) findViewById(R.id.relDespacho);
 		relCamara=(RelativeLayout) findViewById(R.id.relCamara);
         relCanasta=(RelativeLayout) findViewById(R.id.relCanastas);
+		rlCobros=(RelativeLayout) findViewById(R.id.rlCobros);
 
 		imgCobro= (ImageView) findViewById(R.id.imageView2);
 		imgDevol= (ImageView) findViewById(R.id.imageView1);
@@ -404,9 +405,9 @@ public class CliDet extends PBase {
 			Intent intento1 = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
 			if (clinue) {
-                URLfoto = new File(Environment.getExternalStorageDirectory() + "/RoadFotos/clinue/" + cod + ".jpg");
+                URLfoto = new File(AppPaths.roadFotosCliNue(this), cod + ".jpg");
             } else {
-                URLfoto = new File(Environment.getExternalStorageDirectory() + "/RoadFotos/" + cod + ".jpg");
+                URLfoto =new File(AppPaths.roadFotos(this), cod + ".jpg");
             }
 
 			intento1.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(URLfoto));
@@ -431,13 +432,10 @@ public class CliDet extends PBase {
 
 		try {
 
-		    if (clinue) {
-                path = (Environment.getExternalStorageDirectory() + "/RoadFotos/clinue/" + cod + ".jpg");
-            } else {
-                path = (Environment.getExternalStorageDirectory() + "/RoadFotos/" + cod + ".jpg");
-            }
-
-			File archivo = new File(path);
+			File archivo = new File(
+					clinue ? AppPaths.roadFotosCliNue(this) : AppPaths.roadFotos(this),
+					cod + ".jpg"
+			);
 
 			sql = "SELECT IMAGEN FROM P_CLIENTE_FACHADA WHERE CODIGO ='"+ cod +"'";
 			DT=Con.OpenDT(sql);
@@ -497,11 +495,12 @@ public class CliDet extends PBase {
 
 				ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-				if (clinue) {
-                    paht = (Environment.getExternalStorageDirectory() + "/RoadFotos/clinue/" + cod + ".jpg");
-                } else {
-                    paht = (Environment.getExternalStorageDirectory() + "/RoadFotos/" + cod + ".jpg");
-                }
+				File fotoFile = new File(
+						clinue ? AppPaths.roadFotosCliNue(this) : AppPaths.roadFotos(this),
+						cod + ".jpg"
+				);
+
+				paht = fotoFile.getAbsolutePath();
 
                 try {
                     Bitmap bitmap1 = BitmapFactory.decodeFile(paht);
@@ -908,8 +907,8 @@ public class CliDet extends PBase {
 		imgDB = false;
 		try {
 
-			path = (Environment.getExternalStorageDirectory() + "/RoadFotos/" + cod + ".jpg");
-			File archivo = new File(path);
+			//path = (Environment.getExternalStorageDirectory() + "/RoadFotos/" + cod + ".jpg");
+			File archivo = new File(AppPaths.roadFotos(this), cod+".jpg");
 
 			sql = "SELECT IMAGEN FROM P_CLIENTE_FACHADA WHERE CODIGO ='"+ cod +"'";
 			DT=Con.OpenDT(sql);
@@ -1380,8 +1379,12 @@ public class CliDet extends PBase {
             if (rt.equalsIgnoreCase("P")) relCanasta.setVisibility(View.GONE);
 
 			flag=false;
-			if (rt.equalsIgnoreCase("V") || rt.equalsIgnoreCase("T")) flag=true;
+			if ((rt.equalsIgnoreCase("V") && !gl.ruta_recolectora) || rt.equalsIgnoreCase("T")) flag=true;
 			if (flag) relV.setVisibility(View.VISIBLE);else relV.setVisibility(View.GONE);
+
+			flag = true;
+			if (rt.equalsIgnoreCase("V") && gl.ruta_recolectora) flag = false;
+			if (!flag)rlCobros.setVisibility(View.INVISIBLE);else rlCobros.setVisibility(View.VISIBLE);
 
 			flag=false;
 			if ((rt.equalsIgnoreCase("P") || rt.equalsIgnoreCase("T")) &&
@@ -1419,6 +1422,13 @@ public class CliDet extends PBase {
 				lblDevol.setVisibility(View.VISIBLE);
 				imgCobro.setVisibility(View.VISIBLE);
 				lblCobro.setVisibility(View.VISIBLE);
+			}
+
+			if (rt.equalsIgnoreCase("V") && gl.ruta_recolectora){
+				if(gl.media != 4){
+					imgDevol.setVisibility(View.INVISIBLE);
+					lblDevol.setVisibility(View.INVISIBLE);
+				}
 			}
 
 		} catch (Exception ex) 	{

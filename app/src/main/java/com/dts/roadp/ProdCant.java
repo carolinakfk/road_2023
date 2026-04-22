@@ -287,8 +287,8 @@ public class ProdCant extends PBase {
 			imgProd.setVisibility(View.INVISIBLE);
 			if (!mu.emptystr(prodimg)) {
 				try {
-					prodimg = Environment.getExternalStorageDirectory()+ "/RoadFotos/"+prodimg+".jpg";
-					File file = new File(prodimg); 
+					//prodimg = Environment.getExternalStorageDirectory()+ "/RoadFotos/"+prodimg+".jpg";
+					File file = new File(AppPaths.roadFotos(this), prodimg+".jpg");
 					if (file.exists()) {
 						try {
 							Bitmap bmImg = BitmapFactory.decodeFile(prodimg);

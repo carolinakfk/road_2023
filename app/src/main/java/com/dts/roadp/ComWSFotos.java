@@ -69,7 +69,7 @@ public class ComWSFotos extends PBase {
 
         System.setProperty("line.separator","\r\n");
 
-        rootdir= Environment.getExternalStorageDirectory()+"/RoadFotos/";
+        rootdir= AppPaths.roadFotos(this).getAbsolutePath();
 
         clsAppM = new AppMethods(this, gl, Con, db);
 
@@ -200,19 +200,21 @@ public class ComWSFotos extends PBase {
             resstr = response.toString();
 
             try {
-                //byte[] imgbytes = resstr.getBytes();
+                byte[] imgbytes = android.util.Base64.decode(resstr, android.util.Base64.DEFAULT);
 
-                byte[] imgbytes= Base64.decode(resstr, Base64.DEFAULT);
+                java.io.File outFile = new java.io.File(rootdir, idprod + ".jpg");
 
-                int bs=imgbytes.length;
+                try (java.io.FileOutputStream fos = new java.io.FileOutputStream(outFile);
+                     java.io.BufferedOutputStream bos = new java.io.BufferedOutputStream(fos)) {
 
-                FileOutputStream fos = new FileOutputStream(rootdir+idprod+".jpg");
-                BufferedOutputStream outputStream = new BufferedOutputStream(fos);
-                outputStream.write(imgbytes);
-                outputStream.close();
+                    bos.write(imgbytes);
+                    bos.flush();
+                    fos.getFD().sync();
+                }
 
             } catch (Exception ee) {
-                sstr = ee.getMessage();return 0;
+                sstr = ee.getMessage();
+                return 0;
             }
 
             sstr =""+resstr.length();

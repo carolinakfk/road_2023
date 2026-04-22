@@ -58,6 +58,7 @@
             android:layout_alignParentBottom="true"
             android:layout_marginBottom="5dp"
             android:adjustViewBounds="true"
+            android:onClick="creaBackup"
             android:src="@drawable/logo_nuevo" />
 
         <ImageView

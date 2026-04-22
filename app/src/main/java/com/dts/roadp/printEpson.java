@@ -103,7 +103,8 @@ public class printEpson extends printBase{
 		
 		try {
 			
-			File file1 = new File(Environment.getExternalStorageDirectory(), "/"+fname);
+			//File file1 = new File(Environment.getExternalStorageDirectory(), "/"+fname);
+			File file1 = new File(AppPaths.road(appGlobals.app()), fname);
 			ffile = new File(file1.getPath());
 					
 			FileInputStream fIn = new FileInputStream(ffile);

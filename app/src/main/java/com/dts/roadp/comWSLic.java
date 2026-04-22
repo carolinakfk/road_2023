@@ -28,6 +28,7 @@ import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 
@@ -895,7 +896,8 @@ public class comWSLic extends PBase {
         FileWriter wfile;
 
         try {
-            String fname = Environment.getExternalStorageDirectory()+"/roaderror.txt";
+            //String fname = Environment.getExternalStorageDirectory()+"/roaderror.txt";
+            String fname = new File( AppPaths.road(appGlobals.app()),  "roaderror.txt").getAbsolutePath();
 
             wfile=new FileWriter(fname,false);
             writer = new BufferedWriter(wfile);
@@ -1059,39 +1061,6 @@ public class comWSLic extends PBase {
         }
     }
 
-	/*@Override
-	protected void onResume() {
-		super.onResume();
-		try {
-			this.wakeLock.acquire();
-		} catch (Exception e) {
-			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"wakelock");
-		}
-	}
-
-	@Override
-	protected void onPause() {
-		try {
-			this.wakeLock.release();
-		} catch (Exception e) {
-			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"wakelock");
-		}
-		super.onPause();
-	}
-
-	@Override
-	protected void onDestroy(){
-		super.onDestroy();
-
-		this.wakelock.release();
-	}
-
-	@Override
-	public void onSaveInstanceState(Bundle icicle) {
-		super.onSaveInstanceState(icicle);
-		this.wakelock.release();
-	}
-	*/
 
     //endregion
 

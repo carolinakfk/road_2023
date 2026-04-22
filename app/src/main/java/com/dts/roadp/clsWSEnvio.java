@@ -20,6 +20,7 @@ import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 
@@ -300,7 +301,8 @@ public class clsWSEnvio {
 
         try {
 
-            String fname = Environment.getExternalStorageDirectory()+"/roadlog.txt";
+            //String fname = Environment.getExternalStorageDirectory()+"/roadlog.txt";
+            String fname = new File( AppPaths.road(appGlobals.app()),  "roadlog.txt").getAbsolutePath();
             wfile=new FileWriter(fname,true);
             writer = new BufferedWriter(wfile);
 

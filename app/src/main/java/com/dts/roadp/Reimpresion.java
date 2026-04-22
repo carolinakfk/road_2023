@@ -16,8 +16,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class Reimpresion extends PBase {
@@ -636,8 +638,6 @@ public class Reimpresion extends PBase {
 				corelNC=getCorelNotaCred(itemid);
 
 				if (!corelNC.isEmpty()){
-					/*fdev=new clsDocDevolucion(this,prn.prw,gl.peMon,gl.peDecImp, "printnc.txt");
-					fdev.deviceid =gl.numSerie;*/
 
 					fdev.buildPrint(corelNC, 1, "TOL");
 					toast("Reimpresion de factura y nota de credito generada");
@@ -676,21 +676,12 @@ public class Reimpresion extends PBase {
 
 			existenciaC=tieneCanasta(corel);
 			existenciaP = "";
-			//existenciaP=tienePaseante(corel);
 
-			//if(existenciaC.isEmpty() && !existenciaP.isEmpty()) impres=1;
 			if(!existenciaC.isEmpty() && existenciaP.isEmpty()) impres=2;
-			//if(existenciaC.isEmpty() && existenciaP.isEmpty()) impres=3;
 
 			if (prn_can.isEnabled()) {
 
 				String vModo=(gl.peModal.equalsIgnoreCase("TOL")?"TOL":"*");
-				/*try {
-					if(impres==0 || impres==1){
-						fpaseantebod.buildPrint(corel,0,vModo);
-					}
-				} catch (Exception e) {
-				}*/
 
 				try {
 					if(impres==0 || impres==2){
@@ -700,23 +691,13 @@ public class Reimpresion extends PBase {
 				} catch (Exception e) {
 				}
 
-				/*if(impres==0) {
-					prn_paseante.printask(printcallback, "printpaseante.txt");
-				}else if(impres==1) {
-					prn_paseante.printask(printcallback, "printpaseante.txt");
-				}else */
-
-					if(impres==2) {
+				if(impres==2) {
 					prn_can.printask(printcallback, "printdevcan.txt");
 				}
 
 			}else if(!prn_can.isEnabled()){
 
 				String vModo=(gl.peModal.equalsIgnoreCase("TOL")?"TOL":"*");
-
-				/*if(impres==0 || impres==1){
-					fpaseantebod.buildPrint(corel,0,vModo);
-				}*/
 
 				if(impres==0 || impres==2){
 					imprimecan=true;
@@ -742,8 +723,6 @@ public class Reimpresion extends PBase {
 			existenciaP=tienePaseante(corel);
 
 			if(existenciaC.isEmpty() && !existenciaP.isEmpty()) impres=1;
-			/*if(!existenciaC.isEmpty() && existenciaP.isEmpty()) impres=2;
-			if(existenciaC.isEmpty() && existenciaP.isEmpty()) impres=3;*/
 
 			impres=1;
 
@@ -757,38 +736,12 @@ public class Reimpresion extends PBase {
 				} catch (Exception e) {
 				}
 
-				/*try {
-					if(impres==0 || impres==2){
-						imprimecan=true;
-						fcanastabod.buildPrint(corel,0, vModo);
-					}
-				} catch (Exception e) {
-				}*/
-
 				if(impres==0) {
 					prn_paseante.printask(printcallback, "printpaseante.txt");
 				}else if(impres==1) {
 					prn_paseante.printask(printcallback, "printpaseante.txt");
 				}
-				/*else if(impres==2) {
-					prn_can.printask(printcallback, "printdevcan.txt");
-				}
-*/
 			}
-			/*else if(!prn_can.isEnabled()){
-
-				String vModo=(gl.peModal.equalsIgnoreCase("TOL")?"TOL":"*");
-
-				if(impres==0 || impres==1){
-					fpaseantebod.buildPrint(corel,0,vModo);
-				}
-
-				if(impres==0 || impres==2){
-					imprimecan=true;
-					fcanastabod.buildPrint(corel,0, vModo);
-				}
-
-			}*/
 
 		} catch (Exception e) {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
@@ -853,7 +806,10 @@ public class Reimpresion extends PBase {
 	private void imprFindia() {
 		try {
 			if(prn.isEnabled()){
-				prn.printask("SyncFold/findia.txt");
+				File f1 = new File(AppPaths.syncFold(this), "findia.txt");
+				File f2 = new File(AppPaths.printDir(this), "print.txt");
+				FileUtils.copyFile(f1, f2);
+				prn.printask("print.txt");
 			}else if(!prn.isEnabled()){
 				toast("No hay impresora configurada");
 			}
@@ -870,7 +826,7 @@ public class Reimpresion extends PBase {
 			if(prn.isEnabled()){
 				buildReports();
 				prn=new printer(this,printclose,gl.validimp);
-				prn.printask("/test.txt");
+				prn.printask("test.txt");
 			}else if(!prn.isEnabled()){
 				toast("No hay impresora configurada");
 			}

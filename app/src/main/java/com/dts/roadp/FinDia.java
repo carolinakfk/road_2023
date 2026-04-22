@@ -134,7 +134,7 @@ public class FinDia extends PBase {
 
 		boolean rslt;
 
-		File fd=new File(Environment.getExternalStorageDirectory()+"/SyncFold/findia.txt");
+		File fd=new File(AppPaths.syncFold(this), "findia.txt");
 		FileUtils.deleteQuietly(fd);
 
         idle = false;
@@ -158,8 +158,8 @@ public class FinDia extends PBase {
             }
 
             try {
-                File f1 = new File(Environment.getExternalStorageDirectory() + "/SyncFold/findia.txt");
-                File f2 = new File(Environment.getExternalStorageDirectory() + "/print.txt");
+                File f1 = new File(AppPaths.syncFold(this), "findia.txt");
+                File f2 = new File(AppPaths.printDir(this), "print.txt");
                 if (f1.exists()){
                     FileUtils.copyFile(f1, f2);
                 }
@@ -594,7 +594,12 @@ public class FinDia extends PBase {
                     return false;
                 }
 
-                if (claseFinDia.getCantFactura() == 0 && !rutatipo.equals("C")) {
+                if (rutatipo.equals("V") && gl.ruta_recolectora && claseFinDia.getCantDevoluciones() == 0) {
+                    msgExit("No hay devoluciones, no se puede realizar el Fin de Día");
+                    return false;
+                }
+
+                if (claseFinDia.getCantFactura() == 0 && !rutatipo.equals("C") && !(rutatipo.equals("V") && gl.ruta_recolectora)) {
                     msgExit("No hay facturas, no se puede realizar el Fin de Día");
                     return false;
                 }
@@ -770,8 +775,8 @@ public class FinDia extends PBase {
 
         try {
 
-            File f1 = new File(Environment.getExternalStorageDirectory() + "/SyncFold/findia.txt");
-            File f2 = new File(Environment.getExternalStorageDirectory() + "/print.txt");
+            File f1 = new File(AppPaths.syncFold(this), "findia.txt");
+            File f2 = new File(AppPaths.printDir(this), "print.txt");
             FileUtils.copyFile(f1, f2);
 
             if (gl.impresora.equalsIgnoreCase("S")) {
@@ -3074,12 +3079,12 @@ public class FinDia extends PBase {
 
     private void delPrintFiles() {
         try {
-            new File(Environment.getExternalStorageDirectory() + "/print.txt").delete();
+            new File(AppPaths.printDir(this), "print.txt").delete();
         } catch (Exception e) {
             addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
         }
         try {
-            new File(Environment.getExternalStorageDirectory() + "/SyncFold/findia.txt").delete();
+            new File(AppPaths.syncFold(this), "findia.txt").delete();
         } catch (Exception e) {
             addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
         }

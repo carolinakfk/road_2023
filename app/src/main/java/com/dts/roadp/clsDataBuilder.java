@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 
@@ -52,13 +53,29 @@ public class clsDataBuilder {
 
 		System.setProperty("line.separator","\r\n");
 		
-		fname = Environment.getExternalStorageDirectory()+"/SyncFold/rd_data.txt";
-		logname = Environment.getExternalStorageDirectory()+"/roadenvio.txt";
-		logname2 = Environment.getExternalStorageDirectory()+"/roadenvio_bck.txt";
-		namefile = Environment.getExternalStorageDirectory()+"/data.acr";
+		//fname = Environment.getExternalStorageDirectory()+"/SyncFold/rd_data.txt";
+		//logname = Environment.getExternalStorageDirectory()+"/roadenvio.txt";
+		//logname2 = Environment.getExternalStorageDirectory()+"/roadenvio_bck.txt";
+		//namefile = Environment.getExternalStorageDirectory()+"/data.acr";
 
-		lognamebk = Environment.getExternalStorageDirectory()+"/roadenvio"+DU.dayofweek(fechaFactTol(DU.getActDate()))+".txt";
-		namefilebk = Environment.getExternalStorageDirectory()+"/data"+DU.dayofweek(fechaFactTol(DU.getActDate()))+".acr";
+		//lognamebk = Environment.getExternalStorageDirectory()+"/roadenvio"+DU.dayofweek(fechaFactTol(DU.getActDate()))+".txt";
+		//namefilebk = Environment.getExternalStorageDirectory()+"/data"+DU.dayofweek(fechaFactTol(DU.getActDate()))+".acr";
+
+		Context ctx = appGlobals.app();
+
+        // /SyncFold/rd_data.txt  ->  .../ROAD/SyncFold/rd_data.txt
+		fname = new File(AppPaths.syncFold(ctx), "rd_data.txt").getAbsolutePath();
+
+        // Logs: roadenvio*.txt  ->  .../ROAD/Logs/...
+		logname  = new File(AppPaths.logs(ctx), "roadenvio.txt").getAbsolutePath();
+		logname2 = new File(AppPaths.logs(ctx), "roadenvio_bck.txt").getAbsolutePath();
+
+		int dow = MU.dayofweek();
+		lognamebk = new File(AppPaths.logs(ctx), "roadenvio" + dow + ".txt").getAbsolutePath();
+
+		// data*.acr  ->  .../ROAD/data*.acr  (si prefieres, puedes moverlos a SyncFold)
+		namefile   = new File(AppPaths.road(ctx), "data.acr").getAbsolutePath();
+		namefilebk = new File(AppPaths.road(ctx), "data" + dow + ".acr").getAbsolutePath();
 
 	}
 	
@@ -101,9 +118,9 @@ public class clsDataBuilder {
 			PRG.moveToFirst();j=0;
 		
 			while (!PRG.isAfterLast()) {
-				  
-				n=PRG.getString(PRG.getColumnIndex("name"));
-				t=PRG.getString(PRG.getColumnIndex("type"));
+
+				n = PRG.getString(PRG.getColumnIndexOrThrow("name"));
+				t = PRG.getString(PRG.getColumnIndexOrThrow("type"));
 
 				if (tn.equals("D_CANASTA") && n.equalsIgnoreCase("IDCANASTA")) {
 					PRG.moveToNext();
@@ -318,7 +335,7 @@ public class clsDataBuilder {
 		return 1;		
 	}
 
-	public int saveArchivo(String fecha){
+	/*public int saveArchivo(String fecha){
 		String s;
 		if (items.size()==0) {return 1;}
 
@@ -340,10 +357,50 @@ public class clsDataBuilder {
 		}
 
 		return 1;
+	}*/
+
+	public int saveArchivo(String fecha){
+		if (items.size()==0) return 1;
+
+		final String NL = "\r\n";
+		java.io.File outFile = new java.io.File(namefile);
+
+		try (java.io.BufferedWriter writer = new java.io.BufferedWriter(
+				new java.io.OutputStreamWriter(
+						new java.io.FileOutputStream(outFile, false),
+						java.nio.charset.StandardCharsets.UTF_8))) {
+
+			writer.write("#" + fecha); writer.write(NL);
+			for (int i = 0; i < items.size(); i++) {
+				writer.write(items.get(i)); writer.write(NL);
+			}
+			writer.flush();
+
+		} catch(Exception e){
+			return 0;
+		}
+
+		// Copia a Descargas (visible). Usa timestamp para no sobrescribir.
+		try {
+			// Si tu clase no tiene Context, usa appGlobals.app()
+			Backups.copyAnyToDownloads(appGlobals.app(), outFile,
+					/*displayName*/ outFile.getName(),
+					/*mimeType*/ "application/octet-stream",
+					/*addTimestamp*/ true);
+		} catch (Exception e) {
+			// decide si quieres fallar aquí:
+			// return 0;
+			// o solo registrar:
+			//setAddlog("saveArchivo.backupDownloads", e.getMessage(), outFile.getAbsolutePath());
+		}
+
+		return 1;
 	}
 
 	public int saveArchivo_bck(String fecha){
 		String s;
+        java.io.File outFile = new java.io.File(logname2);
+
 		if (items.size()==0) {return 1;}
 
 		try {
@@ -361,6 +418,20 @@ public class clsDataBuilder {
 
 		} catch(Exception e){
 			return 0;
+		}
+
+		// Copia a Descargas (visible). Usa timestamp para no sobrescribir.
+		try {
+			// Si tu clase no tiene Context, usa appGlobals.app()
+			Backups.copyAnyToDownloads(appGlobals.app(), outFile,
+					/*displayName*/ outFile.getName(),
+					/*mimeType*/ "application/octet-stream",
+					/*addTimestamp*/ true);
+		} catch (Exception e) {
+			// decide si quieres fallar aquí:
+			// return 0;
+			// o solo registrar:
+			//setAddlog("saveArchivo.backupDownloads", e.getMessage(), outFile.getAbsolutePath());
 		}
 
 		return 1;
@@ -401,7 +472,9 @@ public class clsDataBuilder {
 		String s;
 		FileWriter ffile;
 		BufferedWriter fwriter;
-		flogname =  Environment.getExternalStorageDirectory()+"/"+flogname;
+		//flogname =  Environment.getExternalStorageDirectory()+"/"+flogname;
+		flogname = new File(AppPaths.logs(appGlobals.app()), new File(flogname).getName())
+				.getAbsolutePath();
 
 		if (sendlog.size()==0) return ;
 

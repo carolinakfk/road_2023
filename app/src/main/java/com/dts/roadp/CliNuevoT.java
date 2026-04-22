@@ -768,7 +768,8 @@ public class CliNuevoT extends PBase {
             //#AT20220422 Guardar foto
             //Si tipo == 1 foto de cliente (fachada), si tipo == 2 fotos para documentos.
             if (tipo == 1) {
-                path = Environment.getExternalStorageDirectory() + "/RoadFotos/clinue/" + gl.corelCliente + ".jpg";
+                //path = Environment.getExternalStorageDirectory() + "/RoadFotos/clinue/" + gl.corelCliente + ".jpg";
+                path =  new File(AppPaths.roadFotosCliNue(this), gl.corelCliente+".jpg").getAbsolutePath();
             } else if (tipo == 2) {
 
                 String tmp = "SELECT * FROM D_CLINUEVOT_IMAGEN";
@@ -794,7 +795,7 @@ public class CliNuevoT extends PBase {
                     if(DT!=null) DT.close();
                 }
 
-                path = Environment.getExternalStorageDirectory() + "/RoadFotos/clidocs/" + codimg + ".jpg";
+                path = String.valueOf(new File(AppPaths.roadFotosCliNue(this), codimg + ".jpg"));
             }
 
             URLfoto = new File(path);
@@ -815,9 +816,9 @@ public class CliNuevoT extends PBase {
 
         try {
 
-            path = (Environment.getExternalStorageDirectory() + "/RoadFotos/clinue/" + gl.corelCliente + ".jpg");
+            //path = (Environment.getExternalStorageDirectory() + "/RoadFotos/clinue/" + gl.corelCliente + ".jpg");
 
-            File archivo = new File(path);
+            File archivo = new File(AppPaths.roadFotosCliNue(appGlobals.app()), gl.corelCliente + ".jpg");
 
             if (archivo.exists()) {
                 imgPath = true;
@@ -838,8 +839,8 @@ public class CliNuevoT extends PBase {
         imgDB = false;
         try {
 
-            path = (Environment.getExternalStorageDirectory() + "/RoadFotos/clinue/" + gl.corelCliente + ".jpg");
-            File archivo = new File(path);
+            //path = (Environment.getExternalStorageDirectory() + "/RoadFotos/clinue/" + gl.corelCliente + ".jpg");
+            File archivo = new File(AppPaths.roadFotosCliNue(this), gl.corelCliente + ".jpg");
 
             sql = "SELECT IMAGEN FROM P_CLIENTE_FACHADA WHERE CODIGO ='"+ gl.corelCliente +"'";
             DT=Con.OpenDT(sql);
@@ -874,7 +875,8 @@ public class CliNuevoT extends PBase {
         if (requestCode == 1) {
             try {
                 if (tipo == 1) {
-                    pathFoto = (Environment.getExternalStorageDirectory() + "/RoadFotos/clinue/" + gl.corelCliente + ".jpg");
+                    //pathFoto = (Environment.getExternalStorageDirectory() + "/RoadFotos/clinue/" + gl.corelCliente + ".jpg");
+                    pathFoto = new File(AppPaths.roadFotosCliNue(this), gl.corelCliente + ".jpg").getAbsolutePath();
 
                     try {
                         Bitmap bitmap1 = BitmapFactory.decodeFile(pathFoto);

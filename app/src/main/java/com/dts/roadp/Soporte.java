@@ -90,7 +90,8 @@ public class Soporte extends PBase {
 
     private void sendDBase() {
         body="Base de datos \n"+body;
-        fname= Environment.getExternalStorageDirectory()+"/road.db";
+        //fname= Environment.getExternalStorageDirectory()+"/road.db";
+        fname = new File( AppPaths.road(this),  "road.db").getAbsolutePath();
         file=new File(fname);
 
         send("No se pudo enviar la base de datos datos");
@@ -99,8 +100,8 @@ public class Soporte extends PBase {
     private void sendCarga() {
         body="Carga \n"+body;
 
-       fname= Environment.getExternalStorageDirectory()+"/roadcarga.txt";
-       file=new File(fname);
+       //fname= Environment.getExternalStorageDirectory()+"/roadcarga.txt";
+       file=  new File(AppPaths.road(appGlobals.app()), "roadcarga.txt");
 
         send("El archivo de carga no existe. Debe realizar una carga de datos");
     }
@@ -108,8 +109,8 @@ public class Soporte extends PBase {
     private void sendEnvio() {
         body="Envio \n"+body;
 
-        fname= Environment.getExternalStorageDirectory()+"/roadenvio.txt";
-        file=new File(fname);
+        //fname= Environment.getExternalStorageDirectory()+"/roadenvio.txt";
+        file=new File(AppPaths.road(appGlobals.app()), "roadenvio.txt");
 
         send("El archivo de envio no existe. Debe realizar un envio de datos");
     }
@@ -130,7 +131,8 @@ public class Soporte extends PBase {
 
             for (int i=0;i<8;i++){
 
-                fname= Environment.getExternalStorageDirectory()+"/roadenvio"+(i==0?"":i)+".txt";
+                //fname= Environment.getExternalStorageDirectory()+"/roadenvio"+(i==0?"":i)+".txt";
+                fname = new File( AppPaths.road(this),  "roadenvio"+(i==0?"":i)+ ".txt").getAbsolutePath();
                 file=new File(fname);
 
                 if(file.exists()){
@@ -158,16 +160,18 @@ public class Soporte extends PBase {
 
     private void sendError() {
         body="Error de envío \n"+body;
-        fname= Environment.getExternalStorageDirectory()+"/roaderror.txt";
-        file=new File(fname);
+        //fname= Environment.getExternalStorageDirectory()+"/roaderror.txt";
+        //file=new File(fname);
+        file = new File( AppPaths.road(this),  "roaderror.txt");
 
         send("El archivo de detalle de error de envío no existe");
     }
 
     private void sendBitacora() {
         body="Bitacora \n"+body;
-        fname= Environment.getExternalStorageDirectory()+"/roadlog.txt";
-        file=new File(fname);
+        //fname= Environment.getExternalStorageDirectory()+"/roadlog.txt";
+        //file=new File(fname);
+        file = new File( AppPaths.road(this),  "roadlog.txt");
 
         send("El archivo de bitacora no existe");
     }

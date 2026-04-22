@@ -57,7 +57,7 @@ public class PedidoRes extends PBase {
 	private String itemid,cliid,corel;
 	private int cyear, cmonth, cday,dweek,impres, presday,bandera_monto=0;
 	
-	private double dmax,dfinmon,descpmon,descg,descgmon,tot,stot0,stot,monto_minimo;
+	private double dmax,dfinmon,descpmon,descg,descgmon,tot,stot0,stot,monto_minimo,total_standby;
 	private double descmon,totimp,totperc,dispventa,nue_monto,nue_monto_ext;
 	private double monto_a,monto_c,montop_a,montop_c;
 	private boolean acum,cleandprod,toledano,porpeso,prodstandby,impprecio;
@@ -163,7 +163,42 @@ public class PedidoRes extends PBase {
 				monto_minimo = gl.es_extraruta == true ? mm_cliente.mm_extaruta : mm_cliente.mm_estandar;
 				bandera_monto = 1;
 
-				if (!CumpleMontoMinimo()) {
+				if (mm_cliente != null) {
+                    boolean esMontoValido = false;
+                    if (prodstandby && mm_cliente.setup ==0) {
+                        esMontoValido = (tot-total_standby) >= monto_minimo;
+                    }else{
+                        esMontoValido = tot >= monto_minimo;
+                    }
+
+					switch (mm_cliente.setup) {
+						case 0:
+							if (!esMontoValido) {
+								msgbox("El monto del pedido es menor al mínimo establecido:" + monto_minimo);
+								return;
+							}
+							Guardar(ss);
+							break;
+						case 1:
+							String mensaje = "";
+							if (!esMontoValido) {
+								mensaje = "El monto del pedido es menor al mínimo establecido: "+ monto_minimo+". \n\n";
+								bandera_monto = 0;
+							}
+							mensaje += ss;
+
+							Guardar(mensaje);
+							break;
+						case 2:
+							if (!esMontoValido) {
+								bandera_monto = 0;
+							}
+							Guardar(ss);
+							break;
+					}
+				}
+
+				/*if (!CumpleMontoMinimo()) {
 					if (mm_cliente != null) {
 						boolean esMontoValido = tot >= monto_minimo;
 
@@ -195,7 +230,7 @@ public class PedidoRes extends PBase {
 					}
 				} else {
 					Guardar(ss);
-				}
+				}*/
 			} else {
 				Guardar(ss);
 			}
@@ -1558,14 +1593,18 @@ public class PedidoRes extends PBase {
         Cursor DT;
 
         prodstandby=false;
+        total_standby = 0;
 
         try {
-            sql="SELECT VAL3 FROM T_VENTA";
+            sql="SELECT VAL3, SUM(TOTAL) TOTSB FROM T_VENTA GROUP BY VAL3";
             DT=Con.OpenDT(sql);
 
             DT.moveToFirst();
             while (!DT.isAfterLast()) {
-                if (DT.getInt(0)==1) prodstandby=true;
+                if (DT.getInt(0)==1) {
+                    prodstandby=true;
+                    total_standby = DT.getDouble(1);
+                }
                 DT.moveToNext();
             }
 

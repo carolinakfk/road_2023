@@ -108,7 +108,8 @@ public class printZebraCPCL extends printBase {
 
 		try {
 
-			File file1 = new File(Environment.getExternalStorageDirectory(), "/"+fname);
+			//File file1 = new File(Environment.getExternalStorageDirectory(), "/"+fname);
+			File file1 = new File(AppPaths.printDir(appGlobals.app()), fname);
 			ffile = new File(file1.getPath());
 
 			FileInputStream fIn = new FileInputStream(ffile);

@@ -36,9 +36,11 @@ public class printDMax extends printBase {
 
 	private String qrCode="";
 	private int cantQR=0;
-	
+	private final Context ctx;
+
 	public printDMax(Context context,String printerMAC,boolean validprinter) {
 		super(context,printerMAC);
+		ctx = context;
 		validprint=validprinter;
 		appG = new appGlobals();
 		clsPBase=new PBase();
@@ -147,8 +149,8 @@ public class printDMax extends printBase {
 		String ss;
 		
 		try {
-			
-			File file1 = new File(Environment.getExternalStorageDirectory(), "/"+fname);
+			//File file1 = new File(Environment.getExternalStorageDirectory(), "/"+fname);
+			File file1 = new File(AppPaths.printDir(ctx), fname);
 			ffile = new File(file1.getPath());
 					
 			FileInputStream fIn = new FileInputStream(ffile);

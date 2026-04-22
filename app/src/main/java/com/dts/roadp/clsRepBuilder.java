@@ -7,6 +7,7 @@ import android.widget.Toast;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -46,12 +47,12 @@ public class clsRepBuilder {
 		System.setProperty("line.separator","\r\n");
 		if (regular) {
 			if (!archivo.isEmpty()){
-				fname = Environment.getExternalStorageDirectory()+"/"+archivo;
+				fname = String.valueOf(new File(AppPaths.printDir(cont), archivo));
 			}else{
-				fname = Environment.getExternalStorageDirectory()+"/print.txt";
+				fname = String.valueOf(new File(AppPaths.printDir(cont), "print.txt"));
 			}
 		} else {
-			fname = Environment.getExternalStorageDirectory()+"/SyncFold/findia.txt";	
+			fname = String.valueOf(new File(AppPaths.syncFold(cont), "findia.txt"));
 		}
 		
 		decfrm = new DecimalFormat("#,##0.00");

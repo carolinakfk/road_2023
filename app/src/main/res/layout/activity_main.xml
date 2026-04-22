@@ -187,10 +187,11 @@
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
             android:clickable="true"
-            android:onClick="doRegister"
+            android:onClick="onClickImportarDb"
             android:paddingLeft="3dp"
             android:paddingRight="4dp"
-            android:src="@drawable/lic_icon" />
+            android:src="@drawable/lic_icon"
+            tools:visibility="visible" />
 
         <TextView
             android:id="@+id/textView9"

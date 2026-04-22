@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.widget.GridView;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class CliDocumentos extends PBase {
@@ -49,7 +50,7 @@ public class CliDocumentos extends PBase {
                 clsImg = clsCls.new clsDocumentoImg();
 
                 codimagen = DT.getInt(0);
-                path = Environment.getExternalStorageDirectory() + "/RoadFotos/clidocs/" + codimagen + ".jpg";
+                path = String.valueOf(new File(AppPaths.roadFotosCliDocs(this),  codimagen + ".jpg"));
 
                 BitmapFactory.Options opciones = new BitmapFactory.Options();
                 opciones.inJustDecodeBounds = true;

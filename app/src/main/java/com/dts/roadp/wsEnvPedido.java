@@ -20,8 +20,8 @@ public class wsEnvPedido extends wsBase {
 
     private String command,corel;
 
-    private String pdir= Environment.getExternalStorageDirectory().getPath() + "/RoadPedidos";
-
+    //private String pdir= Environment.getExternalStorageDirectory().getPath() + "/RoadPedidos";
+    private String pdir= AppPaths.roadPedidos(appGlobals.app()).getAbsolutePath();
 
     public wsEnvPedido(String Url) {
         super(Url);

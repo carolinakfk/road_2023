@@ -12,11 +12,11 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
@@ -35,7 +35,6 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.PropertyInfo;
@@ -82,6 +81,17 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
+
+import org.ksoap2.SoapFault;
+import org.ksoap2.serialization.SoapObject;
+import org.ksoap2.serialization.SoapPrimitive;
+import org.ksoap2.serialization.SoapSerializationEnvelope;
+import org.ksoap2.transport.HttpTransportSE;
 
 public class ComWS extends PBase {
 //Esto es de Kelvyn
@@ -154,6 +164,8 @@ public class ComWS extends PBase {
 	private String nombretabla;
 	private int indicetabla,modo_recepcion;
 
+	private static final int TEST_TIMEOUT_MS = 5000;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 
@@ -164,7 +176,18 @@ public class ComWS extends PBase {
 		//addlog("ComWS", "" + du.getActDateTime(), gl.vend);
 
 		System.setProperty("line.separator", "\r\n");
-		rootdir = Environment.getExternalStorageDirectory() + "/RoadFotos/";
+
+		// ===== CAMBIO: rutas seguras en app-specific external =====
+		// /sdcard/Android/data/com.dts.roadp/files/ROAD/RoadFotos/
+		rootdir = new java.io.File(AppPaths.roadFotos(this).getAbsolutePath(), "")
+				.getAbsolutePath() + java.io.File.separator;
+
+		// Asegura creación de las carpetas que antes tenías en raíz:
+		AppPaths.syncFold(this);
+		AppPaths.roadFotos(this);
+		AppPaths.roadFotosCliNue(this);
+		AppPaths.roadFotosCliDocs(this);
+		AppPaths.roadPedidos(this);
 
 		dbld = new clsDataBuilder(this);
 		claseFindia = new clsFinDia(this);
@@ -211,7 +234,6 @@ public class ComWS extends PBase {
 
 		lblUser = new TextView(this, null);
 		lblPassword = new TextView(this, null);
-		//txtVersion=new TextView(this, null);
 
 		txtUser = new EditText(this, null);
 		txtPassword = new EditText(this, null);
@@ -258,27 +280,14 @@ public class ComWS extends PBase {
 		if (gl.debug) {
 			if (mu.emptystr(txtRuta.getText().toString())) {
 				txtRuta.setText("M102-1");
-				//txtRuta.setText("6055-5");
-				//txtRuta.setText("0050-1");
-				//txtRuta.setText("8001-1");
 				txtEmp.setText("03");
 			}
-
-			//txtWS.setText("http://200.46.46.104:8001/RDC7_SAP_PRD_ANDR/wsAndr.asmx");
-            //txtWS.setText("http://200.46.46.104:8001/RDC7_SAP_QAS_ANDR/wsAndr.asmx");
-			txtWS.setText("http://movil.toledano.com/RDC7_SAP_QAS_ANDR/wsAndr.asmx");
-
-            //txtRuta.setText("8001-1");
-			//txtEmp.setText("03");
-			//txtWS.setText("http://192.168.1.137/wsAndr/wsandr.asmx");
+			//txtWS.setText("http://200.46.46.104:8001/RDC7_SAP_QAS_ANDR/wsAndr.asmx");
+			txtWS.setText("http://movil.toledano.com/RDC7_SAP_PRD_ANDR/wsAndr.asmx");
 		}
 
-		//txtRuta.setText("8001-1");
-		//txtEmp.setText("03");
-		//txtWS.setText("http://192.168.1.10/wsAndr/wsandr.asmx");
-
 		mac = getMac();
-		fsql = du.univfechasql(du.getActDate());
+		fsql  = du.univfechasql(du.getActDate());
 		fsqli = du.univfechasql(du.ffecha00(du.getActDate())) + " 00:00:00";
 		fsqlf = du.univfechasql(du.ffecha24(du.getActDate())) + " 23:59:59";
 
@@ -297,10 +306,6 @@ public class ComWS extends PBase {
 			visibilidadBotones();
 		}
 
-		//if (gl.autocom==1) runSend();
-
-		//relExist.setVisibility(View.VISIBLE);
-
 		if (esvacio) txtWS.setEnabled(true);
 
 		setHandlers();
@@ -311,28 +316,27 @@ public class ComWS extends PBase {
 			if (gl.tolsuper) relPedidos.setVisibility(View.VISIBLE);
 		}
 		if (!autoenvio && (rutatipo.equals("P") || rutatipo.equals("T"))) {
-            relPedidos.setVisibility(View.VISIBLE);
-        }
+			relPedidos.setVisibility(View.VISIBLE);
+		}
 
 		if (gl.ruta.isEmpty()) {
-		    relPedidos.setVisibility(View.INVISIBLE);
-		    relClientes.setVisibility(View.INVISIBLE);
-        }
+			relPedidos.setVisibility(View.INVISIBLE);
+			relClientes.setVisibility(View.INVISIBLE);
+		}
 
-        pedidos=rutatipo.equals("P");
+		pedidos = rutatipo.equals("P");
 
 		try {
 			final PowerManager pm = (PowerManager) getSystemService(this.POWER_SERVICE);
 			this.wakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "myapp:mywakelocktag");
 			this.wakeLock.acquire();
 		} catch (Exception e) {
-			addlog(new Object() {
-			}.getClass().getEnclosingMethod().getName(), e.getMessage(), "wakeLock");
+			addlog(new Object() {}.getClass().getEnclosingMethod().getName(), e.getMessage(), "wakeLock");
 		}
 
-        actualizaEstadoPedidos();
+		actualizaEstadoPedidos();
 
-        if (gl.enviaMov){
+		if (gl.enviaMov){
 			lblRec.setVisibility(View.INVISIBLE);
 			imgRec.setVisibility(View.INVISIBLE);
 			lblEnv.setVisibility(View.INVISIBLE);
@@ -342,28 +346,31 @@ public class ComWS extends PBase {
 			relPrecio.setVisibility(View.INVISIBLE);
 			relExist.setVisibility(View.INVISIBLE);
 			relStock.setVisibility(View.INVISIBLE);
+			relImpClientes.setVisibility(View.INVISIBLE);
 
 			runSend();
-
 		}
 	}
 
 	private boolean dbVacia() {
-		Cursor dt;
-
+		Cursor dt = null;
 		try {
-			sql = "SELECT CODIGO,ENVIO_AUTO_PEDIDOS FROM P_RUTA";
+			sql = "SELECT CODIGO, ENVIO_AUTO_PEDIDOS FROM P_RUTA";
 			dt = Con.OpenDT(sql);
 
-			if (dt.getCount()==0) {
-                autoenvio = dt.getInt(1)==1;
-            } else autoenvio=false;
-
-			return dt.getCount() == 0;
+			if (dt != null && dt.moveToFirst()) {
+				autoenvio = (dt.getInt(1) == 1);
+				return false; // hay datos
+			} else {
+				autoenvio = false;
+				return true;  // vacío
+			}
 		} catch (Exception e) {
-			addlog(new Object() {
-			}.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
-			return true;
+			addlog(new Object(){}.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
+			autoenvio = false;
+			return true; // en error, trátalo como vacío
+		} finally {
+			if (dt != null) try { dt.close(); } catch (Exception ignore) {}
 		}
 	}
 
@@ -1406,7 +1413,7 @@ public class ComWS extends PBase {
         }
     }
 
-    private void runSend() {
+   /* private void runSend() {
         long dia = du.dayofweek(du.getActDate());
 
         try {
@@ -1415,9 +1422,11 @@ public class ComWS extends PBase {
             if (!setComParams()) return;
 
             try {
-                File f1 = new File(Environment.getExternalStorageDirectory() + "/road.db");
-                File f2 = new File(Environment.getExternalStorageDirectory() + "/road" + dia + ".db");
-                FileUtils.copyFile(f1, f2);
+                //File f1 = new File(Environment.getExternalStorageDirectory() + "/road.db");
+                //File f2 = new File(Environment.getExternalStorageDirectory() + "/road" + dia + ".db");
+				File f1 = new File( AppPaths.road(appGlobals.app()),  "road.db");
+				File f2 =  new File( AppPaths.road(appGlobals.app()),  "road" + dia + ".db");
+				FileUtils.copyFile(f1, f2);
             } catch (Exception e) {
                 msgbox("No se puede generar respaldo : " + e.getMessage());
             }
@@ -1438,9 +1447,41 @@ public class ComWS extends PBase {
         }
 
 
-    }
+    }*/
 
-    public void writeData(View view) {
+	private void runSend() {
+		long dia = du.dayofweek(du.getActDate());
+
+		try {
+			if (isbusy == 1) return;
+			if (!setComParams()) return;
+
+			try {
+				Backups.Output out = Backups.backupDbBoth(this, dia, /*timestampDownloads*/ true);
+				// (Opcional) Log rápido:
+				setAddlog("runSend.backup",
+						"ROAD=" + (out.roadDb != null ? out.roadDb.getName() : "null"),
+						"DL=" + (out.downloadsDb != null ? out.downloadsDb.toString() : "null"));
+			} catch (Exception e) {
+				msgbox("No se puede generar respaldo: " + e.getMessage());
+			}
+
+			isbusy = 1;
+			barInfo.setVisibility(View.VISIBLE);
+			barInfo.invalidate();
+			lblInfo.setText("Conectando ...");
+
+			showprogress = true;
+			wsStask = new AsyncCallSend();
+			wsStask.execute();
+
+		} catch (Exception e) {
+			addlog(new Object(){}.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
+		}
+	}
+
+
+	public void writeData(View view) {
 
 		try {
 			dbld.clear();
@@ -2397,41 +2438,99 @@ public class ComWS extends PBase {
 
 	}
 
-	public int getTest() {
-
+	public int getTest(String baseUrl) {
 		METHOD_NAME = "TestWS";
 
 		try {
+			// 0) Validar red activa antes de cualquier intento
+			if (!hasNetwork()) {
+				sstr = "Sin conexión de red (Wi-Fi/Datos).";
+				fterr = sstr;
+				return 0;
+			} else {
+				// Útil para logs
+				sstr = "Red activa: " + networkLabel() + ". ";
+			}
 
+			// 1) Preparar request SOAP
 			SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME);
-			SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-			envelope.dotNet = true;
 
 			PropertyInfo param = new PropertyInfo();
 			param.setType(String.class);
 			param.setName("Value");
 			param.setValue("OK");
-
 			request.addProperty(param);
+
+			SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+			envelope.dotNet = true; // si tu WS es .NET
 			envelope.setOutputSoapObject(request);
 
-			HttpTransportSE transport = new HttpTransportSE(URL, 3000);
+			// 2) Transport con timeout
+			HttpTransportSE transport = new HttpTransportSE(baseUrl, TEST_TIMEOUT_MS);
+			transport.debug = true; // para requestDump/responseDump si necesitas
 
-			transport.call(NAMESPACE + METHOD_NAME, envelope);
+			// 3) SOAPAction correcto
+			String soapAction = NAMESPACE.endsWith("/")
+					? (NAMESPACE + METHOD_NAME)
+					: (NAMESPACE + "/" + METHOD_NAME);
 
-			SoapObject response = null;
-			//response = (SoapPrimitive) envelope.getResponse();
-			response = (SoapObject) envelope.bodyIn;
+			// 4) Invocación
+			transport.call(soapAction, envelope);
 
-			sstr = response.toString() + "..";
+			// 5) Revisar fault
+			if (envelope.bodyIn instanceof SoapFault) {    // <-- paquete correcto
+				SoapFault fault = (SoapFault) envelope.bodyIn;
+				sstr += "SOAP Fault: " + fault.faultstring;
+				fterr = sstr;
+				return 0;
+			}
+
+			// 6) Procesar respuesta
+			Object body = envelope.getResponse();
+			if (body == null) {
+				sstr += "Respuesta vacía del WS.";
+				fterr = sstr;
+				return 0;
+			}
+
+			String respText;
+			if (body instanceof org.ksoap2.serialization.SoapPrimitive) {
+				respText = ((org.ksoap2.serialization.SoapPrimitive) body).toString();
+			} else if (body instanceof SoapObject) {
+				SoapObject so = (SoapObject) body;
+				if (so.getPropertyCount() > 0) {
+					Object p0 = so.getProperty(0);
+					respText = (p0 != null) ? p0.toString() : so.toString();
+				} else {
+					respText = so.toString();
+				}
+			} else {
+				respText = body.toString();
+			}
+
+			sstr += "TestWS OK. Resp: " + respText;
+			// Si tu WS devuelve "OK" explícito y quieres ser estricto:
+			// if (!"OK".equalsIgnoreCase(respText)) return 0;
 
 			return 1;
 
+		} catch (java.net.SocketTimeoutException te) {
+			sstr += "Timeout al conectar (" + TEST_TIMEOUT_MS + " ms).";
+			fterr = sstr;
+			return 0;
+		} catch (java.net.UnknownHostException uhe) {
+			sstr += "Host no resuelto: " + uhe.getMessage();
+			fterr = sstr;
+			return 0;
+		} catch (java.net.ConnectException ce) {
+			sstr += "Conexión rechazada: " + ce.getMessage();
+			fterr = sstr;
+			return 0;
 		} catch (Exception e) {
-			fterr ="Causa: " + e.getCause() + "-Mensaje: " + e.getMessage();
+			sstr += "Error en TestWS: " + (e.getMessage() != null ? e.getMessage() : e.toString());
+			fterr = sstr;
+			return 0;
 		}
-
-		return 1;
 	}
 
 	//#HS_20181219 Funcion para enviar JSON al Web Service.
@@ -2666,7 +2765,8 @@ public class ComWS extends PBase {
 				return false;
 			}
 
-			String fname = Environment.getExternalStorageDirectory() + "/roadcarga.txt";
+			//String fname = Environment.getExternalStorageDirectory() + "/roadcarga.txt";
+			String fname = new File( AppPaths.road(this),  "roadcarga.txt").getAbsolutePath();
 			wfile = new FileWriter(fname, false);
 			writer = new BufferedWriter(wfile);
 
@@ -2937,9 +3037,12 @@ public class ComWS extends PBase {
                 if (TieneInventarioSinVentas()) return false;
             }
 
-			String fname = Environment.getExternalStorageDirectory() + "/roadcarga.txt";
-			wfile = new FileWriter(fname, false);
-			writer = new BufferedWriter(wfile);
+			java.io.File baseDir = AppPaths.road(this); // /sdcard/Android/data/com.dts.roadp/files/ROAD/
+			if (!baseDir.exists()) baseDir.mkdirs();
+			java.io.File cargaFile = new java.io.File(baseDir, "roadcarga.txt");
+
+			wfile  = new java.io.FileWriter(cargaFile, false);
+			writer = new java.io.BufferedWriter(wfile);
 
 			db.execSQL("DELETE FROM P_LIQUIDACION");
 
@@ -3014,7 +3117,8 @@ public class ComWS extends PBase {
 			if (rc == 0) return true;
 
             try {
-                String fname = Environment.getExternalStorageDirectory() + "/roadcarga.txt";
+                //String fname = Environment.getExternalStorageDirectory() + "/roadcarga.txt";
+				String fname = new File( AppPaths.road(this),  "roadcarga.txt").getAbsolutePath();
                 wfile = new FileWriter(fname, false);
                 writer = new BufferedWriter(wfile);
             } catch (IOException e) {}
@@ -3172,9 +3276,16 @@ public class ComWS extends PBase {
 				clsAppM.estandartInventario();
 				clsAppM.estandartInventarioPedido();
 
-				if (stockflag == 1) {
-					sendConfirm();
+				if (!gl.ruta_recolectora){
+					if (stockflag == 1) {
+						sendConfirm();
+					}
+				}else{
+					if (stockflag == 1) {
+						eliminaInventario();
+					}
 				}
+
 			}
 
 			if (modo_recepcion==1 ){
@@ -3936,7 +4047,7 @@ public class ComWS extends PBase {
 					"APLICACION_USA, PUERTO_GPS, ES_RUTA_OFICINA, DILUIR_BON, PREIMPRESION_FACTURA, MODIFICAR_MEDIA_PAGO, " +
 					"IDIMPRESORA, NUMVERSION,0 AS FECHAVERSION, ARQUITECTURA, PERMITIR_PRODUCTO_NUEVO, " +
 					"PERMITIR_CANTIDAD_MAYOR, ENVIO_AUTO_PEDIDOS, PEDIDOS_CLINUEVO, VALIDAR_POSICION_GEOREFERENCIAL, " +
-					"CONTROL_CANASTA " +
+					"CONTROL_CANASTA, IMPORTA_CLIENTES_EN_RUTA, RUTA_RECOLECTORA " +
 					"FROM P_RUTA WHERE CODIGO = '" + ActRuta + "'";
 			return SQL;
 		}
@@ -4053,11 +4164,14 @@ public class ComWS extends PBase {
 		if (TN.equalsIgnoreCase("P_VENDEDOR")) {
 
 			if (gl.peModal.equalsIgnoreCase("TOL")) {
-				SQL = "SELECT CODIGO,NOMBRE,CLAVE,RUTA,NIVEL,NIVELPRECIO,ISNULL(BODEGA,0) AS BODEGA,ISNULL(SUBBODEGA,0) AS SUBBODEGA,'' AS COD_VEHICULO,0 AS LIQUIDANDO,0 AS BLOQUEADO,0 AS DEVOLUCION_SAP  " +
-						"FROM VENDEDORES  WHERE (RUTA='" + ActRuta + "') ";
+				SQL = "SELECT v.CODIGO, v.NOMBRE, v.CLAVE, v.RUTA, v.NIVEL, v.NIVELPRECIO, ISNULL(v.BODEGA,0) AS BODEGA," +
+					  " ISNULL(v.SUBBODEGA,0) AS SUBBODEGA," +
+					  " p.COD_VEHICULO,0 AS LIQUIDANDO, p.BLOQUEADO,0 AS DEVOLUCION_SAP  " +
+					  " FROM VENDEDORES v inner join P_VENDEDOR p ON v.CODIGO = p.CODIGO and p.BODEGA = v.BODEGA " +
+					  " WHERE (v.RUTA='" + ActRuta + "') AND p.BLOQUEADO = 0 ";
 			} else {
 				SQL = "SELECT CODIGO,NOMBRE,CLAVE,RUTA,NIVEL,NIVELPRECIO,ISNULL(BODEGA,0) AS BODEGA,ISNULL(SUBBODEGA,0) AS SUBBODEGA,COD_VEHICULO,LIQUIDANDO,BLOQUEADO,DEVOLUCION_SAP  " +
-						"FROM P_VENDEDOR  WHERE (RUTA='" + ActRuta + "') OR (NIVEL=1) ";
+						"FROM P_VENDEDOR  WHERE (RUTA='" + ActRuta + "') OR (NIVEL=1) AND BLOQUEADO = 0 ";
 			}
 
 			return SQL;
@@ -4402,7 +4516,7 @@ public class ComWS extends PBase {
 
                 dt = Con.OpenDT(sql);
                 if (dt.getCount() == 0) {
-                	if (!rutatipo.equals("C")){
+                	if (!rutatipo.equals("C") || (rutatipo.equals("V") && gl.ruta_recolectora)){
 						toastlong("La de carga inventario de productos está vacia");
 						return false;
 					}
@@ -4644,33 +4758,50 @@ public class ComWS extends PBase {
 	//region WS Recepcion Handling Methods
 
 	public void wsExecute() {
-
 		running = 1;
 		fstr = "No connect";
 		scon = 0;
 
 		try {
-			if (getTest() == 1) {
+			// Aborta rápido si no hay red
+			if (!hasNetwork()) {
+				fstr = "Sin conexión de red (Wi-Fi/Datos).";
+				sstr = fstr;
+				return;
+			}
+
+			final String urlPrimaria = URL;
+			final String urlRemota   = URL_Remota;
+
+			sstr = "";
+			fterr = "";
+
+			if (getTest(urlPrimaria) == 1) {
 				scon = 1;
 			} else {
-				URL = URL_Remota;
-				if (getTest() == 1) scon = 1;
+				if (urlRemota != null && urlRemota.length() > 0 && !urlRemota.equalsIgnoreCase(urlPrimaria)) {
+					URL = urlRemota;
+					if (getTest(urlRemota) == 1) {
+						scon = 1;
+					} else {
+						URL = urlPrimaria;
+					}
+				}
 			}
 
 			idbg = idbg + sstr;
 
 			if (scon == 1) {
 				fstr = "Sync OK";
-				if (!getData()) fstr = "Recepcion incompleta : " + fstr;
+				if (!getData()) fstr = "Recepción incompleta : " + fstr;
 			} else {
-				fstr = "No se puede conectar al web service : " + sstr;
+				fstr = "No se puede conectar al web service. " + (sstr != null ? sstr : "");
 			}
 		} catch (Exception e) {
 			scon = 0;
-			fstr = "Error importando los datos: " + fstr;
-			Log.d("E", fstr + " " + sstr);
+			fstr = "Error importando los datos: " + (e.getMessage() != null ? e.getMessage() : "");
+			Log.d("E", fstr + "  " + (sstr != null ? sstr : ""));
 		}
-
 	}
 
 	public void wsFinished() {
@@ -5172,11 +5303,11 @@ public class ComWS extends PBase {
 
 		errflag = false;
 
-		if (getTest() == 0) {
+		if (getTest(URL) == 0) {
 
 			URL = URL_Remota;
 
-			if (getTest() == 0) {
+			if (getTest(URL) == 0) {
 				errflag = true;
 				return false;
 			}
@@ -5384,11 +5515,11 @@ public class ComWS extends PBase {
 			//#CKFK 20190429 Saqué esto de envioFinDia para que se guarde bien el log y luego se realice el envío.
 			if (!envioparcial) {
 
-				if (getTest() == 1) {
+				if (getTest(URL) == 1) {
 					scon = 1;
 				} else {
 					URL = URL_Remota;
-					if (getTest() == 1) {
+					if (getTest(URL) == 1) {
 						scon = 1;
 					}
 				}
@@ -5427,11 +5558,11 @@ public class ComWS extends PBase {
 
 		errflag = false;
 
-		if (getTest() == 0) {
+		if (getTest(URL) == 0) {
 
 			URL = URL_Remota;
 
-			if (getTest() == 0) {
+			if (getTest(URL) == 0) {
 				errflag = true;
 				return false;
 			}
@@ -5462,11 +5593,11 @@ public class ComWS extends PBase {
 
 		errflag = false;
 
-		if (getTest() == 0) {
+		if (getTest(URL) == 0) {
 
 			URL = URL_Remota;
 
-			if (getTest() == 0) {
+			if (getTest(URL) == 0) {
 				errflag = true;
 				return false;
 			}
@@ -5497,11 +5628,11 @@ public class ComWS extends PBase {
 
 		errflag = false;
 
-		if (getTest() == 0) {
+		if (getTest(URL) == 0) {
 
 			URL = URL_Remota;
 
-			if (getTest() == 0) {
+			if (getTest(URL) == 0) {
 				errflag = true;
 				return false;
 			}
@@ -6855,7 +6986,7 @@ public class ComWS extends PBase {
 					fechaImg = DT.getString(3);
 					statcomImg = DT.getString(5);
 
-					path = Environment.getExternalStorageDirectory() + "/RoadFotos/clidocs/" + codigoImg+ ".jpg";
+					path = String.valueOf(new File(AppPaths.roadFotosCliNue(this), codigoImg + ".jpg"));
 
 					Bitmap bmp = BitmapFactory.decodeFile(path);
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -7342,11 +7473,11 @@ public class ComWS extends PBase {
 
 			if (DT != null) DT.close();
 
-			if (getTest() == 1) {
+			if (getTest(URL) == 1) {
 				scon = 1;
 			} else {
 				URL = URL_Remota;
-				if (getTest() == 1) scon = 1;
+				if (getTest(URL) == 1) scon = 1;
 			}
 
 			if (scon == 1) {
@@ -7552,21 +7683,33 @@ public class ComWS extends PBase {
         int pp;
 
         try {
-            File dir = new File(Environment.getExternalStorageDirectory() + "/RoadFotos/clinue");
+			// Carpeta: .../Android/data/com.dts.roadp/files/ROAD/RoadFotos/clinue
+			File dir = AppPaths.roadFotosCliNue(this);  // ya existe, AppPaths la crea
 
-            for (File imagen : dir.listFiles()) {
+            // Filtra solo .jpg (en minúsculas)
+			File[] fotos = dir.listFiles((d, name) -> name != null && name.toLowerCase(java.util.Locale.US).endsWith(".jpg"));
+			if (fotos == null || fotos.length == 0) return false; // nada que enviar
 
-                try {
-                    trid=imagen.getName();pp=trid.indexOf(".");
-                    trid=trid.substring(0,pp);
-                    fname=imagen.getAbsolutePath();
+			for (File imagen : fotos) {
+				try {
+					String nombre = imagen.getName();             // ej: 12345.jpg
+					pp = nombre.lastIndexOf('.');
+					trid = (pp > 0) ? nombre.substring(0, pp) : nombre; // 12345
+					fname = imagen.getAbsolutePath();
 
-                    if (sendFoto(trid,ruta,fname, gl.peModal)==1) imagen.delete();
-                } catch (Exception e) {
-                }
-            }
+					if (sendFoto(trid, ruta, fname, gl.peModal) == 1) {
+						// borrar solo si se envió bien
+						//noinspection ResultOfMethodCallIgnored
+						imagen.delete();
+					}
+				} catch (Exception e) {
+					// opcional: loguear
+					setAddlog("sendFotosCliNue", e.getMessage(), "");
+				}
+			}
 
-            return true;
+
+			return true;
         } catch (Exception e) {
             addlog(new Object() {}.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
         }
@@ -7739,11 +7882,11 @@ public class ComWS extends PBase {
 
 			//msgbox("Envio de pedidos parciales " + gl.enviaPedidosParcial);
 
-			if (getTest() == 1) {
+			if (getTest(URL) == 1) {
 				scon = 1;
 			} else {
 				URL = URL_Remota;
-				if (getTest() == 1) scon = 1;
+				if (getTest(URL) == 1) scon = 1;
 			}
 
 			if (scon == 1) {
@@ -8061,6 +8204,24 @@ public class ComWS extends PBase {
 				}
 			};
 			mtimer.postDelayed(mrunner, 500);
+		} catch (Exception e) {
+			addlog(new Object() {
+			}.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
+		}
+	}
+
+	private void eliminaInventario() {
+		Cursor dt;
+
+		try {
+
+			sql = "DELETE FROM P_STOCK ";
+			db.execSQL(sql);
+			sql = "DELETE FROM P_STOCKB ";
+			db.execSQL(sql);
+
+			msgbox("Las rutas recolectoras no pueden tener inventario asignado, se eliminó de la base de datos");
+
 		} catch (Exception e) {
 			addlog(new Object() {
 			}.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
@@ -8407,6 +8568,7 @@ public class ComWS extends PBase {
 			relExist.setVisibility(View.INVISIBLE);
 			relPrecio.setVisibility(View.INVISIBLE);
 			relStock.setVisibility(View.INVISIBLE);
+			relImpClientes.setVisibility(View.INVISIBLE);
 
 			//Si entra en modo administración, habilita los botones y se va
 			if (gl.modoadmin || gl.debug) {
@@ -8472,7 +8634,8 @@ public class ComWS extends PBase {
 			if (gl.peModal.equalsIgnoreCase("TOL")) {
 				if (claseFindia.yaHizoFindeDia()) {
 					if (YaComunico) {
-						if ((rutatipo.equalsIgnoreCase("V") && !TieneInventario) || (!rutatipo.equalsIgnoreCase("V"))) {
+						if ((rutatipo.equalsIgnoreCase("V") && !TieneInventario) ||
+								(!rutatipo.equalsIgnoreCase("V"))) {
 							lblRec.setVisibility(View.VISIBLE);
 							imgRec.setVisibility(View.VISIBLE);
 							lblEnv.setVisibility(View.INVISIBLE);
@@ -8483,10 +8646,12 @@ public class ComWS extends PBase {
 								relExist.setVisibility(gl.peBotInv && !TieneFact ? View.VISIBLE : View.INVISIBLE);
 								relStock.setVisibility(gl.peBotStock && TieneFact ? View.VISIBLE : View.INVISIBLE);
 								relPrecio.setVisibility(gl.peBotPrec ? View.VISIBLE : View.INVISIBLE);
+								relImpClientes.setVisibility(gl.importa_clientes_en_ruta ? View.VISIBLE :  View.INVISIBLE);
 							} else {
 								relExist.setVisibility(View.INVISIBLE);
 								relStock.setVisibility(View.INVISIBLE);
 								relPrecio.setVisibility(View.INVISIBLE);
+								relImpClientes.setVisibility(View.INVISIBLE);
 							}
 						} else if ((rutatipo.equalsIgnoreCase("V") && TieneInventario &&
 								(TieneFact || TieneCobros || TieneDevol || TienePedidos || TieneCanastas)) ||
@@ -8500,6 +8665,7 @@ public class ComWS extends PBase {
 							relPrecio.setVisibility(gl.peBotPrec ? View.VISIBLE : View.INVISIBLE);
 							relExist.setVisibility(View.INVISIBLE);
 							relStock.setVisibility(gl.peBotStock ? View.VISIBLE : View.INVISIBLE);
+							relImpClientes.setVisibility(gl.importa_clientes_en_ruta ? View.VISIBLE :  View.INVISIBLE);
 						}
 					}
 				} else {
@@ -8515,10 +8681,12 @@ public class ComWS extends PBase {
 							relExist.setVisibility(gl.peBotInv && !TieneFact ? View.VISIBLE : View.INVISIBLE);
 							relStock.setVisibility(gl.peBotStock && TieneFact ? View.VISIBLE : View.INVISIBLE);
 							relPrecio.setVisibility(gl.peBotPrec ? View.VISIBLE : View.INVISIBLE);
+							relImpClientes.setVisibility(gl.importa_clientes_en_ruta ? View.VISIBLE :  View.INVISIBLE);
 						} else {
 							relExist.setVisibility(View.INVISIBLE);
 							relStock.setVisibility(View.INVISIBLE);
 							relPrecio.setVisibility(View.INVISIBLE);
+							relImpClientes.setVisibility(View.INVISIBLE);
 						}
 					} else {
 						if (YaComunico) {
@@ -8533,10 +8701,12 @@ public class ComWS extends PBase {
 								relExist.setVisibility(gl.peBotInv ? View.VISIBLE : View.INVISIBLE);
 								relStock.setVisibility(gl.peBotStock ? View.VISIBLE : View.INVISIBLE);
 								relPrecio.setVisibility(gl.peBotPrec ? View.VISIBLE : View.INVISIBLE);
+								relImpClientes.setVisibility(gl.importa_clientes_en_ruta ? View.VISIBLE :  View.INVISIBLE);
 							} else {
 								relExist.setVisibility(View.INVISIBLE);
 								relStock.setVisibility(View.INVISIBLE);
 								relPrecio.setVisibility(View.INVISIBLE);
+								relImpClientes.setVisibility(View.INVISIBLE);
 							}
 						} else {
 							lblRec.setVisibility(View.INVISIBLE);
@@ -8546,8 +8716,9 @@ public class ComWS extends PBase {
 							lblEnvM.setVisibility(View.VISIBLE);
 							imgEnvM.setVisibility(View.VISIBLE);
 							relExist.setVisibility(View.INVISIBLE);
-							relStock.setVisibility(gl.peBotStock ? View.VISIBLE : View.INVISIBLE);
+							relStock.setVisibility(gl.peBotStock && !gl.ruta_recolectora ? View.VISIBLE : View.INVISIBLE);
 							relPrecio.setVisibility(gl.peBotPrec ? View.VISIBLE : View.INVISIBLE);
+							relImpClientes.setVisibility(gl.importa_clientes_en_ruta ? View.VISIBLE :  View.INVISIBLE);
 						}
 					}
 				}
@@ -8564,12 +8735,14 @@ public class ComWS extends PBase {
 
 					if (StringUtils.equals(GetStatusRec(), "1")) {
 						relExist.setVisibility(gl.peBotInv ? View.VISIBLE : View.INVISIBLE);
-						relStock.setVisibility(gl.peBotStock ? View.VISIBLE : View.INVISIBLE);
+						relStock.setVisibility(gl.peBotStock && !gl.ruta_recolectora ? View.VISIBLE : View.INVISIBLE);
 						relPrecio.setVisibility(gl.peBotPrec ? View.VISIBLE : View.INVISIBLE);
+						relImpClientes.setVisibility(gl.importa_clientes_en_ruta ? View.VISIBLE :  View.INVISIBLE);
 					} else {
 						relExist.setVisibility(View.INVISIBLE);
 						relStock.setVisibility(View.INVISIBLE);
 						relPrecio.setVisibility(View.INVISIBLE);
+						relImpClientes.setVisibility(View.INVISIBLE);
 					}
 
 				} else {
@@ -8583,8 +8756,9 @@ public class ComWS extends PBase {
 						lblEnvM.setVisibility(View.VISIBLE);
 						imgEnvM.setVisibility(View.VISIBLE);
 						relExist.setVisibility(View.INVISIBLE);
-						relStock.setVisibility(gl.peBotStock ? View.VISIBLE : View.INVISIBLE);
+						relStock.setVisibility(gl.peBotStock && !gl.ruta_recolectora? View.VISIBLE : View.INVISIBLE);
 						relPrecio.setVisibility(View.INVISIBLE);
+						relImpClientes.setVisibility(gl.importa_clientes_en_ruta ? View.VISIBLE :  View.INVISIBLE);
 					}
 				}
 			}
@@ -8616,8 +8790,8 @@ public class ComWS extends PBase {
 		FileWriter wfile;
 
 		try {
-			String fname = Environment.getExternalStorageDirectory() + "/roaderror.txt";
-
+			//String fname = Environment.getExternalStorageDirectory() + "/roaderror.txt";
+			String fname = new File( AppPaths.road(this),  "roaderror.txt").getAbsolutePath();
 			wfile = new FileWriter(fname, false);
 			writer = new BufferedWriter(wfile);
 			writer.write(errstr);
@@ -8915,31 +9089,6 @@ public class ComWS extends PBase {
 		}
 	}
 
-	private void msgAskSinLicencia() {
-
-		try {
-			AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-
-			dialog.setTitle("Licencia");
-			dialog.setMessage("El dispositivo no tiene licencia válida");
-			dialog.setCancelable(false);
-
-			dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					restartApp();
-				}
-			});
-
-			dialog.show();
-
-		} catch (Exception e) {
-			addlog(new Object() {
-			}.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
-		}
-
-
-	}
-
 	public void SetStatusRecTo(String estado) {
 		try {
 			sql = "UPDATE P_RUTA SET PARAM2='" + StringUtils.trim(estado) + "'";
@@ -9035,7 +9184,8 @@ public class ComWS extends PBase {
         String fname,cor;
 
         try {
-            String path = Environment.getExternalStorageDirectory().getPath() + "/RoadPedidos";
+            //String path = Environment.getExternalStorageDirectory().getPath() + "/RoadPedidos";
+			String path = AppPaths.roadPedidos(this).getAbsolutePath();
             File directory = new File(path);
             File[] files = directory.listFiles();
 
@@ -9088,6 +9238,7 @@ public class ComWS extends PBase {
 
 		}
 	}
+
 	public void askDecodePrinter() {
 
 		try {
@@ -9309,56 +9460,149 @@ public class ComWS extends PBase {
 
 	}
 
+	private static void copyFileFast(File src, File dst) throws java.io.IOException {
+		if (dst.getParentFile() != null && !dst.getParentFile().exists()) dst.getParentFile().mkdirs();
+		try (java.nio.channels.FileChannel in = new java.io.FileInputStream(src).getChannel();
+			 java.nio.channels.FileChannel out = new java.io.FileOutputStream(dst).getChannel()) {
+			long size = in.size(), pos = 0;
+			while (pos < size) pos += in.transferTo(pos, size - pos, out);
+			out.force(true);
+		}
+	}
+
 	//region Activity Events
 
 	@Override
 	public void onBackPressed() {
-		try{
-			if (isbusy==0) {
-				if (gl.modoadmin) {
-					msgAskExitComplete();
-				} else {
-					super.onBackPressed();
+		try {
+			// 1) Si hay trabajo en curso, no cierres
+			if (isbusy != 0) {
+				toastcent("Procesando… espera por favor");
+				return;
+			}
+
+			// 2) Si quieres confirmar en modo admin, usa el diálogo y solo ahí finaliza
+			if (gl.modoadmin) {
+				msgAskExitComplete();   // <- en ese diálogo, llama a finishError() en el botón "Sí"
+				return;
+			}
+
+			// 3) Caso normal: cancela y devuelve RESULT_CANCELED a MainActivity
+			finishError("Carga cancelada por el usuario");
+
+			// Si prefieres mantener el back stack estándar:
+			// Intent data = new Intent().putExtra("error_msg", "Carga cancelada por el usuario");
+			// setResult(RESULT_CANCELED, data);
+			// super.onBackPressed();   // en vez de finishError()
+
+		} catch (Exception e) {
+			addlog(new Object(){}.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
+		}
+	}
+
+	/** Llamar cuando todo el seed/carga concluyó correctamente */
+	private void finishOk() {
+		setResult(PBase.RESULT_OK);
+		finish();
+	}
+
+	/** Llamar si falló la carga o el usuario canceló */
+	private void finishError(String msg) {
+		Intent data = new Intent();
+		data.putExtra("error_msg", msg);
+		setResult(PBase.RESULT_CANCELED, data);
+		finish();
+	}
+
+	// Ejemplo: si usas AsyncTask:
+	private class AsyncSeed extends AsyncTask<Void, Void, Boolean> {
+		String error;
+		@Override protected Boolean doInBackground(Void... v) {
+			try {
+				// Descargas, inserts, etc.
+				return true;
+			} catch (Exception e) {
+				error = e.getMessage();
+				return false;
+			}
+		}
+		@Override protected void onPostExecute(Boolean ok) {
+			if (ok) finishOk(); else finishError(error != null ? error : "Error de carga");
+		}
+	}
+
+	public void creaBackup(View v) {
+		try {
+			Uri out = Backups.backupRoadDbToDownloads(this);
+			toastcent("Backup en Descargas/ROAD.\n" + out);
+		} catch (Exception e) {
+			addlog("onBackupDbClick", e.getMessage(), "");
+			msgbox("No se pudo generar backup: " + e.getMessage());
+		}
+	}
+
+	// ¿Hay red activa con capacidad de Internet?
+	private boolean hasNetwork() {
+		try {
+			ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+			if (cm == null) return false;
+
+			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+				Network n = cm.getActiveNetwork();
+				if (n == null) return false;
+
+				NetworkCapabilities nc = cm.getNetworkCapabilities(n);
+				if (nc == null) return false;
+
+				// Debe tener capacidad de INTERNET y estar en algún transporte válido
+				boolean hasInternet = nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+				boolean hasTransport = nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+						|| nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+						|| nc.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET);
+				return hasInternet && hasTransport;
+			} else {
+				// Legacy (<= Lollipop)
+				@SuppressWarnings("deprecation")
+				NetworkInfo ni = cm.getActiveNetworkInfo();
+				return ni != null && ni.isConnected();
+			}
+		} catch (Exception ignored) {
+			return false;
+		}
+	}
+
+	// Etiqueta legible del transporte actual (Wi-Fi / Datos / Ethernet / Desconocido)
+	private String networkLabel() {
+		try {
+			ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+			if (cm == null) return "desconocido";
+
+			if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+				Network n = cm.getActiveNetwork();
+				if (n == null) return "sin red";
+
+				NetworkCapabilities nc = cm.getNetworkCapabilities(n);
+				if (nc == null) return "sin red";
+
+				if (nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) return "Wi-Fi";
+				if (nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) return "Datos móviles";
+				if (nc.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) return "Ethernet";
+				return "otro";
+			} else {
+				@SuppressWarnings("deprecation")
+				NetworkInfo ni = cm.getActiveNetworkInfo();
+				if (ni == null) return "sin red";
+				switch (ni.getType()) {
+					case ConnectivityManager.TYPE_WIFI:     return "Wi-Fi";
+					case ConnectivityManager.TYPE_MOBILE:   return "Datos móviles";
+					case ConnectivityManager.TYPE_ETHERNET: return "Ethernet";
+					default: return "otro";
 				}
 			}
-		}catch (Exception e){
-			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
+		} catch (Exception ignored) {
+			return "desconocido";
 		}
 	}
-
-	/*@Override
-	protected void onResume() {
-		super.onResume();
-		try {
-			this.wakeLock.acquire();
-		} catch (Exception e) {
-			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"wakelock");
-		}
-	}
-
-	@Override
-	protected void onPause() {
-		try {
-			this.wakeLock.release();
-		} catch (Exception e) {
-			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"wakelock");
-		}
-		super.onPause();
-	}
-
-	@Override
-	protected void onDestroy(){
-		super.onDestroy();
-
-		this.wakelock.release();
-	}
-
-	@Override
-	public void onSaveInstanceState(Bundle icicle) {
-		super.onSaveInstanceState(icicle);
-		this.wakelock.release();
-	}
-	*/
 
 	//endregion
 

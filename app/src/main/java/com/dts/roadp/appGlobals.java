@@ -1,6 +1,7 @@
 package com.dts.roadp;
 
 import android.app.Application;
+import android.content.Context;
 
 import com.dts.roadp.clsClasses.clsBonifItem;
 import com.dts.roadp.clsClasses.clsDemoDlg;
@@ -10,6 +11,26 @@ import com.epson.eposdevice.printer.Printer;
 import java.util.ArrayList;
 
 public class appGlobals extends Application {
+
+	private static volatile appGlobals inst;
+
+	@Override public void onCreate() {
+		super.onCreate();
+		inst = this;
+		CrashReporter.install(getApplicationContext());
+		deviceId   = DeviceIds.deviceId(this);
+		devicename = DeviceIds.deviceName();
+	}
+
+	// Si quieres el Application tipado:
+	public static appGlobals get() {
+		if (inst == null) throw new IllegalStateException("appGlobals not initialized");
+		return inst;
+
+	}
+
+	// Y el Context (por compatibilidad):
+	public static Context app() { return get().getApplicationContext(); }
 
 	public String ruta,rutanom,rutasup,sucur,rutatipo,rutatipog,vend,vendnom,gstr,gstr2,prod,um,umpres,umpresp,umstock,cliente,clitipo;
 	public String ubas,emp, empnom,imgpath,umpeso,lotedf,impresora, tipoImpresora, codSupervisor, ayudante, ayudanteID, vehiculo, vehiculoID;
@@ -28,7 +49,7 @@ public class appGlobals extends Application {
 	public boolean closeCliDet,closeVenta,promapl,pagado,pagocobro,sinimp,rutapos,devol,modoadmin;
 	public boolean usarpeso,banderafindia,depparc,incNoLectura,cobroPendiente,findiaactivo,banderaCobro;
 	public boolean permitir_cantidad_mayor, permitir_producto_nuevo,pedidomod,listapedidos;
-	public boolean validar_posicion_georef,cliente_extraruta, ingresoOC, es_extraruta;
+	public boolean validar_posicion_georef,cliente_extraruta, ingresoOC, es_extraruta, importa_clientes_en_ruta, ruta_recolectora;
 	public int mpago;
 	public String prodCanasta, corelFac, devcord;
 	public String IdCanal, IdSubcanal, IdTipologia, EditarClienteCanal, EditarClienteSubcanal, EditarTipologia;
@@ -43,7 +64,7 @@ public class appGlobals extends Application {
 	public String cuentaCliNuevo, codCliNuevo;
 
 	//#CKFK 20190319 Para facilidades de desarrollo se debe colocar la variable debug en true por defecto estará en false
-	public boolean debug=true;
+	public boolean debug=false;
 
 	public boolean gpsCliente = false;
 	public boolean repPrefactura = false;
@@ -57,12 +78,12 @@ public class appGlobals extends Application {
     public String dvcorreld,dvcorrelnc,dvestado,dvactuald,dvactualnc,devcornc, dvcorelnd, dvactualnd,dvSeriend,dvSerienc, dvSeried;
 
 	// Parametros Extra
-	public String peModal,peMon,peFormatoFactura,CodDev;
-	public Boolean peStockItf,peSolicInv,peAceptarCarga,peBotInv,peBotPrec,endPrint;
-	public Boolean peBotStock,peVehAyud,peEnvioParcial,peOrdPorNombre;
+	public String peModal="",peMon,peFormatoFactura,CodDev;
+	public boolean peStockItf,peSolicInv,peAceptarCarga,peBotInv,peBotPrec,endPrint;
+	public boolean peBotStock,peVehAyud,peEnvioParcial,peOrdPorNombre;
 	public boolean peImprFactCorrecta, pTransBarra;
 	public int peDec,peDecCant,peDecImp,peLimiteGPS,peMargenGPS,peVentaGps;
-	public Boolean peEditarNombre, peEditarNit, peEditarCanal, peEditarSubcanal, peEditarDir, peEditarContacto, peEditarEmail, peEditarTel, peEditarDistrito;
+	public boolean peEditarNombre, peEditarNit, peEditarCanal, peEditarSubcanal, peEditarDir, peEditarContacto, peEditarEmail, peEditarTel, peEditarDistrito;
 	
 	// Descuentos
 	
@@ -80,7 +101,7 @@ public class appGlobals extends Application {
 	public double gpspx,gpspy,gpscpx,gpscpy,gpscdist;
 	
 	//Id de Dispositivo Móvil
-	public String deviceId,devicename,numSerie;
+	public String deviceId="",devicename="",numSerie="";
 
 	// Epson
 	

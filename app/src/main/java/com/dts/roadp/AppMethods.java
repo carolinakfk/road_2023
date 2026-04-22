@@ -103,7 +103,7 @@ public class AppMethods {
 					sql += (sinEnviar?" WHERE STATCOM = 'N'":"");
 					break;
 
-				case "Devolucion":
+				case "Devoluciones":
 
 					sql="SELECT IFNULL(COUNT(COREL),0) AS CANT FROM D_NOTACRED";
 					sql += (sinEnviar?" WHERE STATCOM = 'N'":"");
@@ -787,17 +787,6 @@ public class AppMethods {
             if (ump.equalsIgnoreCase(gl.umpeso))  return false;
 
             return  true;
-
-/*
-            if (cod.equalsIgnoreCase("0006")) return true;
-            if (cod.equalsIgnoreCase("0629")) return true;
-            if (cod.equalsIgnoreCase("0747")) return true;
-            if (cod.equalsIgnoreCase("0506")) return true;
-            if (cod.equalsIgnoreCase("0508")) return true;
-
-            return  false;
-
- */
 
             } catch (Exception e) {
             toast(e.getMessage());return false;

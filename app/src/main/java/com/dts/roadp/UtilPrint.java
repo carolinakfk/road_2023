@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 
@@ -238,7 +239,8 @@ public class UtilPrint extends PBase {
 		FileWriter wfile;
 		String fname;	
 		
-		fname = Environment.getExternalStorageDirectory()+"/"+"printtest.txt";
+		//fname = Environment.getExternalStorageDirectory()+"/"+"printtest.txt";
+		fname = new File( AppPaths.road(this),  "printtest.txt").getAbsolutePath();
 		
 		try {
 

@@ -21,15 +21,11 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.dts.roadp.clsClasses.clsMenu;
 
-import org.apache.commons.lang.ArrayUtils;
-
+import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
 
 public class Menu extends PBase {
 
@@ -1439,7 +1435,7 @@ public class Menu extends PBase {
 
 			dialog.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
-					DatosSupervisor();
+					DatosSupervisor("Devolución a bodega",true);
 				}
 			});
 
@@ -1457,7 +1453,9 @@ public class Menu extends PBase {
 
 
 	}
-	private void DatosSupervisor() {
+
+    private void DatosSupervisor(String mensaje,
+                                 boolean esDevolucion) {
 
 		try {
 
@@ -1469,7 +1467,7 @@ public class Menu extends PBase {
 
 			final AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
-			alert.setTitle("Devolución a bodega");
+			alert.setTitle(mensaje);
 
 			final LinearLayout layout = new LinearLayout(this);
 			layout.setOrientation(LinearLayout.VERTICAL);
@@ -1532,7 +1530,11 @@ public class Menu extends PBase {
 					dtCorrectos = validaDatos(usr, pwd);
 
 					if (dtCorrectos) {
-						iniciaDevolucion();
+                        if (esDevolucion){
+                            iniciaDevolucion();
+                        }else{
+                            menuConfImpres();
+                        }
 					} else {
 						layout.removeAllViews();
 
@@ -1679,7 +1681,7 @@ public class Menu extends PBase {
 	public void showInvMenuUtils() {
 		try{
 			final AlertDialog Dialog;
-			final String[] selitems = {"Configuracion de impresora","Tablas","Correlativo CierreZ","Calculadora Kgs","Soporte","Serial del dipositivo","Impresión de barras", "Rating ROAD"};
+			final String[] selitems = {"Configuracion de impresora","Tablas","Correlativo CierreZ","Calculadora Kgs","Soporte","Serial del dipositivo","Impresión de barras", "Rating ROAD", "Exportar logs", "Borrar base de datos"};
 
 			menudlg = new AlertDialog.Builder(this);
 			menudlg.setIcon(R.drawable.utils48);
@@ -1690,7 +1692,7 @@ public class Menu extends PBase {
 
 					switch (item) {
 						case 0:
-							menuConfImpres();break;
+                            askConfiguracionImpresora() ;break;
 						case 1:
 							startActivity(new Intent(Menu.this,Tablas.class));break;
 						case 2:
@@ -1705,7 +1707,10 @@ public class Menu extends PBase {
 							startActivity(new Intent(Menu.this,imprime_barras.class));break;
 						case 7:
 							startActivity(new Intent(Menu.this,rating.class));break;
-
+						case 8:
+							Backups.exportCrashLogToDownloads(Menu.this);break;
+						case 9:
+							confirmarBorradoDbConBackup();break;
 					}
 
 					dialog.cancel();
@@ -2450,7 +2455,168 @@ public class Menu extends PBase {
 		startActivity(new Intent(this,RUCprueba.class));
 	}
 
-	//endregion
+	// Llama a este método desde tu botón/menú
+	private void confirmarBorradoDbConBackup() {
+		new android.app.AlertDialog.Builder(this)
+				.setTitle("Restablecer base de datos")
+				.setMessage("Se hará un respaldo y luego se borrará la base de datos.\n¿Desea continuar?")
+				.setIcon(R.drawable.ic_quest)
+				.setPositiveButton("Sí", (d, w) -> borrarDbConBackupAsync())
+				.setNegativeButton("No", null)
+				.show();
+	}
+
+	private void borrarDbConBackupAsync() {
+		final String DB_NAME = "road.db";
+
+		// UI: diálogo simple de “procesando…”
+		final android.app.AlertDialog progress = new android.app.AlertDialog.Builder(this)
+				.setView(new android.widget.ProgressBar(this))
+				.setTitle("Restableciendo")
+				.setMessage("Respaldando y borrando base de datos…")
+				.setCancelable(false)
+				.create();
+		progress.show();
+
+		java.util.concurrent.ExecutorService exec = java.util.concurrent.Executors.newSingleThreadExecutor();
+		android.os.Handler main = new android.os.Handler(android.os.Looper.getMainLooper());
+
+		exec.execute(() -> {
+			boolean bk = false, delOk = false;
+			String errMsg = null;
+
+			try {
+				// 1) Cierra conexiones/servicios antes de tocar archivos
+				cerrarDbParaReemplazo();
+				detenerServiciosYTrabajos();
+
+				// 2) Backup (ya tienes tu clase Backups)
+				bk = Backups.backupDbToAppAndDownloads(this, DB_NAME);
+
+				// 3) Borrado atómico (incluye -wal y -shm). Fallback manual por si algo falla.
+				java.io.File dbFile = getDatabasePath(DB_NAME);
+				try {
+					delOk = android.database.sqlite.SQLiteDatabase.deleteDatabase(dbFile);
+				} catch (Throwable t) {
+					// Fallback
+					java.io.File wal = new java.io.File(dbFile.getPath() + "-wal");
+					java.io.File shm = new java.io.File(dbFile.getPath() + "-shm");
+					try { if (wal.exists()) wal.delete(); } catch (Exception ignored) {}
+					try { if (shm.exists()) shm.delete(); } catch (Exception ignored) {}
+					try { if (dbFile.exists()) delOk = dbFile.delete(); } catch (Exception ignored) {}
+				}
+
+			} catch (Exception e) {
+				errMsg = e.getMessage();
+			}
+
+			boolean bkF = bk, delOkF = delOk;
+			String errF = errMsg;
+
+			main.post(() -> {
+				try { if (progress.isShowing()) progress.dismiss(); } catch (Exception ignored) {}
+
+				if (errF != null) {
+					msgbox("Error restableciendo BD: " + errF);
+					return;
+				}
+
+				String msg = (bkF ? "Respaldo OK. " : "Respaldo falló. ")
+						+ (delOkF ? "BD borrada." : "No se pudo borrar la BD.");
+				toastcent(msg);
+
+				// Si borramos, cierra la app con un breve delay para que se vea el toast
+				if (delOkF) {
+					toastcent("La aplicación se cerrará…");
+					new android.os.Handler(android.os.Looper.getMainLooper())
+							.postDelayed(this::cerrarAplicacionLimpio, 1200);
+				}
+			});
+
+			exec.shutdown();
+		});
+	}
+
+	private void cerrarDbParaReemplazo() {
+		try {
+			if (Con != null && Con.vDatabase != null && Con.vDatabase.isOpen()) Con.vDatabase.close();
+		} catch (Exception ignored) {}
+		try {
+			if (db != null && db.isOpen()) db.close();
+		} catch (Exception ignored) {}
+	}
+
+	private void detenerServiciosYTrabajos() {
+		// 1) Detén servicios (ajusta los tuyos)
+		try { stopService(new android.content.Intent(this, srvBase.class)); } catch (Exception ignored) {}
+		try { stopService(new android.content.Intent(this, srvEnvPedido.class)); } catch (Exception ignored) {}
+
+		// 2) (Opcional) Cancela trabajos de WorkManager si los usas
+		try {
+			androidx.work.WorkManager.getInstance(this).cancelAllWork();
+		} catch (Exception ignored) {}
+
+		// 3) (Opcional) Cancela alarmas si configuraste AlarmManager
+		// Mantén referencias a tus PendingIntent y cancélalas aquí si aplica.
+	}
+
+	private void cerrarAplicacionLimpio() {
+		// Vuelve a intentar cerrar DB por seguridad (si alguna referencia revive)
+		try {
+			if (Con != null && Con.vDatabase != null && Con.vDatabase.isOpen()) Con.vDatabase.close();
+		} catch (Exception ignored) {}
+		try {
+			if (db != null && db.isOpen()) db.close();
+		} catch (Exception ignored) {}
+
+		// Cierra actividades y quita de “Recientes”
+		try {
+			if (android.os.Build.VERSION.SDK_INT >= 21) {
+				finishAndRemoveTask();
+			} else {
+				finishAffinity();
+			}
+		} catch (Exception ignored) {}
+
+		// Último recurso: mata el proceso si algo queda colgado (evita System.exit(0))
+		// Úsalo si ves que la app sigue viva.
+		try {
+			android.os.Process.killProcess(android.os.Process.myPid());
+		} catch (Exception ignored) {}
+	}
+
+    public void askConfiguracionImpresora() {
+
+        try {
+
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+
+            dialog.setTitle("Configurar impresora");
+            dialog.setMessage("¿Va a modificar la configuración de la impresora, está seguro?");
+            dialog.setCancelable(false);
+
+            dialog.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    DatosSupervisor("Configuración impresora", false);
+                }
+            });
+
+            dialog.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                }
+            });
+
+            dialog.show();
+
+        } catch (Exception e) {
+            addlog(new Object() {
+            }.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
+        }
+
+
+    }
+
+    //endregion
 
 	//region Activity Events
 	
