@@ -285,4 +285,9 @@ public class clsClasses {
 		public double mm_estandar, mm_extaruta;
 		public int setup;
 	}
+
+	public class clsBeDescuento {
+		public String porPorcentaje = "";
+		public double valor = 0;
+	}
 }

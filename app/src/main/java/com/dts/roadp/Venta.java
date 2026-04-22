@@ -64,7 +64,8 @@ public class Venta extends PBase {
 
 	private int browse;
 
-	private double cant,desc,mdesc,prec,precsin,imp,impval,cantOriginal,pesoOriginal, umfactor,pesoprom=0,pesostock=0;
+	private double cant,desc,mdesc,prec,precsin,imp,impval,cantOriginal,pesoOriginal, umfactor,pesoprom=0,pesostock=0,
+	recargo = 0, recargoMonto = 0;
 	private double descmon,tot,totsin,percep,ttimp,ttperc,ttsin,prodtot,ipeso,icant,idisp;
 	private double px,py,cpx,cpy,cdist;
 
@@ -93,6 +94,8 @@ public class Venta extends PBase {
 
 	private AlertDialog.Builder dialogBarra;
 	private SwipeController swipeController;
+	public clsClasses.clsBeDescuento BeDescuento = null;
+	public clsClasses.clsBeDescuento BeRecargo = null;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -775,23 +778,34 @@ public class Venta extends PBase {
 
 			// Descuento
 
-			clsDesc = new clsDescuento(this, prodid, cant);
-			desc = clsDesc.getDesc();
-			mdesc = clsDesc.monto;
+			clsDesc = new clsDescuento(this, prodid, cant, gl.dpeso, um);
+			BeDescuento = clsDesc.getDescuentoRecargo(false);
+			BeRecargo = clsDesc.getDescuentoRecargo(true);
+			//desc = clsDesc.getDesc();
+			//mdesc = clsDesc.monto;
 
-			if (desc + mdesc > 0) {
+			if (BeDescuento != null || BeRecargo != null) {
 
 				browse = 3;
+				gl.prommodo = 0;
 				gl.promprod = prodid;
 				gl.promcant = cant;
 
-				if (desc > 0) {
+				if (BeDescuento != null && BeDescuento.valor > 0) {
+					gl.promdesc = BeDescuento.valor;
+				}
+
+				if (BeRecargo != null && BeRecargo.valor > 0) {
+					gl.recargo = BeRecargo.valor;
+				}
+
+				/*if (desc > 0) {
 					gl.prommodo = 0;
 					gl.promdesc = desc;
 				} else {
 					gl.prommodo = 1;
 					gl.promdesc = mdesc;
-				}
+				}*/
 
 				startActivity(new Intent(this, DescBon.class));
 
@@ -866,6 +880,10 @@ public class Venta extends PBase {
 	private void prodPrecio() {
 		try{
 			prec=prc.precio(prodid,cant,nivel,um,gl.umpeso,gl.dpeso,um);
+			tot = prc.tot;
+			descmon = prc.descmon;
+			recargo = prc.recargo;
+			recargoMonto = prc.recargoMonto;
 
             if (prc.existePrecioEspecial(prodid,cant,gl.cliente,gl.clitipo,um,gl.umpeso,gl.dpeso)) {
                 if (prc.precioespecial>0) prec=prc.precioespecial;
@@ -1046,6 +1064,8 @@ public class Venta extends PBase {
 			ins.add("IMP",impval);
 			ins.add("DES",desc);
 			ins.add("DESMON",descmon);
+			ins.add("RECARGO",0);
+			ins.add("RECARGOMONTO",0);
 
             if (rutatipo.equalsIgnoreCase("V")) {
                 if (porpeso) {
@@ -1201,6 +1221,8 @@ public class Venta extends PBase {
 			upd.add("DESMON",descmon);
 			upd.add("TOTAL",tot);
 			upd.add("PRECIODOC",prec);
+			upd.add("RECARGO",recargo);
+			upd.add("RECARGOMONTO",recargoMonto);
 
 			upd.Where("PRODUCTO='"+prodid+"'");
 
@@ -1264,7 +1286,7 @@ public class Venta extends PBase {
 
             db.beginTransaction();
 
-            sql="SELECT PRODUCTO,SIN_EXISTENCIA,UMVENTA,CANT,FACTOR,PRECIO,IMP,DES,DESMON,TOTAL,PRECIODOC,PESO,VAL1,VAL2 " +
+            sql="SELECT PRODUCTO,SIN_EXISTENCIA,UMVENTA,CANT,FACTOR,PRECIO,IMP,DES,DESMON,TOTAL,PRECIODOC,PESO,VAL1,VAL2, RECARGO, RECARGOMONTO " +
                 "FROM D_PEDIDOD WHERE COREL='"+gl.modpedid+"'";
             dt=Con.OpenDT(sql);
 
@@ -1296,6 +1318,8 @@ public class Venta extends PBase {
                     ins.add("VAL3",0);
                     ins.add("VAL4","");
                     ins.add("PERCEP",0);
+					ins.add("RECARGO",dt.getDouble(14));
+					ins.add("RECARGOMONTO",dt.getDouble(15));
 
                     db.execSQL(ins.sql());
 

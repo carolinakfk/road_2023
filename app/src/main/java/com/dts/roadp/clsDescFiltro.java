@@ -80,7 +80,7 @@ public class clsDescFiltro {
 		try {
 			
 			vSQL="SELECT CLIENTE,CTIPO,PRODUCTO,PTIPO,TIPORUTA,RANGOINI,RANGOFIN,DESCTIPO,VALOR,GLOBDESC,PORCANT,FECHAINI,FECHAFIN,CODDESC, " +
-					"NOMBRE, ES_RECARGO, PORPORCENTAJE, PRIORIDAD "+
+					"NOMBRE, ES_RECARGO, PORPORCENTAJE, PRIORIDAD, UMVENTA "+
 				 "FROM P_DESCUENTO WHERE (CTIPO=0) OR "+
 				  "((CTIPO=1) AND (CLIENTE='" + cliid + "')) OR "+
 				  "((CTIPO=2) AND (CLIENTE='" + CTipoNeg + "')) OR "+
@@ -116,6 +116,7 @@ public class clsDescFiltro {
 						ins.add("ES_RECARGO",DT.getInt(15));
 						ins.add("PORPORCENTAJE",DT.getString(16));
 						ins.add("PRIORIDAD",DT.getInt(17));
+						ins.add("UMVENTA",DT.getString(18));
 						
 				    	db.execSQL(ins.sql());
 				    	

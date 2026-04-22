@@ -2,13 +2,11 @@ package com.dts.roadp;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
 public class clsDescuento {
-		
+	protected clsClasses clsCls = new clsClasses();
 	public double monto;
 	
 	private int active;
@@ -23,15 +21,18 @@ public class clsDescuento {
 	
 	private Context cont;
 	
-	private String prodid,lineaid,slineaid,marcaid,canttipo;
-	private double cant,vmax,dmax;
+	private String prodid,lineaid,slineaid,marcaid,canttipo, umVenta;
+	private double cant,vmax,dmax, ppeso;
 	private boolean acum;
+	private appGlobals gll;
 	
-	public clsDescuento(Context context,String producto,double cantidad) {
-		
+	public clsDescuento(Context context,String producto,double cantidad, double peso, String umventa) {
+		this.gll = ((appGlobals) context.getApplicationContext());
 		cont=context;
 		
 		prodid=producto;cant=cantidad;
+		umVenta =  umventa;
+		ppeso = peso;
 
 		try {
 			active=0;
@@ -48,7 +49,84 @@ public class clsDescuento {
 	}
 	
 	// Descuento local
-	
+	public  clsClasses.clsBeDescuento getDescuentoRecargo(boolean esRecargo) {
+		clsClasses.clsBeDescuento TmpDescuento = null;
+		boolean encontrado = false;
+		Cursor DT;
+
+		try {
+			if (validaPermisos()) {
+				// Evaluar si realmente se necesita validar contra gl.umpeso
+				// Si es necesario
+				if (ppeso > 0 && gll.umpeso.equals(umVenta)) {
+					vSQL= "SELECT PRODUCTO, PTIPO, VALOR, PORCANT, PORPORCENTAJE "+
+							"FROM T_DESC WHERE  ("+ppeso+">=RANGOINI) AND ("+ppeso+"<=RANGOFIN) AND ES_RECARGO = "+(esRecargo ? 1 : 0)+
+							" AND (PTIPO<4) AND (DESCTIPO='R') AND (GLOBDESC='N') AND UMVENTA = '"+ umVenta +"' ORDER BY PRIORIDAD ASC ";
+				} else {
+					vSQL= "SELECT PRODUCTO, PTIPO, VALOR, PORCANT, PORPORCENTAJE "+
+							"FROM T_DESC WHERE  ("+cant+">=RANGOINI) AND ("+cant+"<=RANGOFIN) AND ES_RECARGO = "+(esRecargo ? 1 : 0)+
+							" AND (PTIPO<4) AND (DESCTIPO='R') AND (GLOBDESC='N') ORDER BY PRIORIDAD ASC ";
+				}
+
+				DT=Con.OpenDT(vSQL);
+
+				if (DT.getCount()==0) return null;
+
+				DT.moveToFirst();
+				while (!DT.isAfterLast()) {
+					TmpDescuento = clsCls.new clsBeDescuento();
+					TmpDescuento.porPorcentaje = DT.getString(4);
+
+					String valor = DT.getString(0);
+
+					switch (DT.getInt(1)) {
+						case 0:
+							if (valor.equalsIgnoreCase(prodid) || valor.equalsIgnoreCase("*")) {
+								TmpDescuento.valor = DT.getDouble(2);
+								encontrado = true;
+							}
+							break;
+
+						case 1:
+							if (valor.equalsIgnoreCase(slineaid)) {
+								TmpDescuento.valor = DT.getDouble(2);
+								encontrado = true;
+							}
+							break;
+
+						case 2:
+							if (valor.equalsIgnoreCase(lineaid)) {
+								TmpDescuento.valor = DT.getDouble(2);
+								encontrado = true;
+							}
+							break;
+
+						case 3:
+							if (valor.equalsIgnoreCase(marcaid)) {
+								TmpDescuento.valor = DT.getDouble(2);
+								encontrado = true;
+							}
+							break;
+					}
+
+					if (encontrado) {
+						break;
+					}
+
+					DT.moveToNext();
+				}
+
+				if (!encontrado) {
+					return null;
+				}
+			}
+		} catch (Exception e) {
+			MU.msgbox(e.getMessage());
+		}
+
+		return TmpDescuento;
+	}
+
 	public double getDesc(){
 		double dval=0;
 		

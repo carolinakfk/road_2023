@@ -116,6 +116,7 @@ public class BaseDatosScript {
 					"[CUMPLE_MONTO_MINIMO] INTEGER NOT NULL,"+
 					"[TIPO_PEDIDO] TEXT NOT NULL,"+
 					"[TOTAL_MONTO_MINIMO] REAL NOT NULL,"+
+					"[RECARGOMONTO] REAL NOT NULL,"+
 					"PRIMARY KEY ([COREL])"+
 					");";
 			database.execSQL(vSQL);
@@ -152,6 +153,8 @@ public class BaseDatosScript {
 					"[UMSTOCK] TEXT NOT NULL,"+
 					"[UMPESO] TEXT NOT NULL,"+
 					"[SIN_EXISTENCIA] INTEGER NOT NULL,"+  //JP20210614
+					"[RECARGO] REAL NOT NULL,"+
+					"[RECARGOMONTO] REAL NOT NULL,"+
 					"PRIMARY KEY ([COREL],[PRODUCTO],[SIN_EXISTENCIA])"+
 					");";
 			database.execSQL(vSQL);
@@ -1611,7 +1614,8 @@ public class BaseDatosScript {
 					"[ES_RECARGO] INT NOT NULL,"+
 					"[PORPORCENTAJE] TEXT NOT NULL,"+
 					"[PRIORIDAD] INT NOT NULL,"+
-					"PRIMARY KEY ([CLIENTE],[CTIPO],[PRODUCTO],[PTIPO],[TIPORUTA],[RANGOINI])"+
+					"[UMVENTA] TEXT NOT NULL,"+
+					"PRIMARY KEY ([CLIENTE],[CTIPO],[PRODUCTO],[PTIPO],[TIPORUTA],[RANGOINI],[ES_RECARGO])"+
 					");";
 			database.execSQL(vSQL);
 
@@ -2484,6 +2488,8 @@ public class BaseDatosScript {
 					"[PERCEP] REAL NOT NULL,"+
 					"[CANTORIGINAL] REAL,"+
 					"[PESOORIGINAL] REAL,"+
+					"[RECARGO] REAL NOT NULL,"+
+					"[RECARGOMONTO] REAL NOT NULL,"+
 					"PRIMARY KEY ([PRODUCTO],[UM],[SIN_EXISTENCIA])"+
 					");";
 			database.execSQL(vSQL);
@@ -2535,6 +2541,7 @@ public class BaseDatosScript {
 					"[ES_RECARGO] INT NOT NULL,"+
 					"[PORPORCENTAJE] INT NOT NULL,"+
 					"[PRIORIDAD] INT NOT NULL,"+
+					"[UMVENTA] TEXT NOT NULL,"+
 					"PRIMARY KEY ([ID])"+
 					");";
 			database.execSQL(vSQL);

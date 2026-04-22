@@ -7,7 +7,7 @@ import java.text.DecimalFormat;
 
 public class Precio {
 
-	public double costo,descmon,imp,impval,tot,precsin,totsin,precdoc,precioespecial;
+	public double costo,descmon,imp,impval,tot,precsin,totsin,precdoc,precioespecial, recargoMonto, recargo;
 	
 	private int active;
 	private android.database.sqlite.SQLiteDatabase db;
@@ -23,6 +23,9 @@ public class Precio {
 	private double cant,desc,prec;
 	private int nivel,ndec;
 	private boolean porpeso;
+	public clsClasses.clsBeDescuento BeDescuento = null;
+	public clsClasses.clsBeDescuento BeRecargo = null;
+	private appGlobals gll;
 
 	public Precio(Context context,MiscUtils mutil,int numdec) {
 		
@@ -37,9 +40,11 @@ public class Precio {
 		} catch (Exception e) {
 		}
 		
-		costo=0;descmon=0;imp=0;tot=0;
+		costo=0;descmon=0;imp=0;tot=0;recargoMonto=0;
 		
 		ffrmprec = new DecimalFormat("#0.00");
+
+		this.gll = ((appGlobals) context.getApplicationContext());
 		
 	}
 
@@ -48,9 +53,23 @@ public class Precio {
 		prodid=prod;cant=pcant;nivel=nivelprec;
 		um=unimedida;umpeso=unimedidapeso;umventa=umven;
 		prec=0;costo=0;descmon=0;imp=0;tot=0;precioespecial=0;
+		recargo = 0;recargoMonto=0;
 
-		clsDescuento clsDesc=new clsDescuento(cont,prodid,cant);
-		desc=clsDesc.getDesc();
+		clsDescuento clsDesc=new clsDescuento(cont,prodid,cant, ppeso, umventa);
+		BeDescuento = clsDesc.getDescuentoRecargo(false);
+		BeRecargo = clsDesc.getDescuentoRecargo(true);
+
+		if (gll.promdesc != 0 && BeDescuento != null) {
+			if (gll.promdesc != BeDescuento.valor) {
+				BeDescuento.valor = gll.promdesc;
+			}
+		}
+
+		if (gll.recargo != 0 && BeRecargo != null) {
+			if (gll.recargo != BeRecargo.valor) {
+				BeRecargo.valor = gll.recargo;
+			}
+		}
 
 		if (cant>0) prodPrecio(ppeso);else prodPrecioBase();
 
@@ -105,7 +124,24 @@ public class Precio {
 				pr=0;
 			}
 	    }
-		
+
+		descmon = 0;
+		if (BeDescuento != null) {
+			desc = BeDescuento.valor;
+			descmon = BeDescuento.porPorcentaje.equals("S") ? pr * desc / 100 : desc;
+			descmon = mu.round(descmon, ndec);
+		}
+
+		if (BeRecargo != null) {
+			recargo = BeRecargo.valor;
+			recargoMonto = BeRecargo.porPorcentaje.equals("S") ? pr * recargo / 100 : recargo;
+			recargoMonto = mu.round(recargoMonto, ndec);
+		}
+
+		//#AT20260325 Al precio unitario le restamos el descuento
+		//Si existe recargo se aplica
+		pr = pr - descmon + recargoMonto;
+
 		totsin=pr*cant;tsimp=mu.round(totsin,ndec);
 		
 		//percep=0;
@@ -114,10 +150,11 @@ public class Precio {
 		pr=pr*(1+imp/100);
 
 		// total
-		stot=pr*cant;stot=mu.round(stot,ndec);
+		stot=pr*cant;
+		stot=mu.round(stot,ndec);
 		if (imp>0) impval=stot-tsimp; else impval=0;
-		descmon=(double) (stot*desc/100);descmon=mu.round(descmon,ndec);
-		tot=stot-descmon;
+		//descmon=(double) (stot*desc/100);descmon=mu.round(descmon,ndec);
+		tot=stot;
 
 		if (cant>0) prec=(double) (tot/cant); else prec=pr;
 
@@ -143,8 +180,8 @@ public class Precio {
 		// total
 		stot=prec*cant;stot=mu.round(stot,ndec);
 		if (imp>0) impval=stot-tsimp; else impval=0;
-		descmon=(double) (stot*desc/100);descmon=mu.round(descmon,ndec);
-		tot=stot-descmon;
+		//descmon=(double) (stot*desc/100);descmon=mu.round(descmon,ndec);
+		tot=stot;
 
 		if (imp==0) precsin=prec; else precsin=prec/(1+imp/100);
 		//Toast.makeText(cont,sprec+" - "+pprec+" / "+prec+" prec sin : "+precsin, Toast.LENGTH_SHORT).show();

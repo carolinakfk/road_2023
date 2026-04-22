@@ -62,6 +62,7 @@ public class PedidoRes extends PBase {
 	private double monto_a,monto_c,montop_a,montop_c;
 	private boolean acum,cleandprod,toledano,porpeso,prodstandby,impprecio;
 	private boolean cli_estandar,cli_nuevo,incluye_cerrados;
+	public double RecargoPorProducto = 0;
 
 	private clsClasses.clsMmCliente mm_cliente = null;
 	
@@ -354,6 +355,12 @@ public class PedidoRes extends PBase {
 				item = clsCls.new clsCDB();
 				item.Cod="Descuento";item.Desc=mu.frmcur(-descmon);item.Bandera=0;
 				items.add(item);
+
+				item = clsCls.new clsCDB();
+				item.Cod="Recargo";
+				item.Desc=mu.frmcur(+RecargoPorProducto);
+				item.Bandera=0;
+				items.add(item);
 				
 				item = clsCls.new clsCDB();
 				item.Cod="TOTAL";item.Desc=mu.frmcur(tot);item.Bandera=1;
@@ -372,6 +379,12 @@ public class PedidoRes extends PBase {
 				
 				item = clsCls.new clsCDB();
 				item.Cod="Descuento";item.Desc=mu.frmcur(-descmon);item.Bandera=0;
+				items.add(item);
+
+				item = clsCls.new clsCDB();
+				item.Cod="Recargo";
+				item.Desc=mu.frmcur(+RecargoPorProducto);
+				item.Bandera=0;
 				items.add(item);
 				
 				item = clsCls.new clsCDB();
@@ -491,7 +504,7 @@ public class PedidoRes extends PBase {
 	
 	private boolean saveOrder(){
 		Cursor DT;
-		double tot,desc,imp,peso,vcant,vpeso,vfactor,factpres,cantinv;
+		double tot,desc,imp,peso,vcant,vpeso,vfactor,factpres,cantinv, recargomonto;
         String vprod,vumstock,vumventa,bandisp, vumstockaux = "",tipo_pedido;
         int dev_ins=1;
         int ncItem=0;
@@ -519,7 +532,7 @@ public class PedidoRes extends PBase {
 				ncItem++;
 			}
 
-			sql="SELECT SUM(TOTAL),SUM(DESMON),SUM(IMP),SUM(PESO) FROM T_VENTA";
+			sql="SELECT SUM(TOTAL),SUM(DESMON),SUM(IMP),SUM(PESO), SUM(RECARGOMONTO) FROM T_VENTA";
 			DT=Con.OpenDT(sql);
 			DT.moveToFirst();
 			
@@ -527,6 +540,7 @@ public class PedidoRes extends PBase {
 			desc=DT.getDouble(1);
 			imp=DT.getDouble(2);
 			peso=DT.getDouble(3);
+			recargomonto = DT.getDouble(4);
 			
 			db.beginTransaction();
 
@@ -575,11 +589,12 @@ public class PedidoRes extends PBase {
 			ins.add("CUMPLE_MONTO_MINIMO",bandera_monto);
 			ins.add("TIPO_PEDIDO",tipo_pedido);
 			ins.add("TOTAL_MONTO_MINIMO",monto_minimo);
+			ins.add("RECARGOMONTO", recargomonto);
 
 			db.execSQL(ins.sql());
           		
 			sql="SELECT PRODUCTO,CANT,PRECIO,IMP,DES,DESMON,TOTAL,PRECIODOC,PESO,VAL1,VAL2,UM,FACTOR,UMSTOCK," +
-					"SIN_EXISTENCIA,VAL3 FROM T_VENTA";
+					"SIN_EXISTENCIA,VAL3, RECARGO, RECARGOMONTO FROM T_VENTA";
 			DT=Con.OpenDT(sql);
 	
 			DT.moveToFirst();
@@ -625,6 +640,8 @@ public class PedidoRes extends PBase {
 
                 ins.add("UMPESO", gl.umpeso);
                 ins.add("SIN_EXISTENCIA", DT.getInt(14)); //JP20210614
+				ins.add("RECARGO", DT.getDouble(16));
+				ins.add("RECARGOMONTO", DT.getDouble(17));
 
                 String ss=ins.sql();
                 db.execSQL(ins.sql());
@@ -915,7 +932,7 @@ public class PedidoRes extends PBase {
 		Cursor DT;
 		
 		try {
-			sql="SELECT SUM(DESMON),SUM(TOTAL),SUM(IMP) FROM T_VENTA";	
+			sql="SELECT SUM(DESMON),SUM(TOTAL),SUM(IMP), SUM(RECARGOMONTO) FROM T_VENTA";
 			DT=Con.OpenDT(sql);
 				
 			DT.moveToFirst();
@@ -924,6 +941,7 @@ public class PedidoRes extends PBase {
 			stot0=tot+DT.getDouble(0);
 			
 			totimp=DT.getDouble(2);
+			RecargoPorProducto = DT.getDouble(3);
 			
 			return DT.getDouble(0);
 		} catch (Exception e) {

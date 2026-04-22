@@ -858,22 +858,22 @@ public class CliDet extends PBase {
 			fecha_vigencia=DT.getLong(4);
 			resguardo=DT.getInt(5)==1;
 
-			if(resguardo==false){
+			/*if(resguardo==false){
 				if(fecha_vigencia< du.getActDate()){
 					//#HS_20181128_1556 Cambie el contenido del mensaje.
 					mu.msgbox("La resolución esta vencida. No se puede continuar con la venta.");
 					return false;
 				}
-			}
+			}*/
 
-			if(resguardo==false){
+			/*if(resguardo==false){
 				diferencia = fecha_vigencia - du.getActDate();
 				if( diferencia <= 30){
 					//#HS_20181128_1556 Cambie el contenido del mensaje.
 					mu.msgbox("La resolución vence en "+diferencia+". No se puede continuar con la venta.");
 					return false;
 				}
-			}
+			}*/
 
 			if (ca1>=cf) {
 				//#HS_20181128_1556 Cambie el contenido del mensaje.
