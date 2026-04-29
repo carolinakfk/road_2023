@@ -74,6 +74,7 @@ public class ListAdaptExistPed extends BaseAdapter {
 			holder.reltot = (RelativeLayout) convertView.findViewById(R.id.relexistt);
 
             holder.imgCer = convertView.findViewById(R.id.imageView28);
+			holder.imgPromocion = convertView.findViewById(R.id.imgPromocion);
 			
 			convertView.setTag(holder);
 		} else {
@@ -128,6 +129,12 @@ public class ListAdaptExistPed extends BaseAdapter {
             holder.imgCer.setVisibility(View.INVISIBLE);
         }
 
+		if (items.get(position).promocion == 1) {
+			holder.imgPromocion.setVisibility(View.VISIBLE);
+		} else {
+			holder.imgPromocion.setVisibility(View.GONE);
+		}
+
         if(selectedIndex!= -1 && position == selectedIndex) {
 			convertView.setBackgroundColor(Color.rgb(26,138,198));
         } else {
@@ -141,7 +148,7 @@ public class ListAdaptExistPed extends BaseAdapter {
 	static class ViewHolder {
 		TextView  lblLote,lblLotem,lblCod,lblDesc,lblValor,lblValorM,lblValorT,lblPeso,lblPesoM,lblPesoT;
 		RelativeLayout reltitle,relbueno,relmalo,reltot;
-		ImageView imgCer;
+		ImageView imgCer, imgPromocion;
 	}
 	
 }

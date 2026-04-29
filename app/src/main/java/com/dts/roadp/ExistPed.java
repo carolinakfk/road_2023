@@ -244,8 +244,11 @@ public class ExistPed extends PBase {
 
         try {
 
-            sql ="SELECT P_STOCK_PV.CODIGO,P_PRODUCTO.DESCLARGA " +
-                 "FROM P_STOCK_PV INNER JOIN P_PRODUCTO ON P_PRODUCTO.CODIGO=P_STOCK_PV.CODIGO  WHERE 1=1 ";
+            sql ="SELECT P_STOCK_PV.CODIGO,P_PRODUCTO.DESCLARGA, " +
+                    " CASE WHEN P_DESCUENTO.PRODUCTO IS NOT NULL THEN 1 ELSE 0 END AS PROMOCION " +
+                 "FROM P_STOCK_PV INNER JOIN P_PRODUCTO ON P_PRODUCTO.CODIGO=P_STOCK_PV.CODIGO " +
+                    " LEFT JOIN P_DESCUENTO ON P_DESCUENTO.PRODUCTO = P_STOCK_PV.CODIGO" +
+                    " WHERE 1=1 ";
             if (vF.length() > 0) sql = sql + "AND ((P_PRODUCTO.DESCLARGA LIKE '%" + vF + "%') OR (P_PRODUCTO.CODIGO LIKE '%" + vF + "%')) ";
             sql+="GROUP BY P_STOCK_PV.CODIGO,P_PRODUCTO.DESCLARGA ";
             sql+="ORDER BY P_STOCK_PV.CODIGO";
@@ -281,6 +284,7 @@ public class ExistPed extends PBase {
                 item = clsCls.new clsExist();
                 item.Cod = pcod;
                 item.Desc = dp.getString(1);
+                item.promocion = dp.getInt(2);
                 item.flag = 0;
                 item.items=icnt;
 

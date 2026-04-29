@@ -524,7 +524,7 @@
         <activity
             android:name=".Exist"
             android:label="@string/title_activity_exist"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@android:style/Theme.Holo.Light.NoActionBar" />
         <activity
             android:name=".ComWSSend"
             android:screenOrientation="portrait"
