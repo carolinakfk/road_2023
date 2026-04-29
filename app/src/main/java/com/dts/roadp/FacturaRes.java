@@ -113,6 +113,7 @@ public class FacturaRes extends PBase {
 	private String urlDocNT = "";
 	private String QR = "";
 	private boolean exito = true;
+	private double RecargoMontoTotal = 0;
 
 	@SuppressLint("MissingPermission")
 	@Override
@@ -842,6 +843,12 @@ public class FacturaRes extends PBase {
 				item.Cod="Descuento";item.Desc=mu.frmcur(-descmon);item.Bandera=0;
 				items.add(item);
 
+				item = clsCls.new clsCDB();
+				item.Cod="Recargo";
+				item.Desc=mu.frmcur(+RecargoMontoTotal);
+				item.Bandera=0;
+				items.add(item);
+
 				if (gl.dvbrowse!=0){
 
 					item = clsCls.new clsCDB();
@@ -1098,6 +1105,8 @@ public class FacturaRes extends PBase {
 			}else{
 				ins.add("CODIGO_RUTA_PEDIDO","");
 			}
+
+			ins.add("RECARGOMONTO",RecargoMontoTotal);
 
 			db.execSQL(ins.sql());
 
@@ -1676,7 +1685,7 @@ public class FacturaRes extends PBase {
 
 			//region D_FACTURAD , D_FACTURAD_LOTES
 
-			sql="SELECT PRODUCTO,CANT,PRECIO,IMP,DES,DESMON,TOTAL,PRECIODOC,PESO,VAL1,VAL2,UM,FACTOR,UMSTOCK FROM T_VENTA";
+			sql="SELECT PRODUCTO,CANT,PRECIO,IMP,DES,DESMON,TOTAL,PRECIODOC,PESO,VAL1,VAL2,UM,FACTOR,UMSTOCK, RECARGO, RECARGOMONTO FROM T_VENTA";
 			dt=Con.OpenDT(sql);
 
 			double TotalFact = 0;
@@ -1711,7 +1720,9 @@ public class FacturaRes extends PBase {
 				ins.add("FACTOR",dt.getDouble(12));
 				ins.add("UMSTOCK",dt.getString(13));ss=dt.getString(13);
 				ins.add("UMPESO",gl.umpeso); //#HS_20181120_1625 Se agrego el valor gl.umpeso anteriormente estaba ""
-			    db.execSQL(ins.sql());
+				ins.add("RECARGO",dt.getDouble(14));
+				ins.add("RECARGOMONTO",dt.getDouble(15));
+				db.execSQL(ins.sql());
 
 			    vprod=dt.getString(0);
 				vumstock=dt.getString(13);
@@ -2945,7 +2956,7 @@ public class FacturaRes extends PBase {
 		Cursor DT;
 
 		try {
-			sql="SELECT SUM(DESMON),SUM(TOTAL),SUM(IMP) FROM T_VENTA";
+			sql="SELECT SUM(DESMON),SUM(TOTAL),SUM(IMP), SUM(RECARGOMONTO) FROM T_VENTA";
 			DT=Con.OpenDT(sql);
 
 			if(DT.getCount()>0){
@@ -2957,6 +2968,7 @@ public class FacturaRes extends PBase {
                 totimp=DT.getDouble(2);
 
                 double rslt=DT.getDouble(0);
+				RecargoMontoTotal = DT.getDouble(3);
 
 				DT.close();
 

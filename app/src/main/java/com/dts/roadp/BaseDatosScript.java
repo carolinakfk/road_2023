@@ -628,6 +628,7 @@ public class BaseDatosScript {
 					"[CERTIFICADA_DGI] INTEGER NOT NULL,"+
 					"[CUFE] TEXT,"+
 					"[ORDEN_COMPRA] TEXT,"+
+					"[RECARGOMONTO] REAL NOT NULL,"+
 					"PRIMARY KEY ([COREL])"+
 					");";
 			database.execSQL(vSQL);
@@ -656,6 +657,8 @@ public class BaseDatosScript {
 					"[FACTOR] REAL NOT NULL,"+
 					"[UMSTOCK] TEXT NOT NULL,"+
 					"[UMPESO] TEXT NOT NULL,"+
+					"[RECARGO] REAL NOT NULL,"+
+					"[RECARGOMONTO] REAL NOT NULL,"+
 					"PRIMARY KEY ([COREL],[PRODUCTO])"+
 					");";
 			database.execSQL(vSQL);
