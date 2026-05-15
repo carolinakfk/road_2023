@@ -204,12 +204,17 @@ public class MainActivity extends PBase {
         ok &= (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            ok &= (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED);
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             ok &= (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN)
                     == PackageManager.PERMISSION_GRANTED);
             ok &= (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
                     == PackageManager.PERMISSION_GRANTED);
-        } else {
+        }else {
             ok &= (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH)
                     == PackageManager.PERMISSION_GRANTED);
             ok &= (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN)
@@ -233,6 +238,11 @@ public class MainActivity extends PBase {
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) toAsk.add(Manifest.permission.CAMERA);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) toAsk.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN)
@@ -457,7 +467,7 @@ public class MainActivity extends PBase {
             lblVer.setText(gl.parTipoVer + " Version " + gl.parNumVer + gl.parFechaVer);
 
             // C) Flag debug (carpeta segura) + migración opcional desde legacy
-            try {
+/*            try {
                 File debugFile = new File(AppPaths.road(this), "debug.txt");
                 if (!debugFile.exists()) {
                     File legacy = new File("/sdcard/debug.txt");
@@ -471,7 +481,40 @@ public class MainActivity extends PBase {
                     }
                 }
                 gl.debug = debugFile.exists();
-            } catch (Exception e) { gl.debug = false; }
+            } catch (Exception e) { gl.debug = false; }*/
+
+            try {
+                File debugFile = new File(AppPaths.road(this), "debug.txt");
+
+                if (!debugFile.exists()) {
+                    File legacy = new File(Environment.getExternalStorageDirectory(), "debug.txt");
+
+                    if (legacy.exists()) {
+                        try (FileInputStream in = new FileInputStream(legacy);
+                             FileOutputStream out = new FileOutputStream(debugFile)) {
+
+                            byte[] buf = new byte[8192];
+                            int n;
+
+                            while ((n = in.read(buf)) != -1) {
+                                out.write(buf, 0, n);
+                            }
+
+                            out.flush();
+                            out.getFD().sync();
+
+                        } catch (Exception ex) {
+                            Log.e("DEBUG_FILE", "No se pudo copiar debug.txt", ex);
+                        }
+                    }
+                }
+
+                gl.debug = debugFile.exists();
+
+            } catch (Exception e) {
+                gl.debug = false;
+                Log.e("DEBUG_FILE", "Error general", e);
+            }
 
             // D) Migraciones una vez
             SharedPreferences sp = getSharedPreferences(PREFS, MODE_PRIVATE);
