@@ -279,9 +279,11 @@ public class Producto extends PBase {
 
                     if (modotol) { // La empresa es Toledano
 
-                        sql="SELECT DISTINCT P_PRODUCTO.CODIGO, P_PRODUCTO.DESCCORTA, P_PRODPRECIO.UNIDADMEDIDA, P_STOCK_PV.ESTADO , P_STOCK_PV.CANT, P_STOCK_PV.PESO  " +
+                        sql="SELECT DISTINCT P_PRODUCTO.CODIGO, P_PRODUCTO.DESCCORTA, P_PRODPRECIO.UNIDADMEDIDA, P_STOCK_PV.ESTADO , P_STOCK_PV.CANT, P_STOCK_PV.PESO, " +
+								"CASE WHEN P_DESCUENTO.PRODUCTO IS NOT NULL THEN 1 ELSE 0 END AS PROMOCION  " +
                                 "FROM P_PRODUCTO INNER JOIN	P_STOCK_PV ON P_STOCK_PV.CODIGO=P_PRODUCTO.CODIGO INNER JOIN " +
                                 "P_PRODPRECIO ON (P_STOCK_PV.CODIGO=P_PRODPRECIO.CODIGO)  " +
+								"LEFT JOIN P_DESCUENTO ON P_DESCUENTO.PRODUCTO = P_STOCK_PV.CODIGO " +
                                 "WHERE (P_PRODPRECIO.NIVEL = " + gl.nivel +") AND (P_PRODUCTO.ES_VENDIBLE=1) AND (ES_CANASTA = 0) ";
                     	if (gl.cliente_extraruta) {
 							 sql=sql+"AND (P_STOCK_PV.CANT=0) ";
@@ -306,9 +308,11 @@ public class Producto extends PBase {
 					
 				case 1:  // Venta
 
-					sql="SELECT DISTINCT P_PRODUCTO.CODIGO, P_PRODUCTO.DESCCORTA, P_PRODPRECIO.UNIDADMEDIDA " +
+					sql="SELECT DISTINCT P_PRODUCTO.CODIGO, P_PRODUCTO.DESCCORTA, P_PRODPRECIO.UNIDADMEDIDA, " +
+						" CASE WHEN P_DESCUENTO.PRODUCTO IS NOT NULL THEN 1 ELSE 0 END AS PROMOCION " +
 						"FROM P_PRODUCTO INNER JOIN	P_STOCK ON P_STOCK.CODIGO=P_PRODUCTO.CODIGO INNER JOIN " +
-						"P_PRODPRECIO ON (P_STOCK.CODIGO=P_PRODPRECIO.CODIGO)  " +
+						"P_PRODPRECIO ON (P_STOCK.CODIGO=P_PRODPRECIO.CODIGO) " +
+						" LEFT JOIN P_DESCUENTO ON P_DESCUENTO.PRODUCTO = P_STOCK.CODIGO  " +
 						"WHERE (P_STOCK.CANT > 0) AND (P_PRODPRECIO.NIVEL = " + gl.nivel +") AND (P_PRODUCTO.ES_VENDIBLE=1)  AND (ES_CANASTA = 0) ";
 					if (!mu.emptystr(famid)){
 						if (!famid.equalsIgnoreCase("0")) sql=sql+"AND (P_PRODUCTO.LINEA='"+famid+"') ";
@@ -317,9 +321,11 @@ public class Producto extends PBase {
 							                     "OR (P_PRODUCTO.CODIGO='" + vF + "')) ";
 					sql+="UNION ";
 
-					sql+="SELECT DISTINCT P_PRODUCTO.CODIGO, P_PRODUCTO.DESCCORTA, P_PRODPRECIO.UNIDADMEDIDA " +
+					sql+="SELECT DISTINCT P_PRODUCTO.CODIGO, P_PRODUCTO.DESCCORTA, P_PRODPRECIO.UNIDADMEDIDA, " +
+						" CASE WHEN P_DESCUENTO.PRODUCTO IS NOT NULL THEN 1 ELSE 0 END AS PROMOCION " +
 						"FROM P_PRODUCTO INNER JOIN	P_STOCKB ON P_STOCKB.CODIGO=P_PRODUCTO.CODIGO INNER JOIN " +
-						"P_PRODPRECIO ON (P_STOCKB.CODIGO=P_PRODPRECIO.CODIGO)  " +
+						"P_PRODPRECIO ON (P_STOCKB.CODIGO=P_PRODPRECIO.CODIGO) " +
+						" LEFT JOIN P_DESCUENTO ON P_DESCUENTO.PRODUCTO = P_STOCKB.CODIGO  " +
 						"WHERE (P_STOCKB.CANT > 0) AND (P_PRODPRECIO.NIVEL = " + gl.nivel +") AND " +
 							  "(P_PRODUCTO.ES_VENDIBLE=1) AND " +
 							  "(P_PRODUCTO.ES_CANASTA = 0) ";
@@ -329,7 +335,7 @@ public class Producto extends PBase {
 					if (vF.length()>0) sql=sql+"AND ((P_PRODUCTO.DESCCORTA LIKE '%" + vF + "%') OR (P_PRODUCTO.CODIGO='" + vF + "')) ";
 					sql+="UNION ";
 
-					sql+="SELECT DISTINCT P_PRODUCTO.CODIGO,P_PRODUCTO.DESCCORTA,''  " +
+					sql+="SELECT DISTINCT P_PRODUCTO.CODIGO,P_PRODUCTO.DESCCORTA,'', 0 AS PROMOCION  " +
 							"FROM P_PRODUCTO "  +
 							"WHERE (P_PRODUCTO.TIPO ='S')  AND (P_PRODUCTO.ES_VENDIBLE=1) AND (P_PRODUCTO.ES_CANASTA = 0) ";
 					if (!mu.emptystr(famid)){
@@ -395,6 +401,7 @@ public class Producto extends PBase {
 			  
 			  vItem.Cod=cod;
 			  vItem.Desc=name;
+			  vItem.promocion = DT.getInt(3);
 
 			  //#EJC20181127: En aprof. no tienen un viene vacío, colocar por defecto un.
 			  if (um.equalsIgnoreCase(""))  um="UN";
@@ -405,7 +412,10 @@ public class Producto extends PBase {
 
               if (prodtipo==0 && modotol) {
                   if (DT.getString(3).equalsIgnoreCase("C")) vItem.bandera=true;
-              }
+				  vItem.promocion = DT.getInt(6);
+              } else {
+				  vItem.promocion = DT.getInt(3);
+			  }
 
 			  items.add(vItem);
 			  vitems.add(vItem);

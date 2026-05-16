@@ -153,5 +153,6 @@ public class appGlobals extends Application {
 	public String url_lote_ruc_dv = ""; //"https://labpa.guru-soft.com/eDocPanama/4.0/Ruc/Consulta/Api/LoteRucDV"
 
 	public String RUC_token= "";
+	public double recargo = 0;
 
 }

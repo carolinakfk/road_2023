@@ -26,9 +26,9 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/lblETipo"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_weight="1"
-        android:width="0dip"
+        android:layout_alignParentRight="false"
+        android:layout_marginEnd="0dp"
+        android:layout_toStartOf="@+id/imageView34"
         android:maxLines="100"
         android:paddingLeft="5dp"
         android:paddingBottom="5dp"
@@ -59,6 +59,17 @@
         android:layout_marginEnd="0dp"
         android:padding="3dp"
         android:src="@drawable/ic_warn" />
+
+    <ImageView
+        android:id="@+id/imgPromocion"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_below="@+id/imageView17"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="0dp"
+        android:layout_marginEnd="0dp"
+        android:padding="3dp"
+        android:src="@drawable/promocion" />
 
     <TextView
         android:id="@+id/lblFaltante"

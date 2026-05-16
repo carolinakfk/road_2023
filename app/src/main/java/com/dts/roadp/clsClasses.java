@@ -8,6 +8,7 @@ public class clsClasses {
 		public String Cod,Desc,Text,um;
 		public boolean bandera,disp, es_despacho;
 		public double faltante, cantOriginal, pesoOriginal;
+		public int promocion = 0;
 	}
 	
 	public class clsCDB {
@@ -26,7 +27,7 @@ public class clsClasses {
 	public class clsExist {
 		public String Cod,Desc,Fecha,Valor,ValorM,ValorT,Peso,PesoM,PesoT,Lote,Doc,Centro,Stat,Estado;
 		public double cant,cantm;
-		public int id,flag,items;
+		public int id,flag,items, promocion = 0;
 	}
 
 	public class clsDevCan {
@@ -284,5 +285,10 @@ public class clsClasses {
 	public class  clsMmCliente {
 		public double mm_estandar, mm_extaruta;
 		public int setup;
+	}
+
+	public class clsBeDescuento {
+		public String porPorcentaje = "";
+		public double valor = 0;
 	}
 }
