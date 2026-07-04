@@ -3910,8 +3910,16 @@ public class ComWS extends PBase {
 
 		if (TN.equalsIgnoreCase("P_DESCUENTO")) {
 			SQL = "SELECT  CLIENTE,CTIPO,PRODUCTO,PTIPO,TIPORUTA,RANGOINI,RANGOFIN,DESCTIPO,VALOR,GLOBDESC,PORCANT,dbo.AndrDateIni(FECHAINI),dbo.AndrDateFin(FECHAFIN),CODDESC,NOMBRE, ES_RECARGO, " +
-					"PORPORCENTAJE, PRIORIDAD, UMVENTA ";
+					"PORPORCENTAJE, PRIORIDAD, UMVENTA, SUCURSAL, TIPOLOGIA ";
 			SQL += "FROM P_DESCUENTO WHERE DATEDIFF(D, FECHAINI,GETDATE()) >=0 AND DATEDIFF(D,GETDATE(), FECHAFIN) >=0";
+			return SQL;
+		}
+
+		if (TN.equalsIgnoreCase("P_DESCUENTO_COMBO_DET")) {
+			SQL = "SELECT DET.* ";
+			SQL += "FROM P_DESCUENTO_COMBO_DET DET ";
+			SQL += "INNER JOIN P_DESCUENTO DES ON DET.CODDESC = DES.CODDESC ";
+			SQL += "WHERE DATEDIFF(D, DES.FECHAINI, GETDATE()) >= 0 AND DATEDIFF(D, GETDATE(), DES.FECHAFIN) >= 0";
 			return SQL;
 		}
 
@@ -5049,11 +5057,12 @@ public class ComWS extends PBase {
 					nombretabla="P_TIPOLOGIA";break;
 				case 78:
 					nombretabla="P_MONTO_MINIMO_CLIENTE";break;
-
-                case 79://#CKFK 20210813 Cambié esto para el final
+				case 79:
+					nombretabla="P_DESCUENTO_COMBO_DET";break;
+                case 80://#CKFK 20210813 Cambié esto para el final
                     nombretabla="Procesando tablas ...";break;
 
-                case 80:
+                case 81:
 					procesaDatos();
 					//#AT 20220322 Se cambia el valor de las variables
 					//gl.permitir_cantidad_mayor, gl.permitir_producto_nuevo, gl.validar_posicion_georef

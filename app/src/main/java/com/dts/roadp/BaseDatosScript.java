@@ -1618,6 +1618,8 @@ public class BaseDatosScript {
 					"[PORPORCENTAJE] TEXT NOT NULL,"+
 					"[PRIORIDAD] INT NOT NULL,"+
 					"[UMVENTA] TEXT NOT NULL,"+
+					"[SUCURSAL] TEXT NOT NULL,"+
+					"[TIPOLOGIA] TEXT NOT NULL,"+
 					"PRIMARY KEY ([CLIENTE],[CTIPO],[PRODUCTO],[PTIPO],[TIPORUTA],[RANGOINI],[ES_RECARGO])"+
 					");";
 			database.execSQL(vSQL);
@@ -1629,6 +1631,21 @@ public class BaseDatosScript {
 			vSQL="CREATE INDEX P_DESCUENTO_idx3 ON P_DESCUENTO(FECHAINI)";
 			database.execSQL(vSQL);
 			vSQL="CREATE INDEX P_DESCUENTO_idx4 ON P_DESCUENTO(FECHAFIN)";
+			database.execSQL(vSQL);
+
+			vSQL="CREATE TABLE [P_DESCUENTO_COMBO_DET] ("+
+					"[CODDESC] INTEGER NOT NULL,"+
+					"[SECUENCIA] INTEGER NOT NULL,"+
+					"[GRUPO] TEXT,"+
+					"[PRODUCTO] TEXT,"+
+					"[CANTIDAD] REAL,"+
+					"[UMSTOCK] TEXT,"+
+					"[UMVENTA] TEXT,"+
+					"[OBLIGATORIO] INTEGER,"+
+					"[EMP] TEXT,"+
+					"[TIPO_PARTICIPACION_COMBO] TEXT,"+
+					"PRIMARY KEY ([CODDESC], [SECUENCIA])"+
+					");";
 			database.execSQL(vSQL);
 
 			vSQL="CREATE TABLE [P_EMPRESA] ("+
