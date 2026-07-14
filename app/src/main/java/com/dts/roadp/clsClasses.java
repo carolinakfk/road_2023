@@ -291,4 +291,61 @@ public class clsClasses {
 		public String porPorcentaje = "";
 		public double valor = 0;
 	}
+
+	public class clsBeP_DESCUENTO {
+		public String cliente = "";
+		public String ctipo = "";
+		public String producto = "";
+		public String ptipo = "";
+		public String tiporuta = "";
+		public double rangoIni = 0;
+		public double rangoFin = 0;
+		public String descTipo = "";
+		public double valor = 0;
+		public String globDesc = "";
+		public double porcAnt = 0;
+		public String fechaIni = "";
+		public String fechaFin = "";
+		public int codDesc = 0;
+		public String nombre = "";
+		public boolean esRecargo = false;
+		public String porPorcentaje = "";
+		public int prioridad = 0;
+		public String umVenta = "";
+		public String sucursal = "";
+		public String tipologia = "";
+	}
+
+	public class clsBeP_DESCUENTO_COMBO_DET {
+		public int codDesc = 0;
+		public int secuencia = 0;
+		public String producto = "";
+		public double cantidad = 0;
+	}
+
+	public class VentaLinea {
+		public String producto;
+		public String empresa;
+		public String um;
+		public double sinExistencia;
+		public double cant;
+		public String umStock;
+		public double factor;
+		public double precio;
+		public double imp;
+		public double des;
+		public double desMon;
+		public double total;
+		public double precioDoc;
+		public double peso;
+		public double val1;
+		public double val2;
+		public double val3;
+		public double val4;
+		public double percep;
+		public double cantOriginal;
+		public double pesoOriginal;
+		public double recargo;
+		public double recargoMonto;
+	}
 }

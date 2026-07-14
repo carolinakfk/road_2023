@@ -133,5 +133,6 @@ public class appGlobals extends Application {
 
 	public String RUC_token= "";
 	public double recargo = 0;
+	public int mostrar_pantalla_descuento = 0;
 
 }

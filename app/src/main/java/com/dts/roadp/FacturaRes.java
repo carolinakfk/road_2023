@@ -36,6 +36,9 @@ import com.example.edocsdk.Fimador;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -53,6 +56,7 @@ import Entidades.gRucRec;
 import Entidades.gUbiRec;
 import Entidades.rFE;
 import Facturacion.CatalogoFactura;
+import models.Catalogo;
 
 public class FacturaRes extends PBase {
 
@@ -106,6 +110,7 @@ public class FacturaRes extends PBase {
 	private final rFE Factura = new rFE();
 	private final rFE NotaCredito = new rFE();
 	private CatalogoFactura Catalogo;
+	private Catalogo DescCombos;
 	private String urltoken =  "";
 	private String usuario = "";
 	private String clave = "";
@@ -260,13 +265,22 @@ public class FacturaRes extends PBase {
 			}
 		}
 
+		//#AT20260709 Aca vamos a calcular los nuevos valores en T_VENTA
+		DescCombos = new Catalogo(this, Con, db);
+		AplicarDescuentosRecargosCombo(cliid);
+
 		fecha=du.getActDateTime();
 		fechae=fecha;
 		if (gl.peModal.equalsIgnoreCase("TOL")) fecha=app.fechaFactTol(du.getActDate());
 
 		clsDescGlob clsDesc = new clsDescGlob(this);
 
-		descpmon=totalDescProd();
+		//#AT20260913 Probarémos asi
+		if (gl.peModal.equalsIgnoreCase("TOL")) {
+			descpmon=totalDescProdNuevo();
+		} else {
+			descpmon = totalDescProd();
+		}
 
 		dmax= clsDesc.dmax;
 		acum= clsDesc.acum;
@@ -345,6 +359,34 @@ public class FacturaRes extends PBase {
 			}.getClass().getEnclosingMethod()).getName(),e.getMessage(),"");
 		}
 
+	}
+
+	public void AplicarDescuentosRecargosCombo(String cliente) {
+		try {
+
+			clsClasses.clsBeP_DESCUENTO beDescuento = DescCombos.GetDescuentoCombo(cliente, false);
+			clsClasses.clsBeP_DESCUENTO beRecargo = DescCombos.GetDescuentoCombo(cliente, true);
+
+			List<clsClasses.clsBeP_DESCUENTO_COMBO_DET> detDescuento = new ArrayList<>();
+			List<clsClasses.clsBeP_DESCUENTO_COMBO_DET> detRecargo = new ArrayList<>();
+
+			if (beDescuento != null) {
+				detDescuento = DescCombos.GetDetalleComboDescuento(beDescuento.codDesc);
+			}
+			if (beRecargo != null) {
+				detRecargo = DescCombos.GetDetalleComboDescuento(beRecargo.codDesc);
+			}
+
+			if (detDescuento.size() > 0) {
+				DescCombos.AplicarAjusteComboEnTVenta(detDescuento, beDescuento, beRecargo);
+			}
+			if (detRecargo.size() > 0) {
+				DescCombos.AplicarAjusteComboEnTVenta(detRecargo, beDescuento, beRecargo);
+			}
+		} catch (Exception e) {
+			msgbox(Objects.requireNonNull(new Object() {
+			}.getClass().getEnclosingMethod()).getName()+" . "+e.getMessage());
+		}
 	}
 
 	public void paySelect(View view) {
@@ -839,15 +881,19 @@ public class FacturaRes extends PBase {
 				item.Cod="Subtotal";item.Desc=mu.frmcur(stot);item.Bandera=0;
 				items.add(item);
 
-				item = clsCls.new clsCDB();
-				item.Cod="Descuento";item.Desc=mu.frmcur(-descmon);item.Bandera=0;
-				items.add(item);
+				if (gl.mostrar_pantalla_descuento == 1) {
+					item = clsCls.new clsCDB();
+					item.Cod = "Descuento";
+					item.Desc = mu.frmcur(-descmon);
+					item.Bandera = 0;
+					items.add(item);
 
-				item = clsCls.new clsCDB();
-				item.Cod="Recargo";
-				item.Desc=mu.frmcur(+RecargoMontoTotal);
-				item.Bandera=0;
-				items.add(item);
+					item = clsCls.new clsCDB();
+					item.Cod = "Recargo";
+					item.Desc = mu.frmcur(+RecargoMontoTotal);
+					item.Bandera = 0;
+					items.add(item);
+				}
 
 				if (gl.dvbrowse!=0){
 
@@ -2407,7 +2453,7 @@ public class FacturaRes extends PBase {
 
 		return true;
 	}
-	
+
 	private void ActualizaFacturaTmp(String Corel, clsClasses.clsControlFEL ControlFEL) {
 		try {
 			if (!Catalogo.ExisteFacturaDControl(Corel).isEmpty()) {
@@ -2419,7 +2465,7 @@ public class FacturaRes extends PBase {
 			msgbox(new Object() {}.getClass().getEnclosingMethod().getName() + " - " + e.getMessage());
 		}
 	}
-	
+
 	public boolean ConexionValida() {
 		boolean valida = false;
 		try {
@@ -2977,6 +3023,50 @@ public class FacturaRes extends PBase {
             }else {
 			    return 0;
             }
+
+		} catch (Exception e) {
+			addlog(Objects.requireNonNull(new Object() {
+			}.getClass().getEnclosingMethod()).getName(),e.getMessage(),sql);
+			mu.msgbox("totalDescProd: " + e.getMessage());
+
+			return 0;
+		}
+
+	}
+
+	private double totalDescProdNuevo(){
+		Cursor DT;
+
+		try {
+			sql="SELECT SUM(ROUND(DESMON * FACTOR, 2))," +
+					" SUM(TOTAL)," +
+					" SUM(IMP)," +
+					" SUM(ROUND(RECARGOMONTO * FACTOR, 2))" +
+					"FROM (" +
+					"    SELECT DESMON, TOTAL, IMP, RECARGOMONTO," +
+					"           CASE WHEN UM = 'KG' THEN PESO ELSE CANT END AS FACTOR" +
+					"    FROM T_VENTA" +
+					")";
+			DT=Con.OpenDT(sql);
+
+			if(DT.getCount()>0){
+				DT.moveToFirst();
+
+				tot=DT.getDouble(1);
+				stot0=tot+DT.getDouble(0);
+
+				totimp=DT.getDouble(2);
+
+				double rslt=DT.getDouble(0);
+				RecargoMontoTotal = DT.getDouble(3);
+
+				DT.close();
+
+				return rslt;
+
+			}else {
+				return 0;
+			}
 
 		} catch (Exception e) {
 			addlog(Objects.requireNonNull(new Object() {

@@ -799,16 +799,15 @@ public class Venta extends PBase {
 					gl.recargo = BeRecargo.valor;
 				}
 
-				/*if (desc > 0) {
-					gl.prommodo = 0;
-					gl.promdesc = desc;
+				if (gl.mostrar_pantalla_descuento == 1) {
+					startActivity(new Intent(this, DescBon.class));
 				} else {
-					gl.prommodo = 1;
-					gl.promdesc = mdesc;
-				}*/
+					//#AT20260713 Mostrar u ocultar la confirmacion de descuento.
+					gl.prommdesc=0;
+					gl.promapl=true;
 
-				startActivity(new Intent(this, DescBon.class));
-
+					updDesc();
+				}
 			} else {
 				if (gl.bonus.size() > 0) {
 					Intent intent = new Intent(this, BonList.class);
@@ -4168,7 +4167,21 @@ public class Venta extends PBase {
 	}
 
 	//endregion
+	private void GetMostrarPantallaDesc() {
+		Cursor DT;
 
+		try {
+			sql="SELECT MOSTRAR_PANTALLA_DESCUENTO FROM P_EMPRESA";
+			DT=Con.OpenDT(sql);
+			DT.moveToFirst();
+
+			gl.mostrar_pantalla_descuento=DT.getInt(0);
+		} catch (Exception e) {
+			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
+			gl.mostrar_pantalla_descuento=0;
+		}
+
+	}
 	public void setEventosRecycler() {
 		adapter.setOnItemClickListener(position -> {
 			try {

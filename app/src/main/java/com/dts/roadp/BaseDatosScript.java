@@ -1403,6 +1403,7 @@ public class BaseDatosScript {
 					"[DESCRIPCION_PAGO] TEXT,"+
 					"[PERMITIR_PEDIDO_EXTRA_RUTA] INTEGER DEFAULT 0 NOT NULL,"+
 					"[TIPOLOGIA] TEXT ,"+
+					"[SUBTIPOLOGIA] TEXT ,"+
 					"PRIMARY KEY ([CODIGO])"+
 					");";
 			database.execSQL(vSQL);
@@ -1701,6 +1702,7 @@ public class BaseDatosScript {
 					"[AMBIENTE] TEXT,"+
 					"[URL_CONSULTAR_DOCUMENTO_POR_RUTA] TEXT,"+
 					"[URL_LOTE_RUC_DV] TEXT,"+
+					"[MOSTRAR_PANTALLA_DESCUENTO] INTEGER,"+
 					"PRIMARY KEY ([EMPRESA])"+
 					");";
 			database.execSQL(vSQL);
