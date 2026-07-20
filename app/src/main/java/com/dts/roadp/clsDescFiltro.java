@@ -78,7 +78,8 @@ public class clsDescFiltro {
 		i=0;
 		
 		try {
-			
+
+			//#AT20260719 Filtrar descuento validando que  el cliente no este excluido
 			vSQL="SELECT CLIENTE,CTIPO,PRODUCTO,PTIPO,TIPORUTA,RANGOINI,RANGOFIN,DESCTIPO,VALOR,GLOBDESC,PORCANT,FECHAINI,FECHAFIN,CODDESC, " +
 					"NOMBRE, ES_RECARGO, PORPORCENTAJE, PRIORIDAD, UMVENTA "+
 				 "FROM P_DESCUENTO WHERE (CTIPO=0) OR "+
@@ -90,7 +91,12 @@ public class clsDescFiltro {
 				  "((CTIPO=6) AND (CLIENTE='" + CSubCanal + "')) OR "+
 				  "((CTIPO=8) AND (CLIENTE='" + CSucursal + "')) OR "+
 				  "((CTIPO=9) AND (CLIENTE='" + NivelPrec + "')) "+
-				  " AND ((FECHAINI<="+fecha+") AND (FECHAFIN>="+fecha+")) ";
+				  " AND ((FECHAINI<="+fecha+") AND (FECHAFIN>="+fecha+")) " +
+				  " AND NOT EXISTS (SELECT 1 FROM P_CLIENTE_PROD_EXCLUIDOS E "+
+				  "   WHERE E.CLIENTE='" + cliid + "' "+
+				  "     AND E.PRODUCTO=D.PRODUCTO "+
+				  "     AND E.ACTIVO=1 "+
+			      "     AND (E.FECHAINI<="+fecha+") AND (E.FECHAFIN>="+fecha+")) ";
 			
 			DT=Con.OpenDT(vSQL);
 				

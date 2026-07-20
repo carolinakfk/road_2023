@@ -1650,6 +1650,22 @@ public class BaseDatosScript {
 					");";
 			database.execSQL(vSQL);
 
+			vSQL="CREATE TABLE [P_CLIENTE_PROD_EXCLUIDOS] ("+
+					"[CODCLIPRODEXC] INTEGER NOT NULL,"+
+					"[CLIENTE] TEXT NOT NULL,"+
+					"[PRODUCTO] TEXT NOT NULL,"+
+					"[FECHAINI] TEXT,"+
+					"[FECHAFIN] TEXT,"+
+					"[ACTIVO] INT,"+
+					"[ID_TRAZA_INTEGRACION_SAP] INTEGER,"+
+					"[FEC_AGR] TEXT,"+
+					"[USR_AGR] TEXT,"+
+					"[FEC_MOD] TEXT,"+
+					"[USR_MOD] TEXT,"+
+					"PRIMARY KEY ([CODCLIPRODEXC])"+
+					");";
+			database.execSQL(vSQL);
+
 			vSQL="CREATE TABLE [P_EMPRESA] ("+
 					"[EMPRESA] TEXT NOT NULL,"+
 					"[NOMBRE] TEXT NOT NULL,"+

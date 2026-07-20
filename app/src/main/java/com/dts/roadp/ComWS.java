@@ -3893,7 +3893,7 @@ public class ComWS extends PBase {
 			return SQL;
 		}
 
-		if (TN.equalsIgnoreCase("TMP_PRECESPEC")) {
+		/*if (TN.equalsIgnoreCase("TMP_PRECESPEC")) {
 
 			if (!cargasuper) {
 				SQL = "SELECT CODIGO,VALOR,PRODUCTO,PRECIO,UNIDADMEDIDA FROM TMP_PRECESPEC ";
@@ -3906,7 +3906,7 @@ public class ComWS extends PBase {
 			}
 
 			return SQL;
-		}
+		}*/
 
 		if (TN.equalsIgnoreCase("P_DESCUENTO")) {
 			SQL = "SELECT  CLIENTE,CTIPO,PRODUCTO,PTIPO,TIPORUTA,RANGOINI,RANGOFIN,DESCTIPO,VALOR,GLOBDESC,PORCANT,dbo.AndrDateIni(FECHAINI),dbo.AndrDateFin(FECHAFIN),CODDESC,NOMBRE, ES_RECARGO, " +
@@ -3921,6 +3921,18 @@ public class ComWS extends PBase {
 			SQL += "FROM P_DESCUENTO_COMBO_DET DET ";
 			SQL += "INNER JOIN P_DESCUENTO DES ON DET.CODDESC = DES.CODDESC ";
 			SQL += "WHERE DATEDIFF(D, DES.FECHAINI, GETDATE()) >= 0 AND DATEDIFF(D, GETDATE(), DES.FECHAFIN) >= 0";
+			return SQL;
+		}
+
+		if (TN.equalsIgnoreCase("P_CLIENTE_PROD_EXCLUIDOS")) {
+			SQL = " SELECT E.* FROM P_CLIENTE_PROD_EXCLUIDOS E WHERE E.ACTIVO = 1 " +
+					" AND CAST(GETDATE() AS DATE) >= CAST(E.FECHAINI AS DATE) " +
+					" AND CAST(GETDATE() AS DATE) <= CAST(E.FECHAFIN AS DATE) " +
+					" AND EXISTS (SELECT 1 FROM P_CLIRUTA CR WHERE CR.CLIENTE = E.CLIENTE " +
+					" AND CR.RUTA = '" + ActRuta + "') " +
+					" AND EXISTS (SELECT 1 FROM P_LINEARUTA LR WHERE LR.LINEA = E.PRODUCTO " +
+					" AND LR.RUTA = '" + ActRuta + "') " +
+					" ORDER BY E.CLIENTE, E.PRODUCTO";
 			return SQL;
 		}
 
