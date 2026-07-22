@@ -27,6 +27,12 @@ public class clsDescuento {
 	private appGlobals gll;
 	
 	public clsDescuento(Context context,String producto,double cantidad, double peso, String umventa) {
+		this(context, producto, cantidad, peso, umventa, null, null);
+	}
+
+	//#EJC20260721 fix(hh-desc-transaction): reutiliza la conexion activa en flujos transaccionales.
+	public clsDescuento(Context context,String producto,double cantidad, double peso, String umventa,
+					 BaseDatos dbconnection, android.database.sqlite.SQLiteDatabase database) {
 		this.gll = ((appGlobals) context.getApplicationContext());
 		cont=context;
 		
@@ -36,8 +42,15 @@ public class clsDescuento {
 
 		try {
 			active=0;
-			Con = new BaseDatos(context);
-			opendb();
+			if (dbconnection != null && database != null) {
+				Con=dbconnection;
+				db=database;
+				Con.vDatabase=db;
+				active=1;
+			} else {
+				Con = new BaseDatos(context);
+				opendb();
+			}
 		} catch (Exception e) {
 		}
 	    
@@ -56,17 +69,15 @@ public class clsDescuento {
 
 		try {
 			if (validaPermisos()) {
-				// Evaluar si realmente se necesita validar contra gl.umpeso
-				// Si es necesario
-				if (ppeso > 0 && gll.umpeso.equals(umVenta)) {
-					vSQL= "SELECT PRODUCTO, PTIPO, VALOR, PORCANT, PORPORCENTAJE "+
-							"FROM T_DESC WHERE  ("+ppeso+">=RANGOINI) AND ("+ppeso+"<=RANGOFIN) AND ES_RECARGO = "+(esRecargo ? 1 : 0)+
-							" AND (PTIPO<4) AND (DESCTIPO='R') AND (GLOBDESC='N') AND UMVENTA = '"+ umVenta +"' ORDER BY PRIORIDAD ASC ";
-				} else {
-					vSQL= "SELECT PRODUCTO, PTIPO, VALOR, PORCANT, PORPORCENTAJE "+
-							"FROM T_DESC WHERE  ("+cant+">=RANGOINI) AND ("+cant+"<=RANGOFIN) AND ES_RECARGO = "+(esRecargo ? 1 : 0)+
-							" AND (PTIPO<4) AND (DESCTIPO='R') AND (GLOBDESC='N') ORDER BY PRIORIDAD ASC ";
-				}
+				//#EJC20260721 fix(hh-desc-selection): incluye M, prioriza M y limita UM solo para R.
+				double baseEvaluacion = (ppeso > 0 && gll.umpeso.equalsIgnoreCase(umVenta)) ? ppeso : cant;
+				vSQL= "SELECT PRODUCTO,PTIPO,VALOR,PORCANT,PORPORCENTAJE,CODDESC,DESCTIPO,PRIORIDAD,UMVENTA,RANGOINI,RANGOFIN "+
+						"FROM T_DESC WHERE ES_RECARGO="+(esRecargo ? 1 : 0)+
+						" AND PTIPO<4 AND GLOBDESC='N' AND ("+
+						" (DESCTIPO='M' AND "+baseEvaluacion+">=RANGOINI) OR "+
+						" (DESCTIPO='R' AND "+baseEvaluacion+">=RANGOINI AND "+baseEvaluacion+"<=RANGOFIN "+
+						((ppeso > 0 && gll.umpeso.equalsIgnoreCase(umVenta)) ? " AND UMVENTA='"+umVenta+"'" : "")+
+						")) ORDER BY CASE WHEN DESCTIPO='M' THEN 0 ELSE 1 END,PRIORIDAD ASC";
 
 				DT=Con.OpenDT(vSQL);
 
@@ -76,6 +87,14 @@ public class clsDescuento {
 				while (!DT.isAfterLast()) {
 					TmpDescuento = clsCls.new clsBeDescuento();
 					TmpDescuento.porPorcentaje = DT.getString(4);
+					TmpDescuento.codDesc = DT.getInt(5);
+					TmpDescuento.descTipo = DT.getString(6);
+					TmpDescuento.prioridad = DT.getInt(7);
+					TmpDescuento.umVenta = DT.getString(8);
+					TmpDescuento.rangoIni = DT.getDouble(9);
+					TmpDescuento.rangoFin = DT.getDouble(10);
+					TmpDescuento.pTipo = DT.getInt(1);
+					TmpDescuento.producto = DT.getString(0);
 
 					String valor = DT.getString(0);
 

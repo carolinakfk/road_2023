@@ -2581,6 +2581,9 @@ public class BaseDatosScript {
 					"[PORPORCENTAJE] INT NOT NULL,"+
 					"[PRIORIDAD] INT NOT NULL,"+
 					"[UMVENTA] TEXT NOT NULL,"+
+					"[CODDESC] INTEGER DEFAULT 0 NOT NULL,"+
+					"[CTIPO] INTEGER DEFAULT 0 NOT NULL,"+
+					"[CLIENTE] TEXT DEFAULT '' NOT NULL,"+
 					"PRIMARY KEY ([ID])"+
 					");";
 			database.execSQL(vSQL);

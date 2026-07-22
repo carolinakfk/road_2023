@@ -3,6 +3,10 @@ package com.dts.roadp;
 import android.content.Context;
 import android.database.Cursor;
 
+import com.dts.roadp.promotions.PromotionTrace;
+import com.dts.roadp.promotions.SapPromotionCalculator;
+
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
 public class Precio {
@@ -77,9 +81,12 @@ public class Precio {
 	}
 
 	public boolean existePrecioEspecial(String prod,double pcant,String cliente,String clitipo,String unimedida,String unimedidapeso,double ppeso) {
-		prodid=prod;cant=pcant;um=unimedida;
+		prodid=prod;cant=pcant;um=unimedida;umventa=unimedida;
 		umpeso=unimedidapeso;
 		prec=0;costo=0;descmon=0;imp=0;tot=0;precioespecial=0;
+		clsDescuento clsDesc=new clsDescuento(cont,prodid,cant,ppeso,umventa);
+		BeDescuento=clsDesc.getDescuentoRecargo(false);
+		BeRecargo=clsDesc.getDescuentoRecargo(true);
 
 		prodPrecioEsp(ppeso,cliente,clitipo);
 		precioespecial=prec;
@@ -125,79 +132,49 @@ public class Precio {
 			}
 	    }
 
-		descmon = 0;
-		if (BeDescuento != null) {
-			desc = BeDescuento.valor;
-			descmon = BeDescuento.porPorcentaje.equals("S") ? pr * desc / 100 : desc;
-			descmon = mu.round(descmon, ndec);
-		}
+		//#EJC20260721 feat(hh-sap-calculator): total extendido autoritativo y precio derivado.
+		double baseFacturacion = ppeso > 0 ? ppeso : cant;
+		if (baseFacturacion <= 0) baseFacturacion = 1;
+		SapPromotionCalculator.Result resultado = SapPromotionCalculator.calculate(
+				SapPromotionCalculator.decimal(pr), SapPromotionCalculator.decimal(baseFacturacion),
+				toAdjustment(BeDescuento), toAdjustment(BeRecargo));
 
-		if (BeRecargo != null) {
-			recargo = BeRecargo.valor;
-			recargoMonto = BeRecargo.porPorcentaje.equals("S") ? pr * recargo / 100 : recargo;
-			recargoMonto = mu.round(recargoMonto, ndec);
-		}
+		desc = BeDescuento == null ? 0 : BeDescuento.valor;
+		recargo = BeRecargo == null ? 0 : BeRecargo.valor;
+		descmon = resultado.discountTotal.doubleValue();
+		recargoMonto = resultado.surchargeTotal.doubleValue();
+		totsin = resultado.authoritativeFinalTotal.doubleValue();
+		precsin = resultado.derivedUnitPrice.doubleValue();
 
-		//#AT20260325 Al precio unitario le restamos el descuento
-		//Si existe recargo se aplica
-		pr = pr - descmon + recargoMonto;
-
-		totsin=pr*cant;tsimp=mu.round(totsin,ndec);
-		
-		//percep=0;
-		
 		imp=getImp();
-		pr=pr*(1+imp/100);
+		BigDecimal impuestoTotal = SapPromotionCalculator.money(resultado.authoritativeFinalTotal
+				.multiply(SapPromotionCalculator.decimal(imp)).divide(new BigDecimal("100")));
+		BigDecimal totalConImpuesto = resultado.authoritativeFinalTotal.add(impuestoTotal)
+				.setScale(SapPromotionCalculator.MONEY_SCALE, SapPromotionCalculator.SAP_ROUNDING);
+		impval = impuestoTotal.doubleValue();
+		tot = totalConImpuesto.doubleValue();
+		prec = totalConImpuesto.divide(SapPromotionCalculator.decimal(baseFacturacion),
+				SapPromotionCalculator.UNIT_PRICE_SCALE, SapPromotionCalculator.SAP_ROUNDING).doubleValue();
+		precdoc = prec;
 
-		// total
-		stot=pr*cant;
-		stot=mu.round(stot,ndec);
-		if (imp>0) impval=stot-tsimp; else impval=0;
-		//descmon=(double) (stot*desc/100);descmon=mu.round(descmon,ndec);
-		tot=stot;
+		PromotionTrace.write(cont,"PROMO_CALCULATION",
+				"producto="+prodid+";basePrecio="+pr+";baseFacturacion="+baseFacturacion+
+				";codDesc="+(BeDescuento==null?0:BeDescuento.codDesc)+";tipo="+(BeDescuento==null?"":BeDescuento.descTipo)+
+				";descuento="+descmon+";recargo="+recargoMonto+";total="+tot+";precioDerivado="+prec);
 
-		if (cant>0) prec=(double) (tot/cant); else prec=pr;
+	}
 
-		try {
-			sprec=ffrmprec.format(prec);sprec=sprec.replace(",",".");
-			pprec=Double.parseDouble(sprec);
-			precdoc=mu.round(pprec,ndec);
-		} catch (Exception e) {
-			precdoc=prec;
+	private SapPromotionCalculator.Adjustment toAdjustment(clsClasses.clsBeDescuento condicion) {
+		if (condicion == null || condicion.valor == 0) return SapPromotionCalculator.Adjustment.none();
+		SapPromotionCalculator.AdjustmentKind kind;
+		if (!"S".equalsIgnoreCase(condicion.porPorcentaje)) {
+			kind = SapPromotionCalculator.AdjustmentKind.FIXED;
+		} else if ("M".equalsIgnoreCase(condicion.descTipo)) {
+			kind = SapPromotionCalculator.AdjustmentKind.PERCENTAGE_MULTIPLE;
+		} else {
+			kind = SapPromotionCalculator.AdjustmentKind.PERCENTAGE_RANGE;
 		}
-
-		//if (ppeso>0) prec=prec*ppeso/cant;
-			
-		try {
-			sprec=ffrmprec.format(prec);sprec=sprec.replace(",",".");
-			pprec=Double.parseDouble(sprec);
-			pprec=mu.round(pprec,ndec);
-		} catch (Exception e) {
-			pprec=prec;
-		}
-		prec=pprec;
-
-		// total
-		stot=prec*cant;stot=mu.round(stot,ndec);
-		if (imp>0) impval=stot-tsimp; else impval=0;
-		//descmon=(double) (stot*desc/100);descmon=mu.round(descmon,ndec);
-		tot=stot;
-
-		if (imp==0) precsin=prec; else precsin=prec/(1+imp/100);
-		//Toast.makeText(cont,sprec+" - "+pprec+" / "+prec+" prec sin : "+precsin, Toast.LENGTH_SHORT).show();
-		
-		totsin=mu.round(precsin*cant,ndec);
-		if (cant>0) precsin=(double) (totsin/cant);	
-		
-		try {
-			sprec=ffrmprec.format(precsin);sprec=sprec.replace(",",".");
-			pprec=Double.parseDouble(sprec);
-			pprec=mu.round(pprec,ndec);
-		} catch (Exception e) {
-			pprec=precsin;
-		}
-		precsin=pprec;
-
+		return new SapPromotionCalculator.Adjustment(kind, SapPromotionCalculator.decimal(condicion.valor));
 	}
 	
 	private void prodPrecioBase() {
@@ -381,56 +358,23 @@ public class Precio {
 			if (dt!=null) dt.close();
 		}
 
-		totsin=pr*cant;tsimp=mu.round(totsin,ndec);
-		imp=0;
-		pr=pr*(1+imp/100);
-
-		// total
-		stot=pr*cant;stot=mu.round(stot,ndec);
-		if (imp>0) impval=stot-tsimp; else impval=0;
-		descmon=(double) (stot*desc/100);descmon=mu.round(descmon,ndec);
-		tot=stot-descmon;
-
-		if (cant>0) prec=(double) (tot/cant); else prec=pr;
-
-		try {
-			sprec=ffrmprec.format(prec);sprec=sprec.replace(",",".");
-			pprec=Double.parseDouble(sprec);
-			precdoc=mu.round(pprec,ndec);
-		} catch (Exception e) {
-			precdoc=prec;
-		}
-
-		//if (ppeso>0) prec=prec*ppeso/cant;
-
-		try {
-			sprec=ffrmprec.format(prec);sprec=sprec.replace(",",".");
-			pprec=Double.parseDouble(sprec);
-			pprec=mu.round(pprec,ndec);
-		} catch (Exception e) {
-			pprec=prec;
-		}
-		prec=pprec;
-
-		// total
-		stot=prec*cant;stot=mu.round(stot,ndec);
-		if (imp>0) impval=stot-tsimp; else impval=0;
-		descmon=(double) (stot*desc/100);descmon=mu.round(descmon,ndec);
-		tot=stot-descmon;
-
-		if (imp==0) precsin=prec; else precsin=prec/(1+imp/100);
-		totsin=mu.round(precsin*cant,ndec);
-		if (cant>0) precsin=(double) (totsin/cant);
-
-		try {
-			sprec=ffrmprec.format(precsin);sprec=sprec.replace(",",".");
-			pprec=Double.parseDouble(sprec);
-			pprec=mu.round(pprec,ndec);
-		} catch (Exception e) {
-			pprec=precsin;
-		}
-
-		precsin=pprec;
+		//#EJC20260721 fix(hh-total-extendido): precio especial usa el mismo motor SAP.
+		if (pr <= 0) return;
+		double baseFacturacion=ppeso>0?ppeso:cant;
+		if (baseFacturacion<=0) baseFacturacion=1;
+		SapPromotionCalculator.Result resultado=SapPromotionCalculator.calculate(
+				SapPromotionCalculator.decimal(pr),SapPromotionCalculator.decimal(baseFacturacion),
+				toAdjustment(BeDescuento),toAdjustment(BeRecargo));
+		desc=BeDescuento==null?0:BeDescuento.valor;
+		recargo=BeRecargo==null?0:BeRecargo.valor;
+		descmon=resultado.discountTotal.doubleValue();
+		recargoMonto=resultado.surchargeTotal.doubleValue();
+		totsin=resultado.authoritativeFinalTotal.doubleValue();
+		tot=totsin;
+		precsin=resultado.derivedUnitPrice.doubleValue();
+		prec=precsin;
+		precdoc=prec;
+		imp=0;impval=0;
 
 	}
 

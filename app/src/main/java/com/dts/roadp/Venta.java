@@ -832,6 +832,9 @@ public class Venta extends PBase {
 			imp = prc.imp;
 			impval = prc.impval;
 			descmon = prc.descmon;
+			desc = prc.BeDescuento == null ? 0 : prc.BeDescuento.valor;
+			recargo = prc.recargo;
+			recargoMonto = prc.recargoMonto;
 
 			if (rutatipo.equalsIgnoreCase("P")) {
                 double factorconv=app.factorPeso(prodid);
@@ -881,6 +884,9 @@ public class Venta extends PBase {
 			prec=prc.precio(prodid,cant,nivel,um,gl.umpeso,gl.dpeso,um);
 			tot = prc.tot;
 			descmon = prc.descmon;
+			desc = prc.BeDescuento == null ? 0 : prc.BeDescuento.valor;
+			recargo = prc.recargo;
+			recargoMonto = prc.recargoMonto;
 			recargo = prc.recargo;
 			recargoMonto = prc.recargoMonto;
 
@@ -888,7 +894,8 @@ public class Venta extends PBase {
                 if (prc.precioespecial>0) prec=prc.precioespecial;
             }
 
-			prec=mu.round(prec,2);
+			//#EJC20260721 fix(hh-total-extendido): conserva precio derivado a seis decimales.
+			prec=mu.round(prec,6);
 		}catch (Exception e){
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
 		}
@@ -988,11 +995,8 @@ public class Venta extends PBase {
 			//peso=mu.round(gl.dpeso*gl.umfactor,gl.peDec);
 		}
 
-		if (porpeso) {
-			prodtot=mu.round(gl.prectemp*peso,2);
-		} else {
-			prodtot=mu.round(prec*cant,2);
-		}
+		//#EJC20260721 fix(hh-total-extendido): no reconstruye TOTAL desde precio visual.
+		prodtot=mu.round(prc.tot,2);
 
         if (rutatipo.equalsIgnoreCase("V")) {
             gl.umstock=app.umStock(prodid);
@@ -1063,13 +1067,13 @@ public class Venta extends PBase {
 			ins.add("IMP",impval);
 			ins.add("DES",desc);
 			ins.add("DESMON",descmon);
-			ins.add("RECARGO",0);
-			ins.add("RECARGOMONTO",0);
+			ins.add("RECARGO",recargo);
+			ins.add("RECARGOMONTO",recargoMonto);
 
             if (rutatipo.equalsIgnoreCase("V")) {
-                if (porpeso) {
-                    ins.add("PRECIO",gl.prectemp);
-                    ins.add("PRECIODOC",gl.prectemp);
+				if (porpeso) {
+					ins.add("PRECIO",prec);
+					ins.add("PRECIODOC",prc.precdoc);
                 } else {
                     ins.add("PRECIO",prec);
                     ins.add("PRECIODOC",precdoc);
@@ -1078,9 +1082,9 @@ public class Venta extends PBase {
                 ins.add("PESO",peso);
 
             } else {
-                 if (porpeso) {
-                    ins.add("PRECIO",gl.prectemp);vprec=gl.prectemp;
-                    ins.add("PRECIODOC",gl.prectemp);vprecdoc=gl.prectemp;
+				 if (porpeso) {
+					ins.add("PRECIO",prec);vprec=prec;
+					ins.add("PRECIODOC",prc.precdoc);vprecdoc=prc.precdoc;
                 } else {
                     ins.add("PRECIO",prec);vprec=prec;
                     ins.add("PRECIODOC",precdoc);vprecdoc=precdoc;
@@ -1926,7 +1930,7 @@ public class Venta extends PBase {
 			}
 
 			//if (prodPorPeso(prodid)) prec=mu.round2(prec/ppeso);
-			if (prodPorPeso(prodid)) prec = mu.round2(prec);
+			if (prodPorPeso(prodid)) prec = mu.round(prec,6);
 
 			if (prec == 0) {
 				msgbox("El producto no tiene precio definido para nivel de precio " + gl.nivel);
@@ -1942,7 +1946,7 @@ public class Venta extends PBase {
 			}else{
                 prodtot = prec;
             }
-			if (prodPorPeso(prodid)) prodtot = prec * ppeso;
+			prodtot = prc.tot;
 
 			//#AT20230125 Se quito el reondeo en total, por error en el total de la factura
             //prodtot = mu.round2(prodtot);
@@ -2336,7 +2340,8 @@ public class Venta extends PBase {
 				}
 			}
 
-			if (prodPorPeso(prodid)) prec=mu.round2(prec/ppeso);
+			//#EJC20260721 fix(hh-peso-total): Precio ya retorna valor unitario derivado.
+			if (prodPorPeso(prodid)) prec=mu.round(prec,6);
 			pprecdoc = prec;
 
 			//#CKFK 19-09-2019 Agregué la siguiente validación, de forma tal que el precio solo se multiplique por la el factbolsa
@@ -2349,7 +2354,7 @@ public class Venta extends PBase {
 
 			//#AT20230125 Se quito el reondeo en total de t_barra, por error en el total de la factura
 			//if (prodPorPeso(prodid)) prodtot=mu.round2(prec*ppeso);
-			if (prodPorPeso(prodid)) prodtot=prec*ppeso;
+			prodtot=prctr.tot;
 			//region T_BARRA
 
 			try {
@@ -2425,7 +2430,7 @@ public class Venta extends PBase {
 
 			//endregion
 
-			prec=mu.round(prec,2);
+			prec=mu.round(prec,6);
 			prodtot=mu.round(prodtot,2);
 
 			ins.init("T_VENTA");
@@ -3123,11 +3128,8 @@ public class Venta extends PBase {
 								//#CKFK 20210927 Vuelvo a obtener el precio del producto para obtener el total a facturar
 								getPrecio();
 
-								if (porpeso) {
-									prodtot=mu.round(prec*item.peso,2);
-								} else {
-									prodtot=mu.round(prec*cant,2);
-								}
+								//#EJC20260721 fix(hh-total-extendido): resultado autoritativo del motor.
+								prodtot=prc.tot;
 
 								item.precio = prec;
 								item.imp= prc.imp;
@@ -3137,10 +3139,6 @@ public class Venta extends PBase {
 							}
 
 							if (respuesta.equals("")){
-
-								if (porpeso) {
-									item.total=mu.round(item.precio*item.peso,2);
-								}
 
 								ins.init("T_VENTA");
 								ins.add("PRODUCTO",item.producto);
@@ -3671,7 +3669,9 @@ public class Venta extends PBase {
 		gl.ref2="";
 		gl.ref3="";
 
-		clsDescFiltro clsDFilt=new clsDescFiltro(this,gl.ruta,gl.cliente);
+		//#EJC20260721 fix(hh-desc-selection): vigencia basada en fecha de factura ROAD.
+		long fechaDocumentoDescuento = gl.peModal.equalsIgnoreCase("TOL") ? app.fechaFactTol(du.getActDate()) : du.getActDate();
+		clsDescFiltro clsDFilt=new clsDescFiltro(this,gl.ruta,gl.cliente,fechaDocumentoDescuento);
 
 		clsBonFiltro  clsBFilt=new clsBonFiltro(this,gl.ruta,gl.cliente);
 

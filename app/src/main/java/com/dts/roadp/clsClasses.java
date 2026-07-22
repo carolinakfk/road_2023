@@ -290,6 +290,15 @@ public class clsClasses {
 	public class clsBeDescuento {
 		public String porPorcentaje = "";
 		public double valor = 0;
+		//#EJC20260721 refactor(hh-desc-result): conserva genealogía de la condición elegida.
+		public int codDesc = 0;
+		public int prioridad = 0;
+		public int pTipo = 0;
+		public String descTipo = "";
+		public String producto = "";
+		public String umVenta = "";
+		public double rangoIni = 0;
+		public double rangoFin = 0;
 	}
 
 	public class clsBeP_DESCUENTO {
@@ -321,9 +330,16 @@ public class clsClasses {
 		public int secuencia = 0;
 		public String producto = "";
 		public double cantidad = 0;
+		public String grupo = "";
+		public String umStock = "";
+		public String umVenta = "";
+		public boolean obligatorio = true;
+		public String empresa = "";
+		public String tipoParticipacion = "";
 	}
 
 	public class VentaLinea {
+		public String lineKey;
 		public String producto;
 		public String empresa;
 		public String um;
@@ -332,6 +348,7 @@ public class clsClasses {
 		public String umStock;
 		public double factor;
 		public double precio;
+		public double precioBase;
 		public double imp;
 		public double des;
 		public double desMon;

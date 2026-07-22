@@ -265,13 +265,13 @@ public class FacturaRes extends PBase {
 			}
 		}
 
-		//#AT20260709 Aca vamos a calcular los nuevos valores en T_VENTA
-		DescCombos = new Catalogo(this, Con, db);
-		AplicarDescuentosRecargosCombo(cliid);
-
 		fecha=du.getActDateTime();
 		fechae=fecha;
 		if (gl.peModal.equalsIgnoreCase("TOL")) fecha=app.fechaFactTol(du.getActDate());
+
+		//#AT20260709 Aca vamos a calcular los nuevos valores en T_VENTA
+		DescCombos = new Catalogo(this, Con, db);
+		AplicarDescuentosRecargosCombo(cliid,fecha);
 
 		clsDescGlob clsDesc = new clsDescGlob(this);
 
@@ -361,11 +361,11 @@ public class FacturaRes extends PBase {
 
 	}
 
-	public void AplicarDescuentosRecargosCombo(String cliente) {
+	public void AplicarDescuentosRecargosCombo(String cliente,long fechaDocumento) {
 		try {
 
-			clsClasses.clsBeP_DESCUENTO beDescuento = DescCombos.GetDescuentoCombo(cliente, false);
-			clsClasses.clsBeP_DESCUENTO beRecargo = DescCombos.GetDescuentoCombo(cliente, true);
+			clsClasses.clsBeP_DESCUENTO beDescuento = DescCombos.GetDescuentoCombo(cliente, false,fechaDocumento);
+			clsClasses.clsBeP_DESCUENTO beRecargo = DescCombos.GetDescuentoCombo(cliente, true,fechaDocumento);
 
 			List<clsClasses.clsBeP_DESCUENTO_COMBO_DET> detDescuento = new ArrayList<>();
 			List<clsClasses.clsBeP_DESCUENTO_COMBO_DET> detRecargo = new ArrayList<>();
@@ -378,10 +378,11 @@ public class FacturaRes extends PBase {
 			}
 
 			if (detDescuento.size() > 0) {
-				DescCombos.AplicarAjusteComboEnTVenta(detDescuento, beDescuento, beRecargo);
+				//#EJC20260721 fix(hh-combo-aplicacion): cada condición se aplica una sola vez.
+				DescCombos.AplicarAjusteComboEnTVenta(detDescuento, beDescuento, null);
 			}
 			if (detRecargo.size() > 0) {
-				DescCombos.AplicarAjusteComboEnTVenta(detRecargo, beDescuento, beRecargo);
+				DescCombos.AplicarAjusteComboEnTVenta(detRecargo, null, beRecargo);
 			}
 		} catch (Exception e) {
 			msgbox(Objects.requireNonNull(new Object() {
@@ -3038,10 +3039,11 @@ public class FacturaRes extends PBase {
 		Cursor DT;
 
 		try {
-			sql="SELECT SUM(ROUND(DESMON * FACTOR, 2))," +
+			//#EJC20260721 fix(hh-factura-total): los ajustes ya son importes extendidos.
+			sql="SELECT SUM(DESMON)," +
 					" SUM(TOTAL)," +
 					" SUM(IMP)," +
-					" SUM(ROUND(RECARGOMONTO * FACTOR, 2))" +
+					" SUM(RECARGOMONTO)" +
 					"FROM (" +
 					"    SELECT DESMON, TOTAL, IMP, RECARGOMONTO," +
 					"           CASE WHEN UM = 'KG' THEN PESO ELSE CANT END AS FACTOR" +

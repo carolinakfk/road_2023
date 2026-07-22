@@ -2661,6 +2661,7 @@ public class ComWS extends PBase {
 		String s, val = "";
 
 		try {
+			ensurePromotionCompatibilityTables();
 
 			if (TieneInventarioSinVentas()) {
 				return false;
@@ -2725,6 +2726,9 @@ public class ComWS extends PBase {
 			if (!AddTable("P_LINEA")) return false;
 			if (!AddTable("TMP_PRECESPEC")) return false;
 			if (!AddTable("P_DESCUENTO")) return false;
+			//#EJC20260721 fix(hh-sync-exclusiones): completa catálogos requeridos por promociones.
+			if (!AddTable("P_DESCUENTO_COMBO_DET")) return false;
+			if (!AddTable("P_CLIENTE_PROD_EXCLUIDOS")) return false;
 			if (!AddTable("P_EMPRESA")) return false;
 			if (!AddTable("P_SUCURSAL")) return false;
 			if (!AddTable("P_BANCO")) return false;
@@ -2921,6 +2925,16 @@ public class ComWS extends PBase {
 
 		}
 
+	}
+
+	private void ensurePromotionCompatibilityTables() {
+		//#EJC20260721 fix(hh-sync-exclusiones): soporta equipos con BD creada antes de b053866.
+		try {
+			db.execSQL("CREATE TABLE IF NOT EXISTS P_CLIENTE_PROD_EXCLUIDOS ("+
+					"CODCLIPRODEXC INTEGER NOT NULL,CLIENTE TEXT NOT NULL,PRODUCTO TEXT NOT NULL,"+
+					"FECHAINI TEXT,FECHAFIN TEXT,ACTIVO INT,ID_TRAZA_INTEGRACION_SAP INTEGER,"+
+					"FEC_AGR TEXT,USR_AGR TEXT,FEC_MOD TEXT,USR_MOD TEXT,PRIMARY KEY (CODCLIPRODEXC))");
+		} catch (Exception ignored) { }
 	}
 
 	private boolean getData() {
@@ -3925,13 +3939,14 @@ public class ComWS extends PBase {
 		}
 
 		if (TN.equalsIgnoreCase("P_CLIENTE_PROD_EXCLUIDOS")) {
-			SQL = " SELECT E.* FROM P_CLIENTE_PROD_EXCLUIDOS E WHERE E.ACTIVO = 1 " +
+			//#EJC20260721 fix(hh-sync-exclusiones): normaliza fechas al contrato numérico Android.
+			SQL = " SELECT E.CODCLIPRODEXC,E.CLIENTE,E.PRODUCTO,dbo.AndrDateIni(E.FECHAINI),dbo.AndrDateFin(E.FECHAFIN)," +
+					"E.ACTIVO,E.ID_TRAZA_INTEGRACION_SAP,E.FEC_AGR,E.USR_AGR,E.FEC_MOD,E.USR_MOD " +
+					"FROM P_CLIENTE_PROD_EXCLUIDOS E WHERE E.ACTIVO = 1 " +
 					" AND CAST(GETDATE() AS DATE) >= CAST(E.FECHAINI AS DATE) " +
 					" AND CAST(GETDATE() AS DATE) <= CAST(E.FECHAFIN AS DATE) " +
 					" AND EXISTS (SELECT 1 FROM P_CLIRUTA CR WHERE CR.CLIENTE = E.CLIENTE " +
 					" AND CR.RUTA = '" + ActRuta + "') " +
-					" AND EXISTS (SELECT 1 FROM P_LINEARUTA LR WHERE LR.LINEA = E.PRODUCTO " +
-					" AND LR.RUTA = '" + ActRuta + "') " +
 					" ORDER BY E.CLIENTE, E.PRODUCTO";
 			return SQL;
 		}
@@ -5072,10 +5087,14 @@ public class ComWS extends PBase {
 					nombretabla="P_MONTO_MINIMO_CLIENTE";break;
 				case 79:
 					nombretabla="P_DESCUENTO_COMBO_DET";break;
-                case 80://#CKFK 20210813 Cambié esto para el final
-                    nombretabla="Procesando tablas ...";break;
+				case 80:
+					//#EJC20260721 fix(hh-sync-exclusiones): la tabla tenía query pero no paso de descarga.
+					ensurePromotionCompatibilityTables();
+					nombretabla="P_CLIENTE_PROD_EXCLUIDOS";break;
+				case 81://#CKFK 20210813 Cambié esto para el final
+					nombretabla="Procesando tablas ...";break;
 
-                case 81:
+				case 82:
 					procesaDatos();
 					//#AT 20220322 Se cambia el valor de las variables
 					//gl.permitir_cantidad_mayor, gl.permitir_producto_nuevo, gl.validar_posicion_georef
