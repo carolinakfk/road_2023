@@ -63,7 +63,7 @@ public class Catalogo extends PBase {
                     "       AND IFNULL(D.SUCURSAL, '') = C.SUCURSAL " +
                     "       AND IFNULL(D.TIPOLOGIA, '') = C.TIPOLOGIA) " +
                     "    ) " +
-                    "ORDER BY CASE WHEN D.DESCTIPO='M' THEN 0 ELSE 1 END,D.PRIORIDAD ASC ";
+                    "ORDER BY CASE WHEN D.DESCTIPO='M' THEN 0 ELSE 1 END,IFNULL(D.PRIORIDAD_DESCUENTO,0),D.PRIORIDAD ASC ";
 
             DT = Con.OpenDT(vSQL);
 
@@ -141,6 +141,8 @@ public class Catalogo extends PBase {
             d.esRecargo = c.getInt(c.getColumnIndexOrThrow("ES_RECARGO")) == 1;
             d.porPorcentaje = c.getString(c.getColumnIndexOrThrow("PORPORCENTAJE"));
             d.prioridad = c.getInt(c.getColumnIndexOrThrow("PRIORIDAD"));
+            int prioridadDescuentoIndex=c.getColumnIndex("PRIORIDAD_DESCUENTO");
+            d.prioridadDescuento=prioridadDescuentoIndex<0?0:c.getInt(prioridadDescuentoIndex);
             d.umVenta = c.getString(c.getColumnIndexOrThrow("UMVENTA"));
             d.sucursal = c.getString(c.getColumnIndexOrThrow("SUCURSAL"));
             d.tipologia = c.getString(c.getColumnIndexOrThrow("TIPOLOGIA"));
@@ -156,8 +158,9 @@ public class Catalogo extends PBase {
         Cursor DT;
         try {
 			//#EJC20260721 fix(hh-combo-aplicacion): conserva PK completa de la línea.
-			//#EJC20260721 fix(hh-promo-bonificacion): solo T_VENTA participa; T_BONITEM queda fuera.
-            vSQL = "SELECT PRODUCTO,UM,CANT,PESO,PRECIO,SIN_EXISTENCIA FROM T_VENTA";
+			//#EJC20260721 feat(hh-precio-base): usa base persistida y no el precio ya promocionado.
+            vSQL = "SELECT PRODUCTO,UM,CANT,PESO,PRECIO,SIN_EXISTENCIA,"+
+					"IFNULL(PRECIO_BASE,PRECIO),IFNULL(TOTAL_BASE,0),IFNULL(CODDESC_APLICADO,0),IFNULL(CODRECARGO_APLICADO,0) FROM T_VENTA";
             DT = Con.OpenDT(vSQL);
             if (DT.getCount() == 0) return lista;
 
@@ -169,7 +172,11 @@ public class Catalogo extends PBase {
                 l.cant = DT.getDouble(2);
                 l.peso = DT.getDouble(3);
                 l.precio = DT.getDouble(4);
-				l.precioBase = preciosBaseSesion.containsKey(lineKey(l.producto,l.um,DT.getInt(5)))
+				l.precioBase=DT.getDouble(6);
+				l.totalBase=DT.getDouble(7);
+				l.codDescAplicado=DT.getInt(8);
+				l.codRecargoAplicado=DT.getInt(9);
+				if (l.precioBase<=0) l.precioBase = preciosBaseSesion.containsKey(lineKey(l.producto,l.um,DT.getInt(5)))
 						? preciosBaseSesion.get(lineKey(l.producto,l.um,DT.getInt(5))) : l.precio;
 				l.sinExistencia = DT.getInt(5);
 				l.lineKey = lineKey(l.producto,l.um,(int)l.sinExistencia);
@@ -195,6 +202,10 @@ public class Catalogo extends PBase {
             upd.add("RECARGO", l.recargo);
             upd.add("RECARGOMONTO", l.recargoMonto);
             upd.add("TOTAL", l.total);
+			upd.add("PRECIO_BASE",l.precioBase);
+			upd.add("TOTAL_BASE",l.totalBase);
+			upd.add("CODDESC_APLICADO",l.codDescAplicado);
+			upd.add("CODRECARGO_APLICADO",l.codRecargoAplicado);
 
             db.execSQL(upd.SQL());
         } catch (Exception e) {
@@ -208,7 +219,8 @@ public class Catalogo extends PBase {
 
         if (pBeDescuento == null && pBeRecargo == null) return;
 
-        List<clsClasses.VentaLinea> lineas = CargarLineasTVenta();
+		List<clsClasses.VentaLinea> lineas = CargarLineasTVenta();
+		Map<String,Double> bonificaciones=CargarBonificacionesParaCombo();
 
 		//#EJC20260721 fix(hh-combo-requisitos): agrega por producto/UM y respeta OBLIGATORIO.
 		Map<String, List<clsClasses.VentaLinea>> filasAAjustar = new HashMap<>();
@@ -217,7 +229,7 @@ public class Catalogo extends PBase {
 			List<clsClasses.VentaLinea> filasEncontradas = new ArrayList<>();
 			double cantidadAcumulada = 0;
 
-            for (clsClasses.VentaLinea l : lineas) {
+			for (clsClasses.VentaLinea l : lineas) {
                 if (l.producto == null) continue;
 				if (l.producto.equals(itemCombo.producto) && umCompatible(l,itemCombo)) {
 					double cantidadRow = ObtenerCantidadLinea(l);
@@ -225,6 +237,9 @@ public class Catalogo extends PBase {
 					filasEncontradas.add(l);
 				}
 			}
+			//#EJC20260721 rule(hh-promo-bonificacion): bonificaciones ROAD cuentan para cumplir combo,
+			//pero permanecen gratuitas y nunca se convierten en filas cobradas de T_VENTA.
+			cantidadAcumulada += cantidadBonificadaCompatible(bonificaciones,itemCombo);
 
 			if (cantidadAcumulada < itemCombo.cantidad) {
 				PromotionTrace.write(cont,"PROMO_COMBO_REQUIREMENT","codDesc="+itemCombo.codDesc+";producto="+itemCombo.producto+";obligatorio="+itemCombo.obligatorio+";cantidad="+cantidadAcumulada+";requerida="+itemCombo.cantidad);
@@ -250,10 +265,40 @@ public class Catalogo extends PBase {
 				l.recargoMonto = r.surchargeTotal.doubleValue();
 				l.precio = r.derivedUnitPrice.doubleValue();
 				l.total = r.authoritativeFinalTotal.doubleValue();
+				l.totalBase=r.extendedBaseTotal.doubleValue();
+				l.codDescAplicado=pBeDescuento==null?0:pBeDescuento.codDesc;
+				l.codRecargoAplicado=pBeRecargo==null?0:pBeRecargo.codDesc;
 				ActualizarLineaTVenta(l);
 				PromotionTrace.write(cont,"PROMO_COMBO_APPLIED","producto="+l.producto+";linea="+l.lineKey+";base="+l.precioBase+";total="+l.total);
 			}
 		}
+	}
+
+	private Map<String,Double> CargarBonificacionesParaCombo() {
+		Map<String,Double> result=new HashMap<>();
+		Cursor cursor=null;
+		try {
+			cursor=Con.OpenDT("SELECT BONIID,UMVENTA,SUM(CASE WHEN POR_PESO='S' THEN PESO ELSE CANT END) "+
+					"FROM T_BONITEM GROUP BY BONIID,UMVENTA");
+			if (cursor!=null && cursor.moveToFirst()) {
+				do { result.put(cursor.getString(0)+"|"+cursor.getString(1),cursor.getDouble(2)); }
+				while (cursor.moveToNext());
+			}
+		} catch (Exception e) {
+			PromotionTrace.write(cont,"PROMO_BONUS_READ_ERROR","mensaje="+e.getClass().getSimpleName());
+		} finally { if (cursor!=null) cursor.close(); }
+		return result;
+	}
+
+	private double cantidadBonificadaCompatible(Map<String,Double> bonificaciones,
+			clsClasses.clsBeP_DESCUENTO_COMBO_DET detalle) {
+		double total=0;
+		for (Map.Entry<String,Double> item:bonificaciones.entrySet()) {
+			String[] key=item.getKey().split("\\|",-1);
+			if (!key[0].equalsIgnoreCase(detalle.producto)) continue;
+			if (detalle.umVenta==null || detalle.umVenta.trim().isEmpty() || detalle.umVenta.equalsIgnoreCase(key[1])) total+=item.getValue();
+		}
+		return total;
 	}
 
 	private SapPromotionCalculator.Adjustment toAdjustment(clsClasses.clsBeP_DESCUENTO condicion) {

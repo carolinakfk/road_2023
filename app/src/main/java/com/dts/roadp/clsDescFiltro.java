@@ -68,6 +68,7 @@ public class clsDescFiltro {
 		try { db.execSQL("ALTER TABLE T_DESC ADD COLUMN CODDESC INTEGER DEFAULT 0 NOT NULL"); } catch (Exception ignored) { }
 		try { db.execSQL("ALTER TABLE T_DESC ADD COLUMN CTIPO INTEGER DEFAULT 0 NOT NULL"); } catch (Exception ignored) { }
 		try { db.execSQL("ALTER TABLE T_DESC ADD COLUMN CLIENTE TEXT DEFAULT '' NOT NULL"); } catch (Exception ignored) { }
+		try { db.execSQL("ALTER TABLE T_DESC ADD COLUMN PRIORIDAD_DESCUENTO INTEGER DEFAULT 0"); } catch (Exception ignored) { }
 	}
 	
 	private void filtrarDescuentos() {
@@ -98,7 +99,7 @@ public class clsDescFiltro {
 
 			//#AT20260719 Filtrar descuento validando que  el cliente no este excluido
 			vSQL="SELECT D.CLIENTE,D.CTIPO,D.PRODUCTO,D.PTIPO,D.TIPORUTA,D.RANGOINI,D.RANGOFIN,D.DESCTIPO,D.VALOR,D.GLOBDESC,D.PORCANT,D.FECHAINI,D.FECHAFIN,D.CODDESC, " +
-					"NOMBRE, ES_RECARGO, PORPORCENTAJE, PRIORIDAD, UMVENTA "+
+					"NOMBRE, ES_RECARGO, PORPORCENTAJE, PRIORIDAD, IFNULL(PRIORIDAD_DESCUENTO,0), UMVENTA "+
 				 "FROM P_DESCUENTO D WHERE ((CTIPO=0) OR "+
 				  "((CTIPO=1) AND (CLIENTE='" + cliid + "')) OR "+
 				  "((CTIPO=2) AND (CLIENTE='" + CTipoNeg + "')) OR "+
@@ -109,11 +110,11 @@ public class clsDescFiltro {
 				  "((CTIPO=8) AND (CLIENTE='" + CSucursal + "')) OR "+
 				  "((CTIPO=9) AND (CLIENTE='" + NivelPrec + "'))) "+
 				  " AND ((FECHAINI<="+fecha+") AND (FECHAFIN>="+fecha+")) " +
-				  " AND (D.DESCTIPO='M' OR NOT EXISTS (SELECT 1 FROM P_CLIENTE_PROD_EXCLUIDOS E "+
+				  " AND NOT EXISTS (SELECT 1 FROM P_CLIENTE_PROD_EXCLUIDOS E "+
 				  "   WHERE E.CLIENTE='" + cliid + "' "+
 				  "     AND E.PRODUCTO=D.PRODUCTO "+
 				  "     AND E.ACTIVO=1 "+
-			      "     AND (E.FECHAINI<="+fecha+") AND (E.FECHAFIN>="+fecha+"))) ";
+			      "     AND (E.FECHAINI<="+fecha+") AND (E.FECHAFIN>="+fecha+")) ";
 			
 			DT=Con.OpenDT(vSQL);
 			if (DT == null) {
@@ -143,7 +144,8 @@ public class clsDescFiltro {
 						ins.add("ES_RECARGO",DT.getInt(15));
 						ins.add("PORPORCENTAJE",DT.getString(16));
 						ins.add("PRIORIDAD",DT.getInt(17));
-						ins.add("UMVENTA",DT.getString(18));
+						ins.add("PRIORIDAD_DESCUENTO",DT.getInt(18));
+						ins.add("UMVENTA",DT.getString(19));
 						ins.add("CODDESC",DT.getInt(13));
 						ins.add("CTIPO",DT.getInt(1));
 						ins.add("CLIENTE",DT.getString(0));
@@ -168,13 +170,13 @@ public class clsDescFiltro {
 		
 		
 		try {
-			vSQL="SELECT CLIENTE,CTIPO,PRODUCTO,PTIPO,TIPORUTA,RANGOINI,RANGOFIN,DESCTIPO,VALOR,GLOBDESC,PORCANT,FECHAINI,FECHAFIN,CODDESC,NOMBRE,ES_RECARGO,PORPORCENTAJE,PRIORIDAD,UMVENTA "+
+			vSQL="SELECT CLIENTE,CTIPO,PRODUCTO,PTIPO,TIPORUTA,RANGOINI,RANGOFIN,DESCTIPO,VALOR,GLOBDESC,PORCANT,FECHAINI,FECHAFIN,CODDESC,NOMBRE,ES_RECARGO,PORPORCENTAJE,PRIORIDAD,IFNULL(PRIORIDAD_DESCUENTO,0),UMVENTA "+
 				 "FROM P_DESCUENTO D WHERE (CTIPO=10) "+
 				 "AND (CLIENTE IN (SELECT DISTINCT CODIGO FROM P_CLIGRUPO WHERE CLIENTE='"+cliid+"'))  "+
 				 " AND ((FECHAINI<="+fecha+") AND (FECHAFIN>="+fecha+")) "+
-				 " AND (D.DESCTIPO='M' OR NOT EXISTS (SELECT 1 FROM P_CLIENTE_PROD_EXCLUIDOS E "+
+				 " AND NOT EXISTS (SELECT 1 FROM P_CLIENTE_PROD_EXCLUIDOS E "+
 				 " WHERE E.CLIENTE='"+cliid+"' AND E.PRODUCTO=D.PRODUCTO AND E.ACTIVO=1 "+
-				 " AND E.FECHAINI<="+fecha+" AND E.FECHAFIN>="+fecha+")) ";
+				 " AND E.FECHAINI<="+fecha+" AND E.FECHAFIN>="+fecha+") ";
 			
 			DT=Con.OpenDT(vSQL);
 			estr=vSQL+"\n"+DT.getCount();
@@ -201,7 +203,8 @@ public class clsDescFiltro {
 						ins.add("ES_RECARGO",DT.getInt(15));
 						ins.add("PORPORCENTAJE",DT.getString(16));
 						ins.add("PRIORIDAD",DT.getInt(17));
-						ins.add("UMVENTA",DT.getString(18));
+						ins.add("PRIORIDAD_DESCUENTO",DT.getInt(18));
+						ins.add("UMVENTA",DT.getString(19));
 						ins.add("CODDESC",DT.getInt(13));
 						ins.add("CTIPO",DT.getInt(1));
 						ins.add("CLIENTE",DT.getString(0));

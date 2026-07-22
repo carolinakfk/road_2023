@@ -11,7 +11,8 @@ import java.text.DecimalFormat;
 
 public class Precio {
 
-	public double costo,descmon,imp,impval,tot,precsin,totsin,precdoc,precioespecial, recargoMonto, recargo;
+	public double costo,descmon,imp,impval,tot,precsin,totsin,precdoc,precioespecial, recargoMonto, recargo,precioBase,totalBase;
+	public int codDescAplicado,codRecargoAplicado;
 	
 	private int active;
 	private android.database.sqlite.SQLiteDatabase db;
@@ -143,6 +144,10 @@ public class Precio {
 		recargo = BeRecargo == null ? 0 : BeRecargo.valor;
 		descmon = resultado.discountTotal.doubleValue();
 		recargoMonto = resultado.surchargeTotal.doubleValue();
+		precioBase = resultado.baseUnitPrice.doubleValue();
+		totalBase = resultado.extendedBaseTotal.doubleValue();
+		codDescAplicado = BeDescuento == null ? 0 : BeDescuento.codDesc;
+		codRecargoAplicado = BeRecargo == null ? 0 : BeRecargo.codDesc;
 		totsin = resultado.authoritativeFinalTotal.doubleValue();
 		precsin = resultado.derivedUnitPrice.doubleValue();
 
@@ -369,6 +374,10 @@ public class Precio {
 		recargo=BeRecargo==null?0:BeRecargo.valor;
 		descmon=resultado.discountTotal.doubleValue();
 		recargoMonto=resultado.surchargeTotal.doubleValue();
+		precioBase=resultado.baseUnitPrice.doubleValue();
+		totalBase=resultado.extendedBaseTotal.doubleValue();
+		codDescAplicado=BeDescuento==null?0:BeDescuento.codDesc;
+		codRecargoAplicado=BeRecargo==null?0:BeRecargo.codDesc;
 		totsin=resultado.authoritativeFinalTotal.doubleValue();
 		tot=totsin;
 		precsin=resultado.derivedUnitPrice.doubleValue();

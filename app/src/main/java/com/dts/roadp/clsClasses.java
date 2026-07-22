@@ -293,6 +293,7 @@ public class clsClasses {
 		//#EJC20260721 refactor(hh-desc-result): conserva genealogía de la condición elegida.
 		public int codDesc = 0;
 		public int prioridad = 0;
+		public int prioridadDescuento = 0;
 		public int pTipo = 0;
 		public String descTipo = "";
 		public String producto = "";
@@ -320,6 +321,7 @@ public class clsClasses {
 		public boolean esRecargo = false;
 		public String porPorcentaje = "";
 		public int prioridad = 0;
+		public int prioridadDescuento = 0;
 		public String umVenta = "";
 		public String sucursal = "";
 		public String tipologia = "";
@@ -349,6 +351,9 @@ public class clsClasses {
 		public double factor;
 		public double precio;
 		public double precioBase;
+		public double totalBase;
+		public int codDescAplicado;
+		public int codRecargoAplicado;
 		public double imp;
 		public double des;
 		public double desMon;

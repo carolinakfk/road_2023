@@ -5,6 +5,8 @@ import android.database.Cursor;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class clsDocFactura extends clsDocument {
 
@@ -460,7 +462,7 @@ public class clsDocFactura extends clsDocument {
 
 			ss = ss + rep.rtrim(umm, 4) + " " + rep.rtrim(frmdecimal(ccant, 2), 5);
 			rep.add(ss);
-			ss = rep.rtrim(frmdecimal(item.peso, decimp), 10) + " " + rep.rtrim(frmdecimal(item.prec, 2), 8);
+			ss = rep.rtrim(frmdecimal(item.peso, decimp), 10) + " " + rep.rtrim(formatEffectivePrice(item.prec,8), 8);
 			ss = rep.ltrim(ss, prw - 14);
 			ss = ss + " " + rep.rtrim(frmdecimal(item.tot, 2), 9);
 			rep.add(ss);
@@ -470,6 +472,18 @@ public class clsDocFactura extends clsDocument {
 		rep.line();
 
 		return true;
+	}
+
+	//#EJC20260721 fix(hh-print-precio): muestra hasta seis decimales sin alterar TOTAL.
+	private String formatEffectivePrice(double value,int maxWidth) {
+		for (int scale=6;scale>=2;scale--) {
+			String formatted=BigDecimal.valueOf(value).setScale(scale, RoundingMode.HALF_UP)
+					.stripTrailingZeros().toPlainString();
+			if (formatted.indexOf('.')<0) formatted += ".00";
+			else if (formatted.length()-formatted.indexOf('.')-1<2) formatted += "0";
+			if (formatted.length()<=maxWidth) return formatted;
+		}
+		return frmdecimal(value,2);
 	}
 
 	protected boolean inactivo_detailToledano() {
@@ -487,7 +501,7 @@ public class clsDocFactura extends clsDocument {
 				ss = rep.ltrim(item.cod + " " + item.nombre, prw - 10);
 				ss = ss + rep.rtrim(item.um, 4) + " " + rep.rtrim(frmdecimal(item.cant*item.fact, 2), 5);
 				rep.add(ss);
-				ss = rep.rtrim(frmdecimal(item.peso, decimp), 10) + " " + rep.rtrim(frmdecimal(item.prec, 2), 8);
+				ss = rep.rtrim(frmdecimal(item.peso, decimp), 10) + " " + rep.rtrim(formatEffectivePrice(item.prec,8), 8);
 				ss = rep.ltrim(ss, prw - 10);
 				ss = ss + " " + rep.rtrim(frmdecimal(item.tot, 2), 9);
 				rep.add(ss);
@@ -503,7 +517,7 @@ public class clsDocFactura extends clsDocument {
 
 				ss = ss + rep.rtrim(umm, 4) + " " + rep.rtrim(frmdecimal(item.cant, 2), 5);
 				rep.add(ss);
-				ss = rep.rtrim(frmdecimal(item.peso, decimp), 10) + " " + rep.rtrim(frmdecimal(item.prec, 2), 8);
+				ss = rep.rtrim(frmdecimal(item.peso, decimp), 10) + " " + rep.rtrim(formatEffectivePrice(item.prec,8), 8);
 				ss = rep.ltrim(ss, prw - 10);
 				ss = ss + " " + rep.rtrim(frmdecimal(item.tot, 2), 9);
 				rep.add(ss);

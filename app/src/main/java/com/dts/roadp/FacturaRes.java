@@ -57,6 +57,8 @@ import Entidades.gUbiRec;
 import Entidades.rFE;
 import Facturacion.CatalogoFactura;
 import models.Catalogo;
+import com.dts.roadp.promotions.PromotionSchema;
+import com.dts.roadp.promotions.PromotionTrace;
 
 public class FacturaRes extends PBase {
 
@@ -127,6 +129,7 @@ public class FacturaRes extends PBase {
 		setContentView(R.layout.activity_factura_res);
 
 		super.InitBase();
+		PromotionSchema.ensure(db);
         addlog("FacturaRes",""+du.getActDateTime(),gl.vend);
 
 		listView = findViewById(R.id.listView1);
@@ -1732,7 +1735,8 @@ public class FacturaRes extends PBase {
 
 			//region D_FACTURAD , D_FACTURAD_LOTES
 
-			sql="SELECT PRODUCTO,CANT,PRECIO,IMP,DES,DESMON,TOTAL,PRECIODOC,PESO,VAL1,VAL2,UM,FACTOR,UMSTOCK, RECARGO, RECARGOMONTO FROM T_VENTA";
+			sql="SELECT PRODUCTO,CANT,PRECIO,IMP,DES,DESMON,TOTAL,PRECIODOC,PESO,VAL1,VAL2,UM,FACTOR,UMSTOCK, RECARGO, RECARGOMONTO,"+
+					"IFNULL(PRECIO_BASE,PRECIO),IFNULL(TOTAL_BASE,0),IFNULL(CODDESC_APLICADO,0),IFNULL(CODRECARGO_APLICADO,0) FROM T_VENTA";
 			dt=Con.OpenDT(sql);
 
 			double TotalFact = 0;
@@ -1769,6 +1773,13 @@ public class FacturaRes extends PBase {
 				ins.add("UMPESO",gl.umpeso); //#HS_20181120_1625 Se agrego el valor gl.umpeso anteriormente estaba ""
 				ins.add("RECARGO",dt.getDouble(14));
 				ins.add("RECARGOMONTO",dt.getDouble(15));
+				ins.add("PRECIO_BASE",dt.getDouble(16));
+				ins.add("TOTAL_BASE",dt.getDouble(17));
+				ins.add("CODDESC_APLICADO",dt.getInt(18));
+				ins.add("CODRECARGO_APLICADO",dt.getInt(19));
+				PromotionTrace.write(this,"PROMO_LINE_PERSISTED","factura="+corel+";producto="+dt.getString(0)+
+						";precioBase="+dt.getDouble(16)+";totalBase="+dt.getDouble(17)+";descuento="+dt.getDouble(5)+
+						";recargo="+dt.getDouble(15)+";totalFinal="+dt.getDouble(6)+";codDesc="+dt.getInt(18)+";codRecargo="+dt.getInt(19));
 				db.execSQL(ins.sql());
 
 			    vprod=dt.getString(0);

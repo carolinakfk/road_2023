@@ -659,6 +659,10 @@ public class BaseDatosScript {
 					"[UMPESO] TEXT NOT NULL,"+
 					"[RECARGO] REAL NOT NULL,"+
 					"[RECARGOMONTO] REAL NOT NULL,"+
+					"[PRECIO_BASE] REAL,"+
+					"[TOTAL_BASE] REAL,"+
+					"[CODDESC_APLICADO] INTEGER,"+
+					"[CODRECARGO_APLICADO] INTEGER,"+
 					"PRIMARY KEY ([COREL],[PRODUCTO])"+
 					");";
 			database.execSQL(vSQL);
@@ -1618,6 +1622,7 @@ public class BaseDatosScript {
 					"[ES_RECARGO] INT NOT NULL,"+
 					"[PORPORCENTAJE] TEXT NOT NULL,"+
 					"[PRIORIDAD] INT NOT NULL,"+
+					"[PRIORIDAD_DESCUENTO] INT,"+
 					"[UMVENTA] TEXT NOT NULL,"+
 					"[SUCURSAL] TEXT NOT NULL,"+
 					"[TIPOLOGIA] TEXT NOT NULL,"+
@@ -2529,6 +2534,10 @@ public class BaseDatosScript {
 					"[PESOORIGINAL] REAL,"+
 					"[RECARGO] REAL NOT NULL,"+
 					"[RECARGOMONTO] REAL NOT NULL,"+
+					"[PRECIO_BASE] REAL,"+
+					"[TOTAL_BASE] REAL,"+
+					"[CODDESC_APLICADO] INTEGER,"+
+					"[CODRECARGO_APLICADO] INTEGER,"+
 					"PRIMARY KEY ([PRODUCTO],[UM],[SIN_EXISTENCIA])"+
 					");";
 			database.execSQL(vSQL);
@@ -2580,6 +2589,7 @@ public class BaseDatosScript {
 					"[ES_RECARGO] INT NOT NULL,"+
 					"[PORPORCENTAJE] INT NOT NULL,"+
 					"[PRIORIDAD] INT NOT NULL,"+
+					"[PRIORIDAD_DESCUENTO] INT,"+
 					"[UMVENTA] TEXT NOT NULL,"+
 					"[CODDESC] INTEGER DEFAULT 0 NOT NULL,"+
 					"[CTIPO] INTEGER DEFAULT 0 NOT NULL,"+

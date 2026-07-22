@@ -3,6 +3,8 @@ package com.dts.roadp;
 import android.content.Context;
 import android.database.Cursor;
 
+import com.dts.roadp.promotions.PromotionTrace;
+
 import java.util.ArrayList;
 
 public class clsDescuento {
@@ -71,17 +73,19 @@ public class clsDescuento {
 			if (validaPermisos()) {
 				//#EJC20260721 fix(hh-desc-selection): incluye M, prioriza M y limita UM solo para R.
 				double baseEvaluacion = (ppeso > 0 && gll.umpeso.equalsIgnoreCase(umVenta)) ? ppeso : cant;
-				vSQL= "SELECT PRODUCTO,PTIPO,VALOR,PORCANT,PORPORCENTAJE,CODDESC,DESCTIPO,PRIORIDAD,UMVENTA,RANGOINI,RANGOFIN "+
+				vSQL= "SELECT PRODUCTO,PTIPO,VALOR,PORCANT,PORPORCENTAJE,CODDESC,DESCTIPO,PRIORIDAD,IFNULL(PRIORIDAD_DESCUENTO,0),UMVENTA,RANGOINI,RANGOFIN "+
 						"FROM T_DESC WHERE ES_RECARGO="+(esRecargo ? 1 : 0)+
 						" AND PTIPO<4 AND GLOBDESC='N' AND ("+
 						" (DESCTIPO='M' AND "+baseEvaluacion+">=RANGOINI) OR "+
 						" (DESCTIPO='R' AND "+baseEvaluacion+">=RANGOINI AND "+baseEvaluacion+"<=RANGOFIN "+
 						((ppeso > 0 && gll.umpeso.equalsIgnoreCase(umVenta)) ? " AND UMVENTA='"+umVenta+"'" : "")+
-						")) ORDER BY CASE WHEN DESCTIPO='M' THEN 0 ELSE 1 END,PRIORIDAD ASC";
+						")) ORDER BY CASE WHEN DESCTIPO='M' THEN 0 ELSE 1 END,PRIORIDAD_DESCUENTO ASC,PRIORIDAD ASC";
 
 				DT=Con.OpenDT(vSQL);
 
 				if (DT.getCount()==0) return null;
+				PromotionTrace.write(cont,"PROMO_CANDIDATES","producto="+prodid+";recargo="+esRecargo+
+						";base="+baseEvaluacion+";um="+umVenta+";cantidad="+cant+";peso="+ppeso+";rows="+DT.getCount());
 
 				DT.moveToFirst();
 				while (!DT.isAfterLast()) {
@@ -90,11 +94,16 @@ public class clsDescuento {
 					TmpDescuento.codDesc = DT.getInt(5);
 					TmpDescuento.descTipo = DT.getString(6);
 					TmpDescuento.prioridad = DT.getInt(7);
-					TmpDescuento.umVenta = DT.getString(8);
-					TmpDescuento.rangoIni = DT.getDouble(9);
-					TmpDescuento.rangoFin = DT.getDouble(10);
+					TmpDescuento.prioridadDescuento = DT.getInt(8);
+					TmpDescuento.umVenta = DT.getString(9);
+					TmpDescuento.rangoIni = DT.getDouble(10);
+					TmpDescuento.rangoFin = DT.getDouble(11);
 					TmpDescuento.pTipo = DT.getInt(1);
 					TmpDescuento.producto = DT.getString(0);
+					PromotionTrace.write(cont,"PROMO_CANDIDATE","producto="+prodid+";codDesc="+TmpDescuento.codDesc+
+							";tipo="+TmpDescuento.descTipo+";prioridadDescuento="+TmpDescuento.prioridadDescuento+
+							";prioridad="+TmpDescuento.prioridad+";rango="+TmpDescuento.rangoIni+"-"+TmpDescuento.rangoFin+
+							";um="+TmpDescuento.umVenta+";valor="+DT.getDouble(2));
 
 					String valor = DT.getString(0);
 
@@ -129,6 +138,9 @@ public class clsDescuento {
 					}
 
 					if (encontrado) {
+						PromotionTrace.write(cont,"PROMO_SELECTED","producto="+prodid+";codDesc="+TmpDescuento.codDesc+
+								";tipo="+TmpDescuento.descTipo+";recargo="+esRecargo+";base="+baseEvaluacion+
+								";prioridadDescuento="+TmpDescuento.prioridadDescuento+";prioridad="+TmpDescuento.prioridad);
 						break;
 					}
 

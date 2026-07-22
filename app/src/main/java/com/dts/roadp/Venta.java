@@ -35,6 +35,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.dts.roadp.clsClasses.clsVenta;
+import com.dts.roadp.promotions.PromotionSchema;
 import java.util.ArrayList;
 
 public class Venta extends PBase {
@@ -103,6 +104,7 @@ public class Venta extends PBase {
 		setContentView(R.layout.activity_venta);
 
 		super.InitBase();
+		PromotionSchema.ensure(db);
 		addlog("Venta",""+du.getActDateTime(),gl.vend);
 
 		setControls();
@@ -1069,6 +1071,10 @@ public class Venta extends PBase {
 			ins.add("DESMON",descmon);
 			ins.add("RECARGO",recargo);
 			ins.add("RECARGOMONTO",recargoMonto);
+			ins.add("PRECIO_BASE",prc.precioBase);
+			ins.add("TOTAL_BASE",prc.totalBase);
+			ins.add("CODDESC_APLICADO",prc.codDescAplicado);
+			ins.add("CODRECARGO_APLICADO",prc.codRecargoAplicado);
 
             if (rutatipo.equalsIgnoreCase("V")) {
 				if (porpeso) {
@@ -1166,6 +1172,10 @@ public class Venta extends PBase {
                 ins.add("IMP",impval);
                 ins.add("DES",desc);
                 ins.add("DESMON",descmon);
+				ins.add("PRECIO_BASE",prc.precioBase);
+				ins.add("TOTAL_BASE",prc.totalBase);
+				ins.add("CODDESC_APLICADO",prc.codDescAplicado);
+				ins.add("CODRECARGO_APLICADO",prc.codRecargoAplicado);
 
                 ins.add("PRECIO",vprec);
                 ins.add("PRECIODOC",vprecdoc);
@@ -1226,6 +1236,10 @@ public class Venta extends PBase {
 			upd.add("PRECIODOC",prec);
 			upd.add("RECARGO",recargo);
 			upd.add("RECARGOMONTO",recargoMonto);
+			upd.add("PRECIO_BASE",prc.precioBase);
+			upd.add("TOTAL_BASE",prc.totalBase);
+			upd.add("CODDESC_APLICADO",prc.codDescAplicado);
+			upd.add("CODRECARGO_APLICADO",prc.codRecargoAplicado);
 
 			upd.Where("PRODUCTO='"+prodid+"'");
 
@@ -2059,6 +2073,10 @@ public class Venta extends PBase {
 			ins.add("DES", 0);
 			ins.add("DESMON", 0);
 			ins.add("TOTAL", prodtot);
+			ins.add("PRECIO_BASE",prc.precioBase);
+			ins.add("TOTAL_BASE",prc.totalBase);
+			ins.add("CODDESC_APLICADO",prc.codDescAplicado);
+			ins.add("CODRECARGO_APLICADO",prc.codRecargoAplicado);
 
 			if (prodPorPeso(prodid)) {
 				//ins.add("PRECIODOC",gl.prectemp);
@@ -2477,6 +2495,10 @@ public class Venta extends PBase {
 			ins.add("DES",0);
 			ins.add("DESMON",0);
 			ins.add("TOTAL",prodtot);
+			ins.add("PRECIO_BASE",prctr.precioBase);
+			ins.add("TOTAL_BASE",prctr.totalBase);
+			ins.add("CODDESC_APLICADO",prctr.codDescAplicado);
+			ins.add("CODRECARGO_APLICADO",prctr.codRecargoAplicado);
 
 			if (prodPorPeso(prodid)) {
 				//ins.add("PRECIODOC",gl.prectemp);
@@ -3152,6 +3174,10 @@ public class Venta extends PBase {
 								ins.add("DES",item.des);
 								ins.add("DESMON",item.desmon);
 								ins.add("TOTAL",item.total);
+								ins.add("PRECIO_BASE",prc.precioBase);
+								ins.add("TOTAL_BASE",prc.totalBase);
+								ins.add("CODDESC_APLICADO",prc.codDescAplicado);
+								ins.add("CODRECARGO_APLICADO",prc.codRecargoAplicado);
 								ins.add("PRECIODOC",item.precio);
 								ins.add("PESO",item.peso);
 								ins.add("VAL1",i+1);
