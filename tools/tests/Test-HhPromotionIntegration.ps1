@@ -37,6 +37,11 @@ $checks = [ordered]@{
     'F16_NCND_REMAINS_BOF' = -not $all.Contains('hh-ncnd-precio')
     'F17_SAME_BASE_CONCURRENCY' = $calculator.Contains('calculateAdjustment(extendedBase, safeBasis, safeDiscount)') -and $calculator.Contains('calculateAdjustment(extendedBase, safeBasis, safeSurcharge)')
     'F18_EFFECTIVE_PRICE_PRINT' = $print.Contains('formatEffectivePrice(item.prec,8)') -and $print.Contains('scale=6;scale>=2')
+    'TC0015_RANGE_BASIS_BY_UM' = $selector.Contains('#EJC20260724 fix(TC0015-hh-escala-um)') -and
+        $selector.Contains('String baseEvaluacionSql = "CASE WHEN UMVENTA=') -and
+        $selector.Contains('" WHEN UMVENTA=') -and
+        $selector.Contains('baseEvaluacionSql+">=RANGOINI') -and
+        $selector.Contains('baseEvaluacionSql+"<=RANGOFIN')
 }
 
 $failed = @($checks.GetEnumerator() | Where-Object { -not $_.Value } | ForEach-Object Key)

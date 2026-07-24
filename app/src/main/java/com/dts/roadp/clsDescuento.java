@@ -71,21 +71,24 @@ public class clsDescuento {
 
 		try {
 			if (validaPermisos()) {
-				//#EJC20260721 fix(hh-desc-selection): incluye M, prioriza M y limita UM solo para R.
-				double baseEvaluacion = (ppeso > 0 && gll.umpeso.equalsIgnoreCase(umVenta)) ? ppeso : cant;
+				//#EJC20260724 fix(TC0015-hh-escala-um): la base se resuelve por la UMVENTA de cada descuento.
+				String umPesoSql = sqlLiteral(gll.umpeso);
+				String umStockSql = sqlLiteral(umVenta);
+				String baseEvaluacionSql = "CASE WHEN UMVENTA='"+umPesoSql+"' THEN "+ppeso+
+						" WHEN UMVENTA='"+umStockSql+"' THEN "+cant+" ELSE "+cant+" END";
 				vSQL= "SELECT PRODUCTO,PTIPO,VALOR,PORCANT,PORPORCENTAJE,CODDESC,DESCTIPO,PRIORIDAD,IFNULL(PRIORIDAD_DESCUENTO,0),UMVENTA,RANGOINI,RANGOFIN "+
 						"FROM T_DESC WHERE ES_RECARGO="+(esRecargo ? 1 : 0)+
 						" AND PTIPO<4 AND GLOBDESC='N' AND ("+
-						" (DESCTIPO='M' AND "+baseEvaluacion+">=RANGOINI) OR "+
-						" (DESCTIPO='R' AND "+baseEvaluacion+">=RANGOINI AND "+baseEvaluacion+"<=RANGOFIN "+
-						((ppeso > 0 && gll.umpeso.equalsIgnoreCase(umVenta)) ? " AND UMVENTA='"+umVenta+"'" : "")+
+						" (DESCTIPO='M' AND "+baseEvaluacionSql+">=RANGOINI) OR "+
+						" (DESCTIPO='R' AND "+baseEvaluacionSql+">=RANGOINI AND "+baseEvaluacionSql+"<=RANGOFIN "+
 						")) ORDER BY CASE WHEN DESCTIPO='M' THEN 0 ELSE 1 END,PRIORIDAD_DESCUENTO ASC,PRIORIDAD ASC";
 
 				DT=Con.OpenDT(vSQL);
 
 				if (DT.getCount()==0) return null;
 				PromotionTrace.write(cont,"PROMO_CANDIDATES","producto="+prodid+";recargo="+esRecargo+
-						";base="+baseEvaluacion+";um="+umVenta+";cantidad="+cant+";peso="+ppeso+";rows="+DT.getCount());
+						";base=por_umventa;umStock="+umVenta+";umPeso="+gll.umpeso+
+						";cantidad="+cant+";peso="+ppeso+";rows="+DT.getCount());
 
 				DT.moveToFirst();
 				while (!DT.isAfterLast()) {
@@ -100,10 +103,11 @@ public class clsDescuento {
 					TmpDescuento.rangoFin = DT.getDouble(11);
 					TmpDescuento.pTipo = DT.getInt(1);
 					TmpDescuento.producto = DT.getString(0);
+					double baseCandidato = gll.umpeso.equalsIgnoreCase(TmpDescuento.umVenta) ? ppeso : cant;
 					PromotionTrace.write(cont,"PROMO_CANDIDATE","producto="+prodid+";codDesc="+TmpDescuento.codDesc+
 							";tipo="+TmpDescuento.descTipo+";prioridadDescuento="+TmpDescuento.prioridadDescuento+
 							";prioridad="+TmpDescuento.prioridad+";rango="+TmpDescuento.rangoIni+"-"+TmpDescuento.rangoFin+
-							";um="+TmpDescuento.umVenta+";valor="+DT.getDouble(2));
+							";um="+TmpDescuento.umVenta+";base="+baseCandidato+";valor="+DT.getDouble(2));
 
 					String valor = DT.getString(0);
 
@@ -139,7 +143,7 @@ public class clsDescuento {
 
 					if (encontrado) {
 						PromotionTrace.write(cont,"PROMO_SELECTED","producto="+prodid+";codDesc="+TmpDescuento.codDesc+
-								";tipo="+TmpDescuento.descTipo+";recargo="+esRecargo+";base="+baseEvaluacion+
+								";tipo="+TmpDescuento.descTipo+";recargo="+esRecargo+";base="+baseCandidato+
 								";prioridadDescuento="+TmpDescuento.prioridadDescuento+";prioridad="+TmpDescuento.prioridad);
 						break;
 					}
@@ -156,6 +160,10 @@ public class clsDescuento {
 		}
 
 		return TmpDescuento;
+	}
+
+	private String sqlLiteral(String value) {
+		return value == null ? "" : value.replace("'", "''");
 	}
 
 	public double getDesc(){
