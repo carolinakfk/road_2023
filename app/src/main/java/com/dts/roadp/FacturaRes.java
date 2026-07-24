@@ -868,19 +868,17 @@ public class FacturaRes extends PBase {
 				item.Cod="Subtotal";item.Desc=mu.frmcur(stot);item.Bandera=0;
 				items.add(item);
 
-				if (gl.mostrar_pantalla_descuento == 1) {
-					item = clsCls.new clsCDB();
-					item.Cod = "Descuento";
-					item.Desc = mu.frmcur(-descmon);
-					item.Bandera = 0;
-					items.add(item);
+				item = clsCls.new clsCDB();
+				item.Cod = "Descuento";
+				item.Desc = mu.frmcur(-descmon);
+				item.Bandera = 0;
+				items.add(item);
 
-					item = clsCls.new clsCDB();
-					item.Cod = "Recargo";
-					item.Desc = mu.frmcur(+RecargoMontoTotal);
-					item.Bandera = 0;
-					items.add(item);
-				}
+				item = clsCls.new clsCDB();
+				item.Cod = "Recargo";
+				item.Desc = mu.frmcur(+RecargoMontoTotal);
+				item.Bandera = 0;
+				items.add(item);
 
 				if (gl.dvbrowse!=0){
 

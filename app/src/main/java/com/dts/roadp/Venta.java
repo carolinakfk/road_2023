@@ -1859,6 +1859,10 @@ public class Venta extends PBase {
 
 			if (dt != null) dt.close();
 
+			if (rutatipo.equalsIgnoreCase("V")) {
+				gl.umstock=app.umStock(prodid);
+			}
+
 			sql = "SELECT Barra FROM T_BARRA WHERE (BARRA='" + barcode + "') ";
 			dt2 = Con.OpenDT(sql);
 			if (dt2.getCount() > 0) {

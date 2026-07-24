@@ -73,7 +73,7 @@ public class clsDescuento {
 			if (validaPermisos()) {
 				//#EJC20260724 fix(TC0015-hh-escala-um): la base se resuelve por la UMVENTA de cada descuento.
 				String umPesoSql = sqlLiteral(gll.umpeso);
-				String umStockSql = sqlLiteral(umVenta);
+				String umStockSql = gll.umstock;
 				String baseEvaluacionSql = "CASE WHEN UMVENTA='"+umPesoSql+"' THEN "+ppeso+
 						" WHEN UMVENTA='"+umStockSql+"' THEN "+cant+" ELSE "+cant+" END";
 				vSQL= "SELECT PRODUCTO,PTIPO,VALOR,PORCANT,PORPORCENTAJE,CODDESC,DESCTIPO,PRIORIDAD,IFNULL(PRIORIDAD_DESCUENTO,0),UMVENTA,RANGOINI,RANGOFIN "+
