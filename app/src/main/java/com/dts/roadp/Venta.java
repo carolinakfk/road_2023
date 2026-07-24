@@ -2092,6 +2092,8 @@ public class Venta extends PBase {
 			ins.add("VAL4", "");
 			ins.add("PERCEP", percep);
 			ins.add("SIN_EXISTENCIA", 0);
+			ins.add("RECARGO",0);
+			ins.add("RECARGOMONTO",0);
 
 			try {
 				db.execSQL(ins.sql());
@@ -2513,6 +2515,8 @@ public class Venta extends PBase {
 			ins.add("VAL3",0);
 			ins.add("VAL4","");
 			ins.add("PERCEP",percep);
+			ins.add("RECARGO",0);
+			ins.add("RECARGOMONTO",0);
 
 			try {
 				db.execSQL(ins.sql());
@@ -3697,6 +3701,7 @@ public class Venta extends PBase {
 
 		//#EJC20260721 fix(hh-desc-selection): vigencia basada en fecha de factura ROAD.
 		long fechaDocumentoDescuento = gl.peModal.equalsIgnoreCase("TOL") ? app.fechaFactTol(du.getActDate()) : du.getActDate();
+		fechaDocumentoDescuento = du.convertirFecha(fechaDocumentoDescuento);
 		clsDescFiltro clsDFilt=new clsDescFiltro(this,gl.ruta,gl.cliente,fechaDocumentoDescuento);
 
 		clsBonFiltro  clsBFilt=new clsBonFiltro(this,gl.ruta,gl.cliente);
