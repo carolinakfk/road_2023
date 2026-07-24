@@ -441,7 +441,10 @@ public class Repesaje extends PBase {
             tot=prec*ocant;
             peso=tpeso;
 
-            sql="UPDATE T_VENTA SET PRECIO="+prec+",PESO="+peso+",TOTAL="+tot+",PRECIODOC="+precdoc+" WHERE PRODUCTO='"+prodid+"' ";
+            //#EJC20260724 fix(hh-repesaje-promociones): invalida el snapshot porque
+            //el peso cambio; Venta reconstruye todos los importes al volver del repesaje.
+            sql="UPDATE T_VENTA SET PRECIO="+prec+",PESO="+peso+",TOTAL="+tot+
+                    ",PRECIODOC="+precdoc+",INDIVIDUAL_SNAPSHOT=0 WHERE PRODUCTO='"+prodid+"' ";
             db.execSQL(sql);
 
             finish();
@@ -546,7 +549,10 @@ public class Repesaje extends PBase {
            lblPrec.setText(mu.frmdecimal(ttotal,2));
 
             // actualizar peso en T_VENTA
-            sql="UPDATE T_VENTA SET TOTAL="+ttotal+",PESO="+tpeso+" WHERE PRODUCTO='"+prodid+"'";
+            //#EJC20260724 fix(hh-repesaje-promociones): evita restaurar ajustes
+            //individuales calculados con el peso anterior.
+            sql="UPDATE T_VENTA SET TOTAL="+ttotal+",PESO="+tpeso+
+                    ",INDIVIDUAL_SNAPSHOT=0 WHERE PRODUCTO='"+prodid+"'";
             db.execSQL(sql);
 
             if(dt!=null) dt.close();

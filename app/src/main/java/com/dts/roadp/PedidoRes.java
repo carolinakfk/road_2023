@@ -345,7 +345,9 @@ public class PedidoRes extends PBase {
 				totperc=stot*(gl.percepcion/100);
 				totperc=mu.round2(totperc);
 				
-				tot=stot+totimp-descmon+totperc;
+				//#EJC20260724 fix(hh-resumen-ajustes): incluye en el resultado el
+				//recargo que se presenta en el resumen.
+				tot=stot+totimp-descmon+RecargoPorProducto+totperc;
 				tot=mu.round2(tot);
 				
 				item = clsCls.new clsCDB();
@@ -379,7 +381,9 @@ public class PedidoRes extends PBase {
 			} else {
 								
 				totimp=mu.round2(totimp);
-				tot=stot-descmon;
+				//#EJC20260724 fix(hh-resumen-ajustes): subtotal - descuento +
+				//recargo conserva el total autoritativo de T_VENTA.
+				tot=stot-descmon+RecargoPorProducto;
 				tot=mu.round2(tot);
 				
 				
@@ -961,11 +965,12 @@ public class PedidoRes extends PBase {
 			DT.moveToFirst();
 			
 			tot=DT.getDouble(1);
-			stot0=tot+DT.getDouble(0);
+			RecargoPorProducto = DT.getDouble(3);
+			//#EJC20260724 fix(hh-resumen-ajustes): TOTAL ya contiene descuento y
+			//recargo; reconstruye el subtotal base retirando ambos ajustes.
+			stot0=tot+DT.getDouble(0)-RecargoPorProducto;
 			
 			totimp=DT.getDouble(2);
-			RecargoPorProducto = DT.getDouble(3);
-			
 			return DT.getDouble(0);
 		} catch (Exception e) {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);

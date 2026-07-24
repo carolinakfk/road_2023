@@ -819,7 +819,9 @@ public class FacturaRes extends PBase {
 				totperc=stot*(gl.percepcion/100);
 				totperc=mu.round2(totperc);
 
-				tot=stot+totimp-descmon+totperc;
+				//#EJC20260724 fix(hh-resumen-ajustes): el recargo mostrado tambien
+				//participa en el total reconstruido.
+				tot=stot+totimp-descmon+RecargoMontoTotal+totperc;
 				tot=mu.round2(tot);
 
 				item = clsCls.new clsCDB();
@@ -860,7 +862,9 @@ public class FacturaRes extends PBase {
 			} else {
 
 				totimp=mu.round2(totimp);
-				tot=stot-descmon;
+				//#EJC20260724 fix(hh-resumen-ajustes): conserva la identidad
+				//subtotal - descuento + recargo = total final.
+				tot=stot-descmon+RecargoMontoTotal;
 				tot=mu.round2(tot);
 
 
@@ -3047,13 +3051,14 @@ public class FacturaRes extends PBase {
 				DT.moveToFirst();
 
 				tot=DT.getDouble(1);
-				stot0=tot+DT.getDouble(0);
+				RecargoMontoTotal = DT.getDouble(3);
+				//#EJC20260724 fix(hh-resumen-ajustes): TOTAL ya contiene ambos
+				//ajustes; reconstruye la base retirando descuento y recargo.
+				stot0=tot+DT.getDouble(0)-RecargoMontoTotal;
 
 				totimp=DT.getDouble(2);
 
 				double rslt=DT.getDouble(0);
-				RecargoMontoTotal = DT.getDouble(3);
-
 				DT.close();
 
 				return rslt;

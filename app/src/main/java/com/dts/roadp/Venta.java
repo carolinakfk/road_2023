@@ -2707,6 +2707,15 @@ public class Venta extends PBase {
 					" WHERE PRODUCTO='"+prodid+"'";
 			db.execSQL(sql);
 
+			//#EJC20260724 fix(hh-repesaje-promociones): deja evidencia del recalculo
+			//completo posterior a cambios de peso/cantidad.
+			PromotionTrace.write(this,"PROMO_REWEIGH_RECALCULATED",
+					"producto="+prodid+"|cantidad="+ccant+"|peso="+ppeso+
+					"|precioBase="+vprecioBase+"|totalBase="+vtotalBase+
+					"|descuento="+vdescmon+"|recargo="+vrecargoMonto+
+					"|totalFinal="+mu.round(vtot,2)+"|codDesc="+vcodDescAplicado+
+					"|codRecargo="+vcodRecargoAplicado);
+
 			reevaluarCombosDocumento("WEIGHT_OR_BARCODE_EDITED");
 			listItems();
 		} catch (Exception e) {
@@ -4440,7 +4449,9 @@ public class Venta extends PBase {
 			}
 
 			if (browse==4) {
-				browse=0;listItems();return;
+				//#EJC20260724 fix(hh-repesaje-promociones): el repesaje modifica la
+				//base extendida; reconstruye descuento, recargo, total y combos.
+				browse=0;revalidaDescuentoBarra();return;
 			}
 
 			if (browse==5) {
