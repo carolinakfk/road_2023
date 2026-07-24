@@ -39,6 +39,8 @@ import com.dts.roadp.promotions.PromotionSchema;
 import com.dts.roadp.promotions.PromotionTrace;
 import java.util.ArrayList;
 
+import models.Catalogo;
+
 public class Venta extends PBase {
 
 	private ListView listView;
@@ -1235,6 +1237,7 @@ public class Venta extends PBase {
 			mu.msgbox("Error : " + e.getMessage());
 		}
 
+		reevaluarCombosDocumento("LINE_ADDED");
 		listItems();
 
 	}
@@ -1257,6 +1260,7 @@ public class Venta extends PBase {
 			upd.add("TOTAL_BASE",prc.totalBase);
 			upd.add("CODDESC_APLICADO",prc.codDescAplicado);
 			upd.add("CODRECARGO_APLICADO",prc.codRecargoAplicado);
+			upd.add("INDIVIDUAL_SNAPSHOT",0);
 
 			upd.Where("PRODUCTO='"+prodid+"'");
 
@@ -1267,6 +1271,7 @@ public class Venta extends PBase {
 			mu.msgbox("Error : " + e.getMessage());
 		}
 
+		reevaluarCombosDocumento("LINE_EDITED");
     	listItems();
 
 	}
@@ -1306,6 +1311,7 @@ public class Venta extends PBase {
 				removerBonif(bprod,(bontotal-bon));
 			}
 
+			reevaluarCombosDocumento("LINE_DELETED");
 	    	listItems();
 		} catch (SQLException e) {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
@@ -1320,8 +1326,16 @@ public class Venta extends PBase {
 
             db.beginTransaction();
 
-            sql="SELECT PRODUCTO,SIN_EXISTENCIA,UMVENTA,CANT,FACTOR,PRECIO,IMP,DES,DESMON,TOTAL,PRECIODOC,PESO,VAL1,VAL2, RECARGO, RECARGOMONTO " +
-                "FROM D_PEDIDOD WHERE COREL='"+gl.modpedid+"'";
+            //#EJC20260724 fix(hh-pedido-local-genealogy): recupera la base desde el
+            //estado auxiliar local sin exigir columnas nuevas en D_PEDIDOD/backend.
+            sql="SELECT D.PRODUCTO,D.SIN_EXISTENCIA,D.UMVENTA,D.CANT,D.FACTOR,D.PRECIO,"+
+					"D.IMP,D.DES,D.DESMON,D.TOTAL,D.PRECIODOC,D.PESO,D.VAL1,D.VAL2,"+
+					"D.RECARGO,D.RECARGOMONTO,IFNULL(S.PRECIO_BASE,D.PRECIO),"+
+					"IFNULL(S.TOTAL_BASE,D.TOTAL),IFNULL(S.CODDESC_APLICADO,0),"+
+					"IFNULL(S.CODRECARGO_APLICADO,0) FROM D_PEDIDOD D "+
+					"LEFT JOIN T_PEDIDO_PROMO_STATE S ON S.COREL=D.COREL "+
+					"AND S.PRODUCTO=D.PRODUCTO AND S.SIN_EXISTENCIA=D.SIN_EXISTENCIA "+
+					"WHERE D.COREL='"+gl.modpedid+"'";
             dt=Con.OpenDT(sql);
 
 			if (dt==null) return;
@@ -1354,6 +1368,10 @@ public class Venta extends PBase {
                     ins.add("PERCEP",0);
 					ins.add("RECARGO",dt.getDouble(14));
 					ins.add("RECARGOMONTO",dt.getDouble(15));
+					ins.add("PRECIO_BASE",dt.getDouble(16));
+					ins.add("TOTAL_BASE",dt.getDouble(17));
+					ins.add("CODDESC_APLICADO",dt.getInt(18));
+					ins.add("CODRECARGO_APLICADO",dt.getInt(19));
 
                     db.execSQL(ins.sql());
 
@@ -2681,12 +2699,30 @@ public class Venta extends PBase {
 					",Recargo="+vrecargoValor+",RecargoMonto="+vrecargoMonto+
 					",Precio_Base="+vprecioBase+",Total_Base="+vtotalBase+
 					",CodDesc_Aplicado="+vcodDescAplicado+",CodRecargo_Aplicado="+vcodRecargoAplicado+
+					",INDIVIDUAL_SNAPSHOT=0"+
 					" WHERE PRODUCTO='"+prodid+"'";
 			db.execSQL(sql);
 
+			reevaluarCombosDocumento("WEIGHT_OR_BARCODE_EDITED");
 			listItems();
 		} catch (Exception e) {
 			msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+		}
+	}
+
+	//#EJC20260724 fix(hh-combo-live-reevaluation): la venta alimenta pedidos y facturas;
+	//cada mutacion restaura el individual y reevalua combos sobre el documento completo.
+	private void reevaluarCombosDocumento(String motivo) {
+		try {
+			long fechaDocumento=du.getActDateTime();
+			if (gl.peModal.equalsIgnoreCase("TOL")) fechaDocumento=app.fechaFactTol(du.getActDate());
+			Catalogo resolver=new Catalogo(this,Con,db);
+			resolver.ResolverCombosEnTVenta(gl.cliente,fechaDocumento,true);
+			PromotionTrace.write(this,"PROMO_DOCUMENT_RESOLVED","motivo="+motivo+
+					";cliente="+gl.cliente+";destino="+(pedido?"PEDIDO":"FACTURA"));
+		} catch (Exception e) {
+			PromotionTrace.write(this,"PROMO_DOCUMENT_RESOLVE_ERROR","motivo="+motivo+
+					";error="+e.getClass().getSimpleName());
 		}
 	}
 

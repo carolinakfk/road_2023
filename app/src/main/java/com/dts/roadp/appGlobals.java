@@ -52,7 +52,7 @@ public class appGlobals extends Application {
 	public String devtipo,devrazon,dvumventa,dvumstock,dvumpeso,dvlote;
 	public double dvfactor,dvpeso,dvprec,dvpreclista,dvtotal;
 	public int dvbrowse=0,tienelote,facturaVen,brw=0;
-    public boolean dvporpeso,devfindia,devprncierre,gpspass,despdevflag,dvError;
+    public boolean dvporpeso,devfindia,devprncierre,gpspass,despdevflag,dvError,dvPromoElegible=true;
     public double dvdispventa,devtotal;
     public String dvcorreld,dvcorrelnc,dvestado,dvactuald,dvactualnc,devcornc, dvcorelnd, dvactualnd,dvSeriend,dvSerienc, dvSeried;
 

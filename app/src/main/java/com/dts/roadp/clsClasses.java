@@ -369,5 +369,17 @@ public class clsClasses {
 		public double pesoOriginal;
 		public double recargo;
 		public double recargoMonto;
+		public boolean promoEligible = true;
+		//#EJC20260724 state(hh-combo-individual-fallback): conserva el resultado individual
+		//para restaurarlo si un combo queda incompleto o resulta ambiguo.
+		public boolean individualSnapshot;
+		public double individualPrecio;
+		public double individualTotal;
+		public double individualDes;
+		public double individualDesMon;
+		public double individualRecargo;
+		public double individualRecargoMonto;
+		public int individualCodDesc;
+		public int individualCodRecargo;
 	}
 }

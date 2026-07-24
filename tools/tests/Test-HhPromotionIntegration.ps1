@@ -12,11 +12,13 @@ $price = Read-Source 'app\src\main\java\com\dts\roadp\Precio.java'
 $transactionPrice = Read-Source 'app\src\main\java\com\dts\roadp\PrecioTran.java'
 $sale = Read-Source 'app\src\main\java\com\dts\roadp\Venta.java'
 $invoice = Read-Source 'app\src\main\java\com\dts\roadp\FacturaRes.java'
+$order = Read-Source 'app\src\main\java\com\dts\roadp\PedidoRes.java'
+$return = Read-Source 'app\src\main\java\com\dts\roadp\DevolCli.java'
 $combo = Read-Source 'app\src\main\java\models\Catalogo.java'
 $schema = Read-Source 'app\src\main\java\com\dts\roadp\promotions\PromotionSchema.java'
 $print = Read-Source 'app\src\main\java\com\dts\roadp\clsDocFactura.java'
 $calculator = Read-Source 'app\src\main\java\com\dts\roadp\promotions\SapPromotionCalculator.java'
-$all = $comws + $filter + $selector + $price + $transactionPrice + $sale + $invoice + $combo + $schema + $print + $calculator
+$all = $comws + $filter + $selector + $price + $transactionPrice + $sale + $invoice + $order + $return + $combo + $schema + $print + $calculator
 
 $checks = [ordered]@{
     'F01_FILTER_ALIAS' = $filter.Contains('FROM P_DESCUENTO D WHERE ((CTIPO=0)')
@@ -31,9 +33,16 @@ $checks = [ordered]@{
     'F10_NO_REEXTEND' = $invoice.Contains('SELECT SUM(DESMON),') -and $invoice.Contains('SUM(RECARGOMONTO)')
     'F11_COMBO_PTIPO6' = $combo.Contains("D.PTIPO = 6 AND D.DESCTIPO IN ('R','M')")
     'F12_REQUIRED_AND_UM' = $combo.Contains('itemCombo.obligatorio') -and $combo.Contains('umCompatible')
-    'F13_SINGLE_APPLY' = $invoice.Contains('detDescuento, beDescuento, null') -and $invoice.Contains('detRecargo, null, beRecargo')
-    'F14_BONUS_INCLUDED' = $combo.Contains('CargarBonificacionesParaCombo') -and $combo.Contains('cantidadBonificadaCompatible')
-    'F15_BASE_PERSISTED' = $schema.Contains('PRECIO_BASE REAL') -and $invoice.Contains('CODDESC_APLICADO')
+    'F13_SINGLE_APPLY' = $invoice.Contains('ResolverCombosEnTVenta') -and
+        -not $invoice.Contains('AplicarAjusteComboEnTVenta(detDescuento') -and
+        -not $invoice.Contains('AplicarAjusteComboEnTVenta(detRecargo')
+    'F14_BONUS_EXCLUDED' = $combo.Contains('PROMO_COMBO_BONUS_EXCLUDED') -and
+        $combo.Contains('bonificadosIncluidos=0') -and
+        -not $combo.Contains('cantidadAcumulada += cantidadBonificadaCompatible')
+    'F15_BASE_LOCAL_ONLY' = $schema.Contains('T_VENTA","PRECIO_BASE REAL') -and
+        $invoice.Contains('PROMO_LINE_PERSISTED') -and
+        -not $schema.Contains('D_FACTURAD","PRECIO_BASE REAL') -and
+        -not $invoice.Contains('ins.add("CODDESC_APLICADO"')
     'F16_NCND_REMAINS_BOF' = -not $all.Contains('hh-ncnd-precio')
     'F17_SAME_BASE_CONCURRENCY' = $calculator.Contains('calculateAdjustment(extendedBase, safeBasis, safeDiscount)') -and $calculator.Contains('calculateAdjustment(extendedBase, safeBasis, safeSurcharge)')
     'F18_EFFECTIVE_PRICE_PRINT' = $print.Contains('formatEffectivePrice(item.prec,8)') -and $print.Contains('scale=6;scale>=2')
@@ -42,6 +51,16 @@ $checks = [ordered]@{
         $selector.Contains('" WHEN UMVENTA=') -and
         $selector.Contains('baseEvaluacionSql+">=RANGOINI') -and
         $selector.Contains('baseEvaluacionSql+"<=RANGOFIN')
+    'COMBO_TIE_FALLBACK' = $combo.Contains('COMBO_SELECTION_AMBIGUOUS') -and
+        $combo.Contains('accion=individual') -and $combo.Contains('empatados.size() > 1')
+    'COMBO_BOTH_SIDES_ONCE' = $invoice.Contains('ResolverCombosEnTVenta') -and
+        $combo.Contains('aplicarResolucionConjunta')
+    'COMBO_LIVE_REEVALUATION' = $sale.Contains('LINE_ADDED') -and
+        $sale.Contains('LINE_EDITED') -and $sale.Contains('LINE_DELETED') -and
+        $sale.Contains('WEIGHT_OR_BARCODE_EDITED')
+    'COMBO_ORDER_SUMMARY' = $order.Contains('ResolverCombosEnTVenta')
+    'COMBO_CUSTOMER_RETURN' = $return.Contains('ResolverCombosEnDevolucion') -and
+        $return.Contains('BEFORE_SAVE')
 }
 
 $failed = @($checks.GetEnumerator() | Where-Object { -not $_.Value } | ForEach-Object Key)

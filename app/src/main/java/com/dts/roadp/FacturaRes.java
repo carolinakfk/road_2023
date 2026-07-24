@@ -367,26 +367,9 @@ public class FacturaRes extends PBase {
 	public void AplicarDescuentosRecargosCombo(String cliente,long fechaDocumento) {
 		try {
 
-			clsClasses.clsBeP_DESCUENTO beDescuento = DescCombos.GetDescuentoCombo(cliente, false,fechaDocumento);
-			clsClasses.clsBeP_DESCUENTO beRecargo = DescCombos.GetDescuentoCombo(cliente, true,fechaDocumento);
-
-			List<clsClasses.clsBeP_DESCUENTO_COMBO_DET> detDescuento = new ArrayList<>();
-			List<clsClasses.clsBeP_DESCUENTO_COMBO_DET> detRecargo = new ArrayList<>();
-
-			if (beDescuento != null) {
-				detDescuento = DescCombos.GetDetalleComboDescuento(beDescuento.codDesc);
-			}
-			if (beRecargo != null) {
-				detRecargo = DescCombos.GetDetalleComboDescuento(beRecargo.codDesc);
-			}
-
-			if (detDescuento.size() > 0) {
-				//#EJC20260721 fix(hh-combo-aplicacion): cada condición se aplica una sola vez.
-				DescCombos.AplicarAjusteComboEnTVenta(detDescuento, beDescuento, null);
-			}
-			if (detRecargo.size() > 0) {
-				DescCombos.AplicarAjusteComboEnTVenta(detRecargo, null, beRecargo);
-			}
+			//#EJC20260724 fix(hh-combo-summary-resolve): antes de totalizar resuelve ambos
+			//lados juntos; un empate conserva individuales y se informa al usuario.
+			DescCombos.ResolverCombosEnTVenta(cliente, fechaDocumento, true);
 		} catch (Exception e) {
 			msgbox(Objects.requireNonNull(new Object() {
 			}.getClass().getEnclosingMethod()).getName()+" . "+e.getMessage());
@@ -1773,10 +1756,6 @@ public class FacturaRes extends PBase {
 				ins.add("UMPESO",gl.umpeso); //#HS_20181120_1625 Se agrego el valor gl.umpeso anteriormente estaba ""
 				ins.add("RECARGO",dt.getDouble(14));
 				ins.add("RECARGOMONTO",dt.getDouble(15));
-				ins.add("PRECIO_BASE",dt.getDouble(16));
-				ins.add("TOTAL_BASE",dt.getDouble(17));
-				ins.add("CODDESC_APLICADO",dt.getInt(18));
-				ins.add("CODRECARGO_APLICADO",dt.getInt(19));
 				PromotionTrace.write(this,"PROMO_LINE_PERSISTED","factura="+corel+";producto="+dt.getString(0)+
 						";precioBase="+dt.getDouble(16)+";totalBase="+dt.getDouble(17)+";descuento="+dt.getDouble(5)+
 						";recargo="+dt.getDouble(15)+";totalFinal="+dt.getDouble(6)+";codDesc="+dt.getInt(18)+";codRecargo="+dt.getInt(19));

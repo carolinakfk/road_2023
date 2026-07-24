@@ -42,7 +42,7 @@ public class DevCliCant extends PBase {
 	private ArrayList<String> cmbumlist = new ArrayList<String>();
 
 	private String prodid,estado,razon,devrazon,raz;
-	private double cant,icant,factor=0.0,precioventa=0.0,pesoprom=0.0,clcpeso=0.0;
+	private double cant,icant,factor=0.0,precioventa=0.0,pesoprom=0.0,clcpeso=0.0,precioBasePromocion=0.0;
 	private  String um="", ummin="",umcambiar="";
 	private Precio prc;
 
@@ -185,7 +185,9 @@ public class DevCliCant extends PBase {
 				gl.dvpreclista = 0.0;
 			}else{
 				gl.dvprec =Double.parseDouble(txtPrecio.getText().toString());
-				gl.dvpreclista = gl.dvprec;
+				//#EJC20260724 state(hh-return-promotion-base): evita encadenar el combo
+				//sobre el precio individual ya ajustado de la devolucion.
+				gl.dvpreclista = precioBasePromocion>0 ? precioBasePromocion : gl.dvprec;
 			}
 
 			gl.dvfactor = factor;
@@ -412,17 +414,26 @@ public class DevCliCant extends PBase {
 				lblDesc.setText(prodid + " " + DT.getString(7));
 			}
 
+			gl.dvPromoElegible=true;
 			if (prodPorPeso(prodid)) {
 				precioventa = prc.precio(prodid, cant, gl.nivel, um, gl.umpeso, gl.dpeso,um);
 				if (prc.existePrecioEspecial(prodid,cant,gl.cliente,gl.clitipo,um,gl.umpeso,gl.dpeso)) {
-					if (prc.precioespecial>0) precioventa=prc.precioespecial;
+					if (prc.precioespecial>0) {
+						precioventa=prc.precioespecial;
+						gl.dvPromoElegible=false;
+					}
 				}
 			} else {
 				precioventa = prc.precio(prodid, cant, gl.nivel, um, gl.umpeso, 0,um);
 				if (prc.existePrecioEspecial(prodid,cant,gl.cliente,gl.clitipo,um,gl.umpeso,0)) {
-					if (prc.precioespecial>0) precioventa=prc.precioespecial;
+					if (prc.precioespecial>0) {
+						precioventa=prc.precioespecial;
+						gl.dvPromoElegible=false;
+					}
 				}
 			}
+			precioBasePromocion=gl.dvPromoElegible && prc.precioBase>0
+					? prc.precioBase : precioventa;
 
 			//#CKFK 20190329_08:37AM Agregué esta validación cuando el precio es 0.
 			if (precioventa==0) {
@@ -432,7 +443,10 @@ public class DevCliCant extends PBase {
 
 			precioventa = mu.round(precioventa,2);
 
-			sql="SELECT CANT,PESO,PRECIO,UMVENTA,LOTE,TIENE_LOTE FROM T_CxCD WHERE CODIGO='"+prodid+"'";
+			try { db.execSQL("ALTER TABLE T_CxCD ADD COLUMN PROMO_ELEGIBLE INTEGER DEFAULT 1 NOT NULL"); }
+			catch (Exception ignored) { }
+			sql="SELECT CANT,PESO,PRECIO,UMVENTA,LOTE,TIENE_LOTE,PRECLISTA,"+
+					"IFNULL(PROMO_ELEGIBLE,1) FROM T_CxCD WHERE CODIGO='"+prodid+"'";
 			DT=Con.OpenDT(sql);
 
 			if (DT.getCount()>0){
@@ -444,6 +458,8 @@ public class DevCliCant extends PBase {
 				txtPrecio.setText(String.valueOf(DT.getDouble(2)));
 				txtkgs.setText(String.valueOf(DT.getDouble(1)));
 				gl.tienelote = DT.getInt(5);
+				precioBasePromocion=DT.getDouble(6)>0?DT.getDouble(6):precioBasePromocion;
+				gl.dvPromoElegible=DT.getInt(7)==1;
 				txtLote.setText(DT.getString(4));
 
 				if(gl.tienelote==1){
