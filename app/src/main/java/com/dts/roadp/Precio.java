@@ -84,14 +84,11 @@ public class Precio {
 	public boolean existePrecioEspecial(String prod,double pcant,String cliente,String clitipo,String unimedida,String unimedidapeso,double ppeso) {
 		prodid=prod;cant=pcant;um=unimedida;umventa=unimedida;
 		umpeso=unimedidapeso;
-		prec=0;costo=0;descmon=0;imp=0;tot=0;precioespecial=0;
-		clsDescuento clsDesc=new clsDescuento(cont,prodid,cant,ppeso,umventa);
-		BeDescuento=clsDesc.getDescuentoRecargo(false);
-		BeRecargo=clsDesc.getDescuentoRecargo(true);
+		precioespecial=0;
 
-		prodPrecioEsp(ppeso,cliente,clitipo);
-		precioespecial=prec;
-		return prec>0;
+		//#EJC20260724 fix(hh-special-price-exclusive): consultar precio especial no destruye
+		//el calculo base/promocional vigente. Si no existe, P_PRODPRECIO permanece autoritativo.
+		return prodPrecioEsp(ppeso,cliente,clitipo);
 	}
 
 	
@@ -307,7 +304,7 @@ public class Precio {
 		
 	}
 
-	private void prodPrecioEsp(double ppeso,String cliente,String clitipo) {
+	private boolean prodPrecioEsp(double ppeso,String cliente,String clitipo) {
 		Cursor dt = null;
 		double pr,prr,stot,pprec,tsimp;
 		String sprec="",vcod,vval;
@@ -363,27 +360,47 @@ public class Precio {
 			if (dt!=null) dt.close();
 		}
 
-		//#EJC20260721 fix(hh-total-extendido): precio especial usa el mismo motor SAP.
-		if (pr <= 0) return;
+		if (pr <= 0) {
+			PromotionTrace.write(cont,"PRICE_MODE",
+					"producto="+prodid+";modo=STANDARD_PROMOTION;precioEspecial=NO;precioBase="+precioBase+";total="+tot);
+			return false;
+		}
+
+		//#EJC20260724 fix(hh-special-price-exclusive): precio especial y promociones son
+		//mutuamente excluyentes; nunca aplicar descuento/recargo sobre TMP_PRECESPEC.
 		double baseFacturacion=ppeso>0?ppeso:cant;
 		if (baseFacturacion<=0) baseFacturacion=1;
 		SapPromotionCalculator.Result resultado=SapPromotionCalculator.calculate(
 				SapPromotionCalculator.decimal(pr),SapPromotionCalculator.decimal(baseFacturacion),
-				toAdjustment(BeDescuento),toAdjustment(BeRecargo));
-		desc=BeDescuento==null?0:BeDescuento.valor;
-		recargo=BeRecargo==null?0:BeRecargo.valor;
+				SapPromotionCalculator.Adjustment.none(),SapPromotionCalculator.Adjustment.none());
+		BeDescuento=null;
+		BeRecargo=null;
+		desc=0;
+		recargo=0;
 		descmon=resultado.discountTotal.doubleValue();
 		recargoMonto=resultado.surchargeTotal.doubleValue();
 		precioBase=resultado.baseUnitPrice.doubleValue();
 		totalBase=resultado.extendedBaseTotal.doubleValue();
-		codDescAplicado=BeDescuento==null?0:BeDescuento.codDesc;
-		codRecargoAplicado=BeRecargo==null?0:BeRecargo.codDesc;
+		codDescAplicado=0;
+		codRecargoAplicado=0;
 		totsin=resultado.authoritativeFinalTotal.doubleValue();
-		tot=totsin;
 		precsin=resultado.derivedUnitPrice.doubleValue();
-		prec=precsin;
+		imp=getImp();
+		BigDecimal impuestoTotal=SapPromotionCalculator.money(resultado.authoritativeFinalTotal
+				.multiply(SapPromotionCalculator.decimal(imp)).divide(new BigDecimal("100")));
+		BigDecimal totalConImpuesto=resultado.authoritativeFinalTotal.add(impuestoTotal)
+				.setScale(SapPromotionCalculator.MONEY_SCALE,SapPromotionCalculator.SAP_ROUNDING);
+		impval=impuestoTotal.doubleValue();
+		tot=totalConImpuesto.doubleValue();
+		prec=totalConImpuesto.divide(SapPromotionCalculator.decimal(baseFacturacion),
+				SapPromotionCalculator.UNIT_PRICE_SCALE,SapPromotionCalculator.SAP_ROUNDING).doubleValue();
 		precdoc=prec;
-		imp=0;impval=0;
+		precioespecial=prec;
+
+		PromotionTrace.write(cont,"PRICE_MODE",
+				"producto="+prodid+";modo=SPECIAL;precioEspecial="+pr+";baseFacturacion="+baseFacturacion+
+				";descuento=0;recargo=0;total="+tot+";precioDerivado="+prec);
+		return true;
 
 	}
 

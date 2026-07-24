@@ -36,6 +36,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.dts.roadp.clsClasses.clsVenta;
 import com.dts.roadp.promotions.PromotionSchema;
+import com.dts.roadp.promotions.PromotionTrace;
 import java.util.ArrayList;
 
 public class Venta extends PBase {
@@ -884,17 +885,18 @@ public class Venta extends PBase {
 	private void prodPrecio() {
 		try{
 			prec=prc.precio(prodid,cant,nivel,um,gl.umpeso,gl.dpeso,um);
+
+			if (prc.existePrecioEspecial(prodid,cant,gl.cliente,gl.clitipo,um,gl.umpeso,gl.dpeso)) {
+				if (prc.precioespecial>0) prec=prc.precioespecial;
+			}
+
+			//#EJC20260724 fix(hh-special-price-exclusive): copiar los ajustes despues
+			//de resolver el regimen; precio especial deja descuento y recargo en cero.
 			tot = prc.tot;
 			descmon = prc.descmon;
 			desc = prc.BeDescuento == null ? 0 : prc.BeDescuento.valor;
 			recargo = prc.recargo;
 			recargoMonto = prc.recargoMonto;
-			recargo = prc.recargo;
-			recargoMonto = prc.recargoMonto;
-
-            if (prc.existePrecioEspecial(prodid,cant,gl.cliente,gl.clitipo,um,gl.umpeso,gl.dpeso)) {
-                if (prc.precioespecial>0) prec=prc.precioespecial;
-            }
 
 			//#EJC20260721 fix(hh-total-extendido): conserva precio derivado a seis decimales.
 			prec=mu.round(prec,6);
@@ -999,6 +1001,21 @@ public class Venta extends PBase {
 
 		//#EJC20260721 fix(hh-total-extendido): no reconstruye TOTAL desde precio visual.
 		prodtot=mu.round(prc.tot,2);
+
+		//#EJC20260724 fix(hh-price-zero-guard): una venta ordinaria nunca se persiste
+		//sin precio fuente. Bonificaciones usan su flujo dedicado y no pasan por aqui.
+		if (prc.precioBase<=0 || prec<=0 || prodtot<=0) {
+			PromotionTrace.write(this,"SALE_LINE_REJECTED",
+					"producto="+prodid+";precioBase="+prc.precioBase+";precio="+prec+";total="+prodtot+
+					";motivo=PRECIO_O_TOTAL_CERO");
+			mu.msgbox("No se puede agregar el producto "+prodid+" porque no tiene un precio válido definido.");
+			return;
+		}
+
+		PromotionTrace.write(this,"SALE_LINE_BEFORE_INSERT",
+				"producto="+prodid+";precioBase="+prc.precioBase+";precio="+prec+";totalBase="+prc.totalBase+
+				";descuento="+prc.descmon+";recargo="+prc.recargoMonto+";total="+prodtot+
+				";precioEspecial="+(prc.precioespecial>0));
 
         if (rutatipo.equalsIgnoreCase("V")) {
             gl.umstock=app.umStock(prodid);

@@ -1922,9 +1922,13 @@ public class FacturaRes extends PBase {
 				sql = "SELECT ITEM,CODPAGO,TIPO,VALOR,DESC1,DESC2,DESC3 FROM T_PAGO";
 				dt = Con.OpenDT(sql);
 
-				CodPago = dt.getInt(1);
+				//#EJC20260724 fix(hh-payment-empty-guard): nunca leer el cursor antes
+				//de posicionarlo ni guardar una factura ordinaria sin forma de pago.
+				if (dt == null || !dt.moveToFirst()) {
+					throw new IllegalStateException("No existe una forma de pago registrada para la factura.");
+				}
 
-				dt.moveToFirst();
+				CodPago = dt.getInt(1);
 
 				while (!dt.isAfterLast()) {
 
