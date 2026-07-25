@@ -43,6 +43,16 @@ Assert-Equal 'DeletingRequirementRestoresIndividual' (Resolve-Combo @(
 )) 'INDIVIDUAL'
 Assert-Equal 'DiscountAndSurchargeSameBase' (100 - 10 + 5) 95
 
+function Normalize-PromotionDate([long]$date) {
+    $value = [string]$date
+    if ($value.Length -eq 14) { return $date }
+    if ($value.Length -ne 12) { throw 'INVALID_PROMOTION_DATE' }
+    return [long]("20" + $value)
+}
+
+Assert-Equal 'LegacyPFechaGetsFullYear' (Normalize-PromotionDate 260724000000) 20260724000000
+Assert-Equal 'FullPromotionDateIsPreserved' (Normalize-PromotionDate 20260724000000) 20260724000000
+
 $catalog = Get-Content -Raw (Join-Path $repo 'app\src\main\java\models\Catalogo.java')
 $sale = Get-Content -Raw (Join-Path $repo 'app\src\main\java\com\dts\roadp\Venta.java')
 $invoice = Get-Content -Raw (Join-Path $repo 'app\src\main\java\com\dts\roadp\FacturaRes.java')
@@ -64,6 +74,8 @@ $guards = [ordered]@{
     'NO_CODDESC_TIEBREAKER' = $catalog.Contains('empatados.size() > 1') -and
         $catalog.Contains('COMBO_SELECTION_AMBIGUOUS')
     'COMBO_DESCTIPO_C_SUPPORTED' = $catalog.Contains("D.DESCTIPO IN ('R','M','C')")
+    'COMBO_DATE_NORMALIZED_CENTRALLY' = $catalog.Contains('normalizarFechaVigencia(fechaDocumento)') -and
+        $catalog.Contains('PROMO_DATE_NORMALIZED') -and $catalog.Contains('PROMO_DATE_INVALID')
     'BONUS_EXCLUDED' = $catalog.Contains('bonificadosIncluidos=0') -and
         -not $catalog.Contains('cantidadAcumulada += cantidadBonificadaCompatible')
     'LIVE_EVENTS' = $sale.Contains('LINE_ADDED') -and $sale.Contains('LINE_EDITED') -and

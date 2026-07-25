@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.dts.roadp.BaseDatos;
+import com.dts.roadp.DateUtils;
 import com.dts.roadp.MiscUtils;
 import com.dts.roadp.PBase;
 import com.dts.roadp.appGlobals;
@@ -30,11 +31,13 @@ public class Catalogo extends PBase {
     private Context cont;
     private appGlobals gll;
     private MiscUtils mu;
+    private DateUtils dateUtils;
     private final Map<String, Double> preciosBaseSesion = new HashMap<>();
 
     public Catalogo(Context context, BaseDatos dbconnection, SQLiteDatabase dbase) {
         this.gll = ((appGlobals) context.getApplicationContext());
         mu = new MiscUtils(context);
+        dateUtils = new DateUtils();
         cont = context;
         Con = dbconnection;
         db = dbase;
@@ -55,6 +58,9 @@ public class Catalogo extends PBase {
         Cursor DT;
 
         try {
+            //#EJC20260724 fix(hh-combo-fecha-vigencia): P_FECHA conserva el
+            //formato legacy yyMMddHHmmss; promociones comparan siempre yyyyMMddHHmmss.
+            long fechaVigencia = normalizarFechaVigencia(fechaDocumento);
             //#EJC20260724 fix(hh-combo-client-scope): T_DESC ya representa las
             //condiciones comerciales filtradas para el cliente activo; el join evita
             //omitir CTIPO o ampliar combos a clientes no elegibles.
@@ -65,10 +71,10 @@ public class Catalogo extends PBase {
 					//#EJC20260724 fix(hh-combo-desctipo-c): SAP sincroniza los
 					//combos reales con PTIPO=6 y DESCTIPO=C; R/M se conservan por compatibilidad.
                     " AND D.PTIPO = 6 AND D.DESCTIPO IN ('R','M','C') " +
-					" AND D.FECHAINI <= " + fechaDocumento + " AND D.FECHAFIN >= " + fechaDocumento +
+					" AND D.FECHAINI <= " + fechaVigencia + " AND D.FECHAFIN >= " + fechaVigencia +
 					" AND NOT EXISTS (SELECT 1 FROM P_CLIENTE_PROD_EXCLUIDOS E " +
 					" WHERE E.CLIENTE='" + cliente + "' AND E.PRODUCTO=D.PRODUCTO AND E.ACTIVO=1 " +
-					" AND E.FECHAINI <= " + fechaDocumento + " AND E.FECHAFIN >= " + fechaDocumento + ") " +
+					" AND E.FECHAINI <= " + fechaVigencia + " AND E.FECHAFIN >= " + fechaVigencia + ") " +
                     "ORDER BY IFNULL(D.PRIORIDAD_DESCUENTO,0),D.PRIORIDAD ASC,D.CODDESC ASC ";
 
             DT = Con.OpenDT(vSQL);
@@ -91,6 +97,22 @@ public class Catalogo extends PBase {
         }
 
         return candidatos;
+    }
+
+    private long normalizarFechaVigencia(long fechaDocumento) {
+        try {
+            long fechaNormalizada = dateUtils.convertirFecha(fechaDocumento);
+            if (fechaNormalizada != fechaDocumento) {
+                PromotionTrace.write(cont,"PROMO_DATE_NORMALIZED",
+                        "origen=P_FECHA;formatoEntrada=yyMMddHHmmss;fechaNormalizada="+fechaNormalizada);
+            }
+            return fechaNormalizada;
+        } catch (IllegalArgumentException e) {
+            PromotionTrace.write(cont,"PROMO_DATE_INVALID",
+                    "origen=resolver_combo;digitos="+String.valueOf(fechaDocumento).length()+
+                            ";accion=individual");
+            throw e;
+        }
     }
 
     public List<clsClasses.clsBeP_DESCUENTO_COMBO_DET> GetDetalleComboDescuento(int descuento) {
