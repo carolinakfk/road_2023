@@ -62,8 +62,9 @@ public class Catalogo extends PBase {
                     "FROM P_DESCUENTO D INNER JOIN T_DESC T ON T.CODDESC=D.CODDESC " +
                     " AND T.DESCTIPO=D.DESCTIPO AND T.ES_RECARGO=D.ES_RECARGO " +
                     "WHERE D.ES_RECARGO = " + (esRecargo ? 1 : 0) +
-					//#EJC20260721 fix(hh-combo-catalog): combo es PTIPO=6 y DESCTIPO conserva R/M.
-                    " AND D.PTIPO = 6 AND D.DESCTIPO IN ('R','M') " +
+					//#EJC20260724 fix(hh-combo-desctipo-c): SAP sincroniza los
+					//combos reales con PTIPO=6 y DESCTIPO=C; R/M se conservan por compatibilidad.
+                    " AND D.PTIPO = 6 AND D.DESCTIPO IN ('R','M','C') " +
 					" AND D.FECHAINI <= " + fechaDocumento + " AND D.FECHAFIN >= " + fechaDocumento +
 					" AND NOT EXISTS (SELECT 1 FROM P_CLIENTE_PROD_EXCLUIDOS E " +
 					" WHERE E.CLIENTE='" + cliente + "' AND E.PRODUCTO=D.PRODUCTO AND E.ACTIVO=1 " +

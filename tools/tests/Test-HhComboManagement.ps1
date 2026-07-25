@@ -63,6 +63,7 @@ $saleSchema = $database.Substring($saleStart, $saleEnd - $saleStart)
 $guards = [ordered]@{
     'NO_CODDESC_TIEBREAKER' = $catalog.Contains('empatados.size() > 1') -and
         $catalog.Contains('COMBO_SELECTION_AMBIGUOUS')
+    'COMBO_DESCTIPO_C_SUPPORTED' = $catalog.Contains("D.DESCTIPO IN ('R','M','C')")
     'BONUS_EXCLUDED' = $catalog.Contains('bonificadosIncluidos=0') -and
         -not $catalog.Contains('cantidadAcumulada += cantidadBonificadaCompatible')
     'LIVE_EVENTS' = $sale.Contains('LINE_ADDED') -and $sale.Contains('LINE_EDITED') -and
