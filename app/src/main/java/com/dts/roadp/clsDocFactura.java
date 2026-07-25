@@ -69,7 +69,9 @@ public class clsDocFactura extends clsDocument {
 				tot=DT.getDouble(5);
 				desc=DT.getDouble(6);
 				imp=DT.getDouble(7);
-				stot=tot+desc;
+				//#EJC20260724 fix(hh-print-total-autoritativo): Toledano imprime
+				//el precio efectivo y TOTAL; no reconstruye descuento ni recargo.
+				stot=modo.equalsIgnoreCase("TOL") ? tot : tot+desc;
 
 				empp=DT.getString(8);
 				//#CKFK20220413 Cambie la fecha por la fecha de entrega que tiene hora
