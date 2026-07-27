@@ -31,7 +31,7 @@ $checks = [ordered]@{
     'F08_AUTHORITATIVE_TOTAL' = $sale.Contains('prodtot=mu.round(prc.tot,2)')
     'F09_SESSION_BASE' = $combo.Contains('preciosBaseSesion')
     'F10_NO_REEXTEND' = $invoice.Contains('SELECT SUM(DESMON),') -and $invoice.Contains('SUM(RECARGOMONTO)')
-    'F11_COMBO_PTIPO6' = $combo.Contains("D.PTIPO = 6 AND D.DESCTIPO IN ('R','M')")
+    'F11_COMBO_PTIPO6' = $combo.Contains("D.PTIPO = 6 AND D.DESCTIPO IN ('R','M','C')")
     'F12_REQUIRED_AND_UM' = $combo.Contains('itemCombo.obligatorio') -and $combo.Contains('umCompatible')
     'F13_SINGLE_APPLY' = $invoice.Contains('ResolverCombosEnTVenta') -and
         -not $invoice.Contains('AplicarAjusteComboEnTVenta(detDescuento') -and
@@ -61,6 +61,8 @@ $checks = [ordered]@{
     'COMBO_ORDER_SUMMARY' = $order.Contains('ResolverCombosEnTVenta')
     'COMBO_CUSTOMER_RETURN' = $return.Contains('ResolverCombosEnDevolucion') -and
         $return.Contains('BEFORE_SAVE')
+    'ORDER_TOTAL_USES_LINE_CENTS' = $sale.Contains('#EJC20260727 fix(hh-pedido-total-centavos)') -and
+        $sale.Contains('tt=mu.round2(tt)') -and $sale.Contains('PROMO_SALE_TOTAL_DISPLAY')
 }
 
 $failed = @($checks.GetEnumerator() | Where-Object { -not $_.Value } | ForEach-Object Key)

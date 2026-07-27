@@ -541,7 +541,7 @@ public class Venta extends PBase {
 	public void listItems() {
 		Cursor DT;
 		clsVenta item;
-		double tt;
+		double tt,totalPersistido=0;
 		int ii;
 
 		items.clear();tot=0;ttimp=0;ttperc=0;selidx=-1;ii=0;
@@ -581,6 +581,10 @@ public class Venta extends PBase {
 				while (!DT.isAfterLast()) {
 
 					tt=DT.getDouble(2);
+					totalPersistido+=tt;
+					//#EJC20260727 fix(hh-pedido-total-centavos): la pantalla suma
+					//los totales autoritativos de linea tal como se muestran, a dos decimales.
+					if (gl.peModal.equalsIgnoreCase("TOL")) tt=mu.round2(tt);
 
 					item = clsCls.new clsVenta();
 
@@ -671,11 +675,16 @@ public class Venta extends PBase {
 
 		if (sinimp) {
 			ttsin=tot-ttimp-ttperc;
-			ttsin=mu.round(ttsin,2);
+			ttsin=gl.peModal.equalsIgnoreCase("TOL") ? mu.round2(ttsin) : mu.round(ttsin,2);
 			lblTot.setText(mu.frmcur(ttsin));
 		} else {
-			tot=mu.round(tot,2);
+			tot=gl.peModal.equalsIgnoreCase("TOL") ? mu.round2(tot) : mu.round(tot,2);
 			lblTot.setText(mu.frmcur(tot));
+		}
+		if (gl.peModal.equalsIgnoreCase("TOL")) {
+			PromotionTrace.write(this,"PROMO_SALE_TOTAL_DISPLAY",
+					"destino="+(pedido?"PEDIDO":"FACTURA")+";totalPersistido="+totalPersistido+
+							";totalMostrado="+(sinimp?ttsin:tot)+";criterio=suma_lineas_centavos");
 		}
 
 		if (selidx>-1) {
