@@ -52,6 +52,12 @@ public class PrecioTran {
 	}
 
 	public double precio(String prod,double pcant,int nivelprec,String unimedida,String unimedidapeso,double ppeso,String umven) {
+		return precio(prod,pcant,nivelprec,unimedida,unimedidapeso,ppeso,umven,0);
+	}
+
+	//#EJC20260728 fix(hh-rosti-price-factor): separa cantidad comercial de base monetaria convertida.
+	public double precio(String prod,double pcant,int nivelprec,String unimedida,String unimedidapeso,
+						 double ppeso,String umven,double baseFacturacionConvertida) {
 
 		prodid=prod;cant=pcant;nivel=nivelprec;
 		um=unimedida;umpeso=unimedidapeso;umventa=umven;
@@ -61,7 +67,7 @@ public class PrecioTran {
 		BeDescuento=clsDesc.getDescuentoRecargo(false);
 		BeRecargo=clsDesc.getDescuentoRecargo(true);
 
-		if (cant>0) prodPrecio(ppeso);else prodPrecioBase();
+		if (cant>0) prodPrecio(ppeso,baseFacturacionConvertida);else prodPrecioBase();
 
 		return prec;
 	}
@@ -80,7 +86,7 @@ public class PrecioTran {
 	
 	// Private
 	
-	private void prodPrecio(double ppeso) {
+	private void prodPrecio(double ppeso,double baseFacturacionConvertida) {
 		Cursor DT;
 		double pr,stot,pprec,tsimp;
 		String sprec="";
@@ -113,7 +119,8 @@ public class PrecioTran {
 	    }
 		
 		//#EJC20260721 fix(hh-sap-transaction): peso ROAD ya es total; total extendido autoritativo.
-		double baseFacturacion=ppeso>0?ppeso:cant;
+		double baseFacturacion=baseFacturacionConvertida>0
+				?baseFacturacionConvertida:(ppeso>0?ppeso:cant);
 		if (baseFacturacion<=0) baseFacturacion=1;
 		SapPromotionCalculator.Result resultado=SapPromotionCalculator.calculate(
 				SapPromotionCalculator.decimal(pr),SapPromotionCalculator.decimal(baseFacturacion),

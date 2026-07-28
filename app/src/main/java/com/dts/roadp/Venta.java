@@ -1989,7 +1989,10 @@ public class Venta extends PBase {
 					if (prc.precioespecial > 0) prec = prc.precioespecial;
 				}
 			} else {
-				prec = prc.precio(prodid, cant, nivel, um, gl.umpeso, 0, umven);
+				//#EJC20260728 fix(hh-rosti-price-factor): precio UN usa cantidad CA convertida.
+				double baseFacturacionConvertida=cant*(factbolsa>0?factbolsa:1);
+				prec = prc.precio(prodid, cant, nivel, um, gl.umpeso, 0, umven,
+						baseFacturacionConvertida);
 				if (prc.existePrecioEspecial(prodid, cant, gl.cliente, gl.clitipo, umven, gl.umpeso, 0)) {
 					if (prc.precioespecial > 0) prec = prc.precioespecial;
 				}
@@ -2409,7 +2412,10 @@ public class Venta extends PBase {
 					if (prctr.precioespecial>0) prec=prctr.precioespecial;
 				}
 			} else {
-				prec = prctr.precio(prodid, cant, nivel, um, gl.umpeso, 0,umven);
+				//#EJC20260728 fix(hh-rosti-price-factor): precio UN usa cantidad CA convertida.
+				double baseFacturacionConvertida=cant*(factbolsa>0?factbolsa:1);
+				prec = prctr.precio(prodid, cant, nivel, um, gl.umpeso, 0,umven,
+						baseFacturacionConvertida);
 				if (prctr.existePrecioEspecial(prodid,cant,gl.cliente,gl.clitipo,uum,gl.umpeso,0)) {
 					if (prctr.precioespecial>0) prec=prctr.precioespecial;
 				}
@@ -2659,14 +2665,14 @@ public class Venta extends PBase {
 	//#AT20260723 Recalcular descuentos  nuevamente
 	private void revalidaDescuentoBarra() {
 		Cursor dt;
-		double ccant,ppeso;
+		double ccant,ppeso,factor;
 		String umventa;
 		double vtot,vprecdoc,vdescmon,vrecargoMonto,vprecioBase,vtotalBase,vdesValor,vrecargoValor;
 		int vcodDescAplicado,vcodRecargoAplicado;
 
 		try {
 
-			sql="SELECT Cant,Peso FROM T_VENTA WHERE PRODUCTO='"+prodid+"'";
+			sql="SELECT Cant,Peso,Factor FROM T_VENTA WHERE PRODUCTO='"+prodid+"'";
 			dt=Con.OpenDT(sql);
 
 			if (dt.getCount()==0) {
@@ -2677,6 +2683,7 @@ public class Venta extends PBase {
 			dt.moveToFirst();
 			ccant=dt.getDouble(0);
 			ppeso=dt.getDouble(1);
+			factor=dt.getDouble(2);
 
 			if(dt!=null) dt.close();
 
@@ -2687,7 +2694,9 @@ public class Venta extends PBase {
 					prctr.precio(prodid, ccant, nivel, umventa, gl.umpeso, ppeso, umventa);
 					prctr.existePrecioEspecial(prodid, ccant, gl.cliente, gl.clitipo, umventa, gl.umpeso, ppeso);
 				} else {
-					prctr.precio(prodid, ccant, nivel, umventa, gl.umpeso, 0, umventa);
+					//#EJC20260728 fix(hh-rosti-price-factor): conserva la base convertida al recalcular.
+					prctr.precio(prodid, ccant, nivel, umventa, gl.umpeso, 0, umventa,
+							ccant*(factor>0?factor:1));
 					prctr.existePrecioEspecial(prodid, ccant, gl.cliente, gl.clitipo, umventa, gl.umpeso, 0);
 				}
 				vtot=prctr.tot;vprecdoc=prctr.precdoc;vdescmon=prctr.descmon;vrecargoMonto=prctr.recargoMonto;
@@ -2700,7 +2709,8 @@ public class Venta extends PBase {
 					prc.precio(prodid, ccant, nivel, umventa, gl.umpeso, ppeso, umventa);
 					prc.existePrecioEspecial(prodid, ccant, gl.cliente, gl.clitipo, umventa, gl.umpeso, ppeso);
 				} else {
-					prc.precio(prodid, ccant, nivel, umventa, gl.umpeso, 0, umventa);
+					prc.precio(prodid, ccant, nivel, umventa, gl.umpeso, 0, umventa,
+							ccant*(factor>0?factor:1));
 					prc.existePrecioEspecial(prodid, ccant, gl.cliente, gl.clitipo, umventa, gl.umpeso, 0);
 				}
 				vtot=prc.tot;vprecdoc=prc.precdoc;vdescmon=prc.descmon;vrecargoMonto=prc.recargoMonto;

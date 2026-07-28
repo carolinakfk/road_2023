@@ -932,7 +932,10 @@ public class despacho_barras extends PBase {
                     if (prc.precioespecial > 0) prec = prc.precioespecial;
                 }
             } else {
-                prec = prc.precio(prodid, cant, nivel, um, gl.umpeso, 0, umven);
+                //#EJC20260728 fix(hh-rosti-price-factor): precio UN usa cantidad CA convertida.
+                double baseFacturacionConvertida=cant*(factbolsa>0?factbolsa:1);
+                prec = prc.precio(prodid, cant, nivel, um, gl.umpeso, 0, umven,
+                        baseFacturacionConvertida);
                 if (prc.existePrecioEspecial(prodid, cant, gl.cliente, gl.clitipo, umven, gl.umpeso, 0)) {
                     if (prc.precioespecial > 0) prec = prc.precioespecial;
                 }
@@ -955,7 +958,7 @@ public class despacho_barras extends PBase {
             }else{
                 prodtot = prec;
             }
-            if (prodPorPeso(prodid)) prodtot = prec * ppeso;
+            prodtot=prc.tot;
 
             //#CKFK20231120 Se quito el reondeo en total, por error en el total de la factura
             //prodtot = mu.round2(prodtot);
@@ -1234,7 +1237,10 @@ public class despacho_barras extends PBase {
                     if (prctr.precioespecial>0) prec=prctr.precioespecial;
                 }
             } else {
-                prec = prctr.precio(prodid, cant, nivel, um, gl.umpeso, 0,umven);
+                //#EJC20260728 fix(hh-rosti-price-factor): precio UN usa cantidad CA convertida.
+                double baseFacturacionConvertida=cant*(factbolsa>0?factbolsa:1);
+                prec = prctr.precio(prodid, cant, nivel, um, gl.umpeso, 0,umven,
+                        baseFacturacionConvertida);
                 if (prctr.existePrecioEspecial(prodid,cant,gl.cliente,gl.clitipo,uum,gl.umpeso,0)) {
                     if (prctr.precioespecial>0) prec=prctr.precioespecial;
                 }
@@ -1250,7 +1256,7 @@ public class despacho_barras extends PBase {
             }else{
                 prodtot = prec;
             }
-            if (prodPorPeso(prodid)) prodtot=mu.round2(prec*ppeso);
+            prodtot=prctr.tot;
 
             //region T_BARRA
 

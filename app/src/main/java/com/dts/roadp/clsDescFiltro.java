@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.dts.roadp.promotions.PromotionTrace;
 
+import java.util.Calendar;
+
 public class clsDescFiltro {
 	
 	public String estr;
@@ -74,8 +76,11 @@ public class clsDescFiltro {
 	private void filtrarDescuentos() {
 		Cursor DT;
 		int i,NivelPrec;
+		int diaVisita;
 		String CTipoNeg,CTipo,CSubTipo,CCanal,CSubCanal,CSucursal;
 		String CTipologia,CSubTipologia,CPriorizacion;
+
+		diaVisita=diaVisitaDocumento(fecha);
 		        
 		try {
 			vSQL="SELECT TIPONEG,TIPO,SUBTIPO,CANAL,SUBCANAL,SUCURSAL,NIVELPRECIO,"+
@@ -114,11 +119,10 @@ public class clsDescFiltro {
 				  "((CTIPO=6) AND (CLIENTE='" + CSubCanal + "')) OR "+
 				  "((CTIPO=8) AND (CLIENTE='" + CSucursal + "')) OR "+
 				  "((CTIPO=9) AND (CLIENTE='" + NivelPrec + "')) OR "+
-				  //#EJC20260728 fix(hh-combo-access-sequences): A912 valida ruta y
-				  //asignacion del cliente; el dia queda pendiente de confirmacion funcional.
+				  //#EJC20260728 fix(hh-combo-a912): valida ruta y dia de visita con la fecha del documento.
 				  "((CTIPO=11) AND (CLIENTE='" + rutaid + "') AND EXISTS ("+
 				  " SELECT 1 FROM P_CLIRUTA CR WHERE CR.CLIENTE='" + cliid + "'"+
-				  " AND CR.RUTA=D.CLIENTE)) OR "+
+				  " AND CR.RUTA=D.CLIENTE AND CR.DIA=" + diaVisita + ")) OR "+
 				  //A910: Ramo 3 se representa en ROAD como tipologia.
 				  "((CTIPO=12) AND (CLIENTE='" + CTipologia + "')) OR "+
 				  //A909: Clasificacion AB + Ramo 3 + Centro.
@@ -242,7 +246,30 @@ public class clsDescFiltro {
 			estr=e.getMessage();
 	    }		
 		
-			  	    
+
+	}
+
+	private int diaVisitaDocumento(long fechaDocumento) {
+		String valor=String.valueOf(fechaDocumento);
+		int year,month,day;
+
+		if (valor.length()==14) {
+			year=Integer.parseInt(valor.substring(0,4));
+			month=Integer.parseInt(valor.substring(4,6));
+			day=Integer.parseInt(valor.substring(6,8));
+		} else if (valor.length()==12) {
+			year=2000+Integer.parseInt(valor.substring(0,2));
+			month=Integer.parseInt(valor.substring(2,4));
+			day=Integer.parseInt(valor.substring(4,6));
+		} else {
+			return (int)DU.dayofweek(fechaDocumento);
+		}
+
+		Calendar calendar=Calendar.getInstance();
+		calendar.clear();
+		calendar.set(year,month-1,day);
+		int dia=calendar.get(Calendar.DAY_OF_WEEK);
+		return dia==Calendar.SUNDAY ? 7 : dia-1;
 	}
 	
 	
