@@ -74,10 +74,12 @@ public class clsDescFiltro {
 	private void filtrarDescuentos() {
 		Cursor DT;
 		int i,NivelPrec;
-		String  CTipoNeg,CTipo,CSubTipo,CCanal,CSubCanal,CSucursal;
+		String CTipoNeg,CTipo,CSubTipo,CCanal,CSubCanal,CSucursal;
+		String CTipologia,CSubTipologia,CPriorizacion;
 		        
 		try {
-			vSQL="SELECT TIPONEG,TIPO,SUBTIPO,CANAL,SUBCANAL,SUCURSAL,NIVELPRECIO FROM P_CLIENTE WHERE CODIGO='"+cliid+"'";
+			vSQL="SELECT TIPONEG,TIPO,SUBTIPO,CANAL,SUBCANAL,SUCURSAL,NIVELPRECIO,"+
+					"TIPOLOGIA,SUBTIPOLOGIA,PRIORIZACION FROM P_CLIENTE WHERE CODIGO='"+cliid+"'";
            	DT=Con.OpenDT(vSQL);
 			DT.moveToFirst();
 			
@@ -88,6 +90,9 @@ public class clsDescFiltro {
 			CSubCanal = DT.getString(4);
 			CSucursal = DT.getString(5);
 			NivelPrec = DT.getInt(6);
+			CTipologia = DT.getString(7);
+			CSubTipologia = DT.getString(8);
+			CPriorizacion = DT.getString(9);
 			
 		} catch (Exception e) {
 		   	return ;
@@ -108,7 +113,20 @@ public class clsDescFiltro {
 				  "((CTIPO=5) AND (CLIENTE='" + CCanal + "')) OR "+
 				  "((CTIPO=6) AND (CLIENTE='" + CSubCanal + "')) OR "+
 				  "((CTIPO=8) AND (CLIENTE='" + CSucursal + "')) OR "+
-				  "((CTIPO=9) AND (CLIENTE='" + NivelPrec + "'))) "+
+				  "((CTIPO=9) AND (CLIENTE='" + NivelPrec + "')) OR "+
+				  //#EJC20260728 fix(hh-combo-access-sequences): A912 valida ruta y
+				  //asignacion del cliente; el dia queda pendiente de confirmacion funcional.
+				  "((CTIPO=11) AND (CLIENTE='" + rutaid + "') AND EXISTS ("+
+				  " SELECT 1 FROM P_CLIRUTA CR WHERE CR.CLIENTE='" + cliid + "'"+
+				  " AND CR.RUTA=D.CLIENTE)) OR "+
+				  //A910: Ramo 3 se representa en ROAD como tipologia.
+				  "((CTIPO=12) AND (CLIENTE='" + CTipologia + "')) OR "+
+				  //A909: Clasificacion AB + Ramo 3 + Centro.
+				  "((CTIPO=13) AND (CLIENTE='" + CPriorizacion + "')"+
+				  " AND IFNULL(D.TIPOLOGIA,'')='" + CTipologia + "'"+
+				  " AND IFNULL(D.SUCURSAL,'')='" + CSucursal + "') OR "+
+				  //A911: Ramo 4 se representa en ROAD como subtipologia.
+				  "((CTIPO=14) AND (CLIENTE='" + CSubTipologia + "'))) "+
 				  " AND ((FECHAINI<="+fecha+") AND (FECHAFIN>="+fecha+")) " +
 				  " AND NOT EXISTS (SELECT 1 FROM P_CLIENTE_PROD_EXCLUIDOS E "+
 				  "   WHERE E.CLIENTE='" + cliid + "' "+

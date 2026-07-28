@@ -32,6 +32,18 @@ $checks = [ordered]@{
     'F09_SESSION_BASE' = $combo.Contains('preciosBaseSesion')
     'F10_NO_REEXTEND' = $invoice.Contains('SELECT SUM(DESMON),') -and $invoice.Contains('SUM(RECARGOMONTO)')
     'F11_COMBO_PTIPO6' = $combo.Contains("D.PTIPO = 6 AND D.DESCTIPO IN ('R','M','C')")
+    'F11_ACCESS_A908_A912' = $filter.Contains('((CTIPO=1)') -and
+        $filter.Contains('((CTIPO=11)') -and $filter.Contains('P_CLIRUTA CR') -and
+        $filter.Contains('((CTIPO=12)') -and $filter.Contains('CTipologia') -and
+        $filter.Contains('((CTIPO=13)') -and $filter.Contains('CPriorizacion') -and
+        $filter.Contains("IFNULL(D.SUCURSAL,'')") -and
+        $filter.Contains('((CTIPO=14)') -and $filter.Contains('CSubTipologia')
+    'F11_A912_ROUTE_ONLY' = $filter.Contains("((CTIPO=11) AND (CLIENTE='") -and
+        $filter.Contains('rutaid') -and
+        $filter.Contains('CR.RUTA=D.CLIENTE') -and -not $filter.Contains('CR.DIA')
+    'F11_COMBO_DETAIL_EXCLUSION' = $combo.Contains('P_DESCUENTO_COMBO_DET DD') -and
+        $combo.Contains('E.PRODUCTO=DD.PRODUCTO') -and
+        $combo.Contains('DD.CODDESC=D.CODDESC')
     'F12_REQUIRED_AND_UM' = $combo.Contains('itemCombo.obligatorio') -and $combo.Contains('umCompatible')
     'F13_SINGLE_APPLY' = $invoice.Contains('ResolverCombosEnTVenta') -and
         -not $invoice.Contains('AplicarAjusteComboEnTVenta(detDescuento') -and

@@ -72,8 +72,11 @@ public class Catalogo extends PBase {
 					//combos reales con PTIPO=6 y DESCTIPO=C; R/M se conservan por compatibilidad.
                     " AND D.PTIPO = 6 AND D.DESCTIPO IN ('R','M','C') " +
 					" AND D.FECHAINI <= " + fechaVigencia + " AND D.FECHAFIN >= " + fechaVigencia +
-					" AND NOT EXISTS (SELECT 1 FROM P_CLIENTE_PROD_EXCLUIDOS E " +
-					" WHERE E.CLIENTE='" + cliente + "' AND E.PRODUCTO=D.PRODUCTO AND E.ACTIVO=1 " +
+					//#EJC20260728 fix(hh-combo-detail-exclusions): una exclusion de
+					//cualquier material requerido invalida la condicion completa.
+					" AND NOT EXISTS (SELECT 1 FROM P_DESCUENTO_COMBO_DET DD " +
+					" INNER JOIN P_CLIENTE_PROD_EXCLUIDOS E ON E.PRODUCTO=DD.PRODUCTO " +
+					" WHERE DD.CODDESC=D.CODDESC AND E.CLIENTE='" + cliente + "' AND E.ACTIVO=1 " +
 					" AND E.FECHAINI <= " + fechaVigencia + " AND E.FECHAFIN >= " + fechaVigencia + ") " +
                     "ORDER BY IFNULL(D.PRIORIDAD_DESCUENTO,0),D.PRIORIDAD ASC,D.CODDESC ASC ";
 
