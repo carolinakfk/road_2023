@@ -86,9 +86,9 @@ public class Precio {
 		umpeso=unimedidapeso;
 		precioespecial=0;
 
-		//#EJC20260724 fix(hh-special-price-exclusive): consultar precio especial no destruye
-		//el calculo base/promocional vigente. Si no existe, P_PRODPRECIO permanece autoritativo.
-		return prodPrecioEsp(ppeso,cliente,clitipo);
+		//#EJC20260728 fix(hh-base-price-only): P_PRODPRECIO es la unica fuente
+		//del precio base; TMP_PRECESPEC se conserva solo por compatibilidad de esquema.
+		return false;
 	}
 
 	

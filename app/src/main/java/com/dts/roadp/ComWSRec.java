@@ -575,6 +575,12 @@ public class ComWSRec extends PBase {
         String SQL;
 
         try {
+            //#EJC20260728 fix(hh-base-price-only): elimina residuos locales y no
+            //descarga precios especiales; la fuente vigente es P_PRODPRECIO.
+            if (TN.equalsIgnoreCase("TMP_PRECESPEC")) {
+                dbT.execSQL("DELETE FROM TMP_PRECESPEC");
+                return true;
+            }
 
             fprog=TN;idbg=TN;
             wsRtask.onProgressUpdate();

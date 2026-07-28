@@ -72,11 +72,9 @@ public class PrecioTran {
 		umventa=unimedida;
 		precioespecial=0;
 
-		if (cant==0) return false;
-
-		//#EJC20260724 fix(hh-special-price-exclusive): no borrar el precio base si
-		//TMP_PRECESPEC no contiene una condicion aplicable.
-		return prodPrecioEsp(ppeso,cliente,clitipo);
+		//#EJC20260728 fix(hh-base-price-only): P_PRODPRECIO es la unica fuente
+		//del precio base; TMP_PRECESPEC se conserva solo por compatibilidad de esquema.
+		return false;
 	}
 
 	
