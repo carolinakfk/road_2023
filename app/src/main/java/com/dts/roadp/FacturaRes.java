@@ -346,6 +346,10 @@ public class FacturaRes extends PBase {
 
 	//region Events
 
+	public void showProductDiscounts(View view) {
+		DiscountProductDialog.show(this, Con);
+	}
+
 	public void prevScreen(View view) {
 		try{
 

@@ -850,7 +850,7 @@ public class Venta extends PBase {
 			recargo = prc.recargo;
 			recargoMonto = prc.recargoMonto;
 
-			if (rutatipo.equalsIgnoreCase("P")) {
+			if (rutatipo.equalsIgnoreCase("P") && !gl.peModal.equalsIgnoreCase("TOL")) {
                 double factorconv=app.factorPeso(prodid);
 
 				prec=gl.precprev;
@@ -1138,7 +1138,11 @@ public class Venta extends PBase {
 
                 ins.add("PESO",pesopv);
 
-                if (porpeso) {
+                if (gl.peModal.equalsIgnoreCase("TOL") && !gl.tolprodcrit) {
+                    // #EJC20260727 fix(hh-pedido-total-promocional): conserva el
+                    // total extendido autoritativo; PRECIO queda derivado a 6 decimales.
+                    ins.add("TOTAL",prodtot);
+                } else if (porpeso) {
                     //precapp=gl.precuni*gl.umfactor*cantapp;
                     //precapp=cantapp*gl.prectemp;
                     precapp=pesopv*gl.prectemp;

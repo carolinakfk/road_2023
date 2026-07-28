@@ -300,6 +300,18 @@
         android:paddingTop="10dp"
         android:src="@drawable/prev48" />
 
+    <ImageView
+        android:id="@+id/imgProductDiscounts"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:clickable="true"
+        android:contentDescription="Descuentos aplicados"
+        android:onClick="showProductDiscounts"
+        android:padding="5dp"
+        android:src="@drawable/promocion" />
+
     <ListView
         android:id="@+id/listView1"
         android:layout_width="260dp"

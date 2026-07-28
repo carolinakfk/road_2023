@@ -156,6 +156,10 @@ public class PedidoRes extends PBase {
 
 	//region Events
 
+	public void showProductDiscounts(View view) {
+		DiscountProductDialog.show(this, Con);
+	}
+
 	public void askSave(View view) {
 		String ss;
 
