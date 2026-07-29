@@ -262,7 +262,9 @@ public class clsDataBuilder {
 			return columna.equalsIgnoreCase("RECARGOMONTO");
 		}
 		if (tabla.equalsIgnoreCase("D_FACTURAD")) {
-			return columna.equalsIgnoreCase("PRECIO_BASE") ||
+			return columna.equalsIgnoreCase("RECARGO") ||
+					columna.equalsIgnoreCase("RECARGOMONTO") ||
+					columna.equalsIgnoreCase("PRECIO_BASE") ||
 					columna.equalsIgnoreCase("TOTAL_BASE") ||
 					columna.equalsIgnoreCase("CODDESC_APLICADO") ||
 					columna.equalsIgnoreCase("CODRECARGO_APLICADO") ||
