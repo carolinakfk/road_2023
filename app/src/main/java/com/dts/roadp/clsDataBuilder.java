@@ -161,7 +161,7 @@ public class clsDataBuilder {
 					                       "KILOMETRAJE, FECHAENTR, FACTLINK, TOTAL, DESMONTO, IMPMONTO, PESO, BANDERA, "+
 					                       "STATCOM, CALCOBJ, SERIE, CORELATIVO, IMPRES, ADD1, ADD2, ADD3, DEPOS, PEDCOREL," +
 					                       "REFERENCIA, ASIGNACION, SUPERVISOR, AYUDANTE, VEHICULO, CODIGOLIQUIDACION, " +
-					                       "RAZON_ANULACION, CODIGO_RUTA_PEDIDO, DESPCOREL, CERTIFICADA_DGI, CUFE, ORDEN_COMPRA, RECARGOMONTO";
+					                       "RAZON_ANULACION, CODIGO_RUTA_PEDIDO, DESPCOREL, CERTIFICADA_DGI, CUFE, ORDEN_COMPRA";
 			if (tn.equals("D_CANASTA")) SS="SELECT RUTA,FECHA,CLIENTE,PRODUCTO,CANTREC,CANTENTR,STATCOM,CORELTRANS,PESOREC,PESOENTR," +
 											"ANULADO,UNIDBAS,CODIGOLIQUIDACION,VENDEDOR";
 
@@ -258,6 +258,9 @@ public class clsDataBuilder {
 	}
 
 	private boolean esColumnaPromocionLocal(String tabla,String columna) {
+		if (tabla.equalsIgnoreCase("D_FACTURA")) {
+			return columna.equalsIgnoreCase("RECARGOMONTO");
+		}
 		if (tabla.equalsIgnoreCase("D_FACTURAD")) {
 			return columna.equalsIgnoreCase("PRECIO_BASE") ||
 					columna.equalsIgnoreCase("TOTAL_BASE") ||
