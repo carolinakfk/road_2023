@@ -94,8 +94,9 @@ public final class SapPromotionCalculator {
             case FIXED:
                 return money(value.multiply(billingBasis));
             case PERCENTAGE_MULTIPLE:
-                // SAP/BOF: ZK95/ZR95 M no redondea el ajuste intermedio.
-                return extendedBase.multiply(value).divide(new BigDecimal("100"));
+                //#EJC20260728 fix(zk95-zr95-redondeo-sap): SAP redondea el
+                // ajuste porcentual extendido a centavos antes del total neto.
+                return money(extendedBase.multiply(value).divide(new BigDecimal("100")));
             case PERCENTAGE_RANGE:
                 // SAP/BOF: ZK97/ZR97 R redondea el ajuste extendido a centavos.
                 return money(extendedBase.multiply(value).divide(new BigDecimal("100")));

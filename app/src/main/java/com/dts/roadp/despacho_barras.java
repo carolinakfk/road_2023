@@ -1061,8 +1061,16 @@ public class despacho_barras extends PBase {
             }
 
             ins.add("IMP", 0);
-            ins.add("DES", 0);
-            ins.add("DESMON", 0);
+            ins.add("DES", prc.BeDescuento == null ? 0 : prc.BeDescuento.valor);
+            ins.add("DESMON", prc.descmon);
+            //#EJC20260729 fix(hh-despacho-promociones): T_VENTA exige estos
+            // campos y el despacho debe conservar el calculo promocional aplicado.
+            ins.add("RECARGO", prc.recargo);
+            ins.add("RECARGOMONTO", prc.recargoMonto);
+            ins.add("PRECIO_BASE", prc.precioBase);
+            ins.add("TOTAL_BASE", prc.totalBase);
+            ins.add("CODDESC_APLICADO", prc.codDescAplicado);
+            ins.add("CODRECARGO_APLICADO", prc.codRecargoAplicado);
             ins.add("TOTAL", prodtot);
 
             if (prodPorPeso(prodid)) {
@@ -1370,8 +1378,16 @@ public class despacho_barras extends PBase {
             }
 
             ins.add("IMP",0);
-            ins.add("DES",0);
-            ins.add("DESMON",0);
+            ins.add("DES",prctr.BeDescuento == null ? 0 : prctr.BeDescuento.valor);
+            ins.add("DESMON",prctr.descmon);
+            //#EJC20260729 fix(hh-despacho-promociones): mismo contrato T_VENTA
+            // para el flujo transaccional.
+            ins.add("RECARGO",prctr.recargo);
+            ins.add("RECARGOMONTO",prctr.recargoMonto);
+            ins.add("PRECIO_BASE",prctr.precioBase);
+            ins.add("TOTAL_BASE",prctr.totalBase);
+            ins.add("CODDESC_APLICADO",prctr.codDescAplicado);
+            ins.add("CODRECARGO_APLICADO",prctr.codRecargoAplicado);
             ins.add("TOTAL",prodtot);
 
             if (prodPorPeso(prodid)) {
@@ -1387,6 +1403,7 @@ public class despacho_barras extends PBase {
             ins.add("VAL3",0);
             ins.add("VAL4","");
             ins.add("PERCEP",percep);
+            ins.add("SIN_EXISTENCIA",0);
 
             try {
                 db.execSQL(ins.sql());
@@ -1519,6 +1536,11 @@ public class despacho_barras extends PBase {
 
             sql="SELECT Factor FROM T_VENTA WHERE PRODUCTO='"+prodid+"'";
             dt=Con.OpenDT(sql);
+
+            if (dt.getCount()==0) {
+                if(dt!=null) dt.close();
+                return;
+            }
             dt.moveToFirst();
             unfactor=dt.getDouble(0);
 
@@ -1567,6 +1589,11 @@ public class despacho_barras extends PBase {
 
             sql="SELECT Factor FROM T_VENTA_DESPACHO WHERE PRODUCTO='"+prodid+"'";
             dt=Con.OpenDT(sql);
+
+            if (dt.getCount()==0) {
+                if(dt!=null) dt.close();
+                return;
+            }
             dt.moveToFirst();
             unfactor=dt.getDouble(0);
 
