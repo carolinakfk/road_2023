@@ -3341,6 +3341,8 @@ public class Venta extends PBase {
 								ins.add("IMP",item.imp);
 								ins.add("DES",item.des);
 								ins.add("DESMON",item.desmon);
+								ins.add("RECARGO",prc.recargo);
+								ins.add("RECARGOMONTO",prc.recargoMonto);
 								ins.add("TOTAL",item.total);
 								ins.add("PRECIO_BASE",prc.precioBase);
 								ins.add("TOTAL_BASE",prc.totalBase);
