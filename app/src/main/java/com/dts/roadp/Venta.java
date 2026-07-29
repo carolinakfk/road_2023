@@ -1299,7 +1299,7 @@ public class Venta extends PBase {
 			String bprod="";
 
 			if (gl.iddespacho !=null ){
-				if (!gl.iddespacho.isEmpty()) actualizaTotalesBarraDespacho();
+				if (!gl.iddespacho.isEmpty() && app.prodBarra(prodid)) actualizaTotalesBarraDespacho();
 			}
 
 			gl.bonbarprod=prodid;
@@ -2771,6 +2771,10 @@ public class Venta extends PBase {
 
 			sql="SELECT Factor FROM T_VENTA_DESPACHO WHERE PRODUCTO='"+prodid+"'";
 			dt=Con.OpenDT(sql);
+			if (dt==null || dt.getCount()==0) {
+				if(dt!=null) dt.close();
+				return;
+			}
 			dt.moveToFirst();
 			unfactor=dt.getDouble(0);
 			if(dt!=null) dt.close();

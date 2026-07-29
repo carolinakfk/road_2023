@@ -24,6 +24,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import java.util.ArrayList;
 
+import com.dts.roadp.promotions.PromotionTrace;
+
+import models.Catalogo;
+
 public class despacho_barras extends PBase {
 
     private ListView listView;
@@ -1094,11 +1098,13 @@ public class despacho_barras extends PBase {
                 Log.d(e.getMessage(), "");
             }
 
+            actualizaTotalesBarra();
+
             if (gl.iddespacho !=null ){
                 if (!gl.iddespacho.isEmpty()) actualizaTotalesBarraDespacho();
             }
 
-            actualizaTotalesBarra();
+            revalidaDescuentoBarra();
 
             if (isnew) validaBarraBon();
 
@@ -1417,6 +1423,8 @@ public class despacho_barras extends PBase {
                 if (!gl.iddespacho.isEmpty()) actualizaTotalesBarraDespacho();
             }
 
+            revalidaDescuentoBarra();
+
             if (isnew) validaBarraBon();
 
             db.setTransactionSuccessful();
@@ -1499,6 +1507,8 @@ public class despacho_barras extends PBase {
                 if (!gl.iddespacho.isEmpty()) actualizaTotalesBarraDespacho();
             }
 
+            revalidaDescuentoBarra();
+
             gl.bonbarprod=prodid;
 
             bcant=cantBolsa();
@@ -1573,6 +1583,91 @@ public class despacho_barras extends PBase {
 
             sql="DELETE FROM T_VENTA WHERE Cant=0";
             db.execSQL(sql);
+
+            listItems();
+        } catch (Exception e) {
+            msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+        }
+    }
+
+    private void revalidaDescuentoBarra() {
+        Cursor dt;
+        double ccant,ppeso,factor;
+        String umventa;
+        double vtot,vprecdoc,vdescmon,vrecargoMonto,vprecioBase,vtotalBase,vdesValor,vrecargoValor;
+        int vcodDescAplicado,vcodRecargoAplicado;
+
+        try {
+            sql="SELECT Cant,Peso,Factor FROM T_VENTA WHERE PRODUCTO='"+prodid+"'";
+            dt=Con.OpenDT(sql);
+
+            if (dt==null || dt.getCount()==0) {
+                if(dt!=null) dt.close();
+                return;
+            }
+
+            dt.moveToFirst();
+            ccant=dt.getDouble(0);
+            ppeso=dt.getDouble(1);
+            factor=dt.getDouble(2);
+            dt.close();
+
+            umventa=app.umVenta(prodid);
+
+            if (contrans) {
+                if (prodPorPeso(prodid)) {
+                    prctr.precio(prodid,ccant,nivel,umventa,gl.umpeso,ppeso,umventa);
+                    prctr.existePrecioEspecial(prodid,ccant,gl.cliente,gl.clitipo,umventa,gl.umpeso,ppeso);
+                } else {
+                    prctr.precio(prodid,ccant,nivel,umventa,gl.umpeso,0,umventa,
+                            ccant*(factor>0?factor:1));
+                    prctr.existePrecioEspecial(prodid,ccant,gl.cliente,gl.clitipo,umventa,gl.umpeso,0);
+                }
+                vtot=prctr.tot;vprecdoc=prctr.precdoc;vdescmon=prctr.descmon;vrecargoMonto=prctr.recargoMonto;
+                vprecioBase=prctr.precioBase;vtotalBase=prctr.totalBase;
+                vdesValor=(prctr.BeDescuento==null?0:prctr.BeDescuento.valor);
+                vrecargoValor=(prctr.BeRecargo==null?0:prctr.BeRecargo.valor);
+                vcodDescAplicado=prctr.codDescAplicado;vcodRecargoAplicado=prctr.codRecargoAplicado;
+            } else {
+                if (prodPorPeso(prodid)) {
+                    prc.precio(prodid,ccant,nivel,umventa,gl.umpeso,ppeso,umventa);
+                    prc.existePrecioEspecial(prodid,ccant,gl.cliente,gl.clitipo,umventa,gl.umpeso,ppeso);
+                } else {
+                    prc.precio(prodid,ccant,nivel,umventa,gl.umpeso,0,umventa,
+                            ccant*(factor>0?factor:1));
+                    prc.existePrecioEspecial(prodid,ccant,gl.cliente,gl.clitipo,umventa,gl.umpeso,0);
+                }
+                vtot=prc.tot;vprecdoc=prc.precdoc;vdescmon=prc.descmon;vrecargoMonto=prc.recargoMonto;
+                vprecioBase=prc.precioBase;vtotalBase=prc.totalBase;
+                vdesValor=(prc.BeDescuento==null?0:prc.BeDescuento.valor);
+                vrecargoValor=(prc.BeRecargo==null?0:prc.BeRecargo.valor);
+                vcodDescAplicado=prc.codDescAplicado;vcodRecargoAplicado=prc.codRecargoAplicado;
+            }
+
+            sql="UPDATE T_VENTA SET Total="+mu.round(vtot,2)+
+                    ",Precio="+mu.round(vprecdoc,6)+",PrecioDoc="+mu.round(vprecdoc,6)+
+                    ",Des="+vdesValor+",DesMon="+vdescmon+
+                    ",Recargo="+vrecargoValor+",RecargoMonto="+vrecargoMonto+
+                    ",Precio_Base="+vprecioBase+",Total_Base="+vtotalBase+
+                    ",CodDesc_Aplicado="+vcodDescAplicado+",CodRecargo_Aplicado="+vcodRecargoAplicado+
+                    ",INDIVIDUAL_SNAPSHOT=0 WHERE PRODUCTO='"+prodid+"'";
+            db.execSQL(sql);
+
+            if (gl.iddespacho!=null && !gl.iddespacho.isEmpty()) {
+                sql="UPDATE T_VENTA_DESPACHO SET TOTAL="+mu.round(vtot,2)+
+                        " WHERE PRODUCTO='"+prodid+"'";
+                db.execSQL(sql);
+            }
+
+            Catalogo resolver=new Catalogo(this,Con,db);
+            resolver.ResolverCombosEnTVenta(gl.cliente,app.fechaFactTol(du.getActDate()),true);
+
+            PromotionTrace.write(this,"PROMO_BARCODE_TOTAL_RECALCULATED",
+                    "producto="+prodid+"|cantidad="+ccant+"|peso="+ppeso+
+                    "|precioBase="+vprecioBase+"|totalBase="+vtotalBase+
+                    "|descuento="+vdescmon+"|recargo="+vrecargoMonto+
+                    "|totalFinal="+mu.round(vtot,2)+"|codDesc="+vcodDescAplicado+
+                    "|codRecargo="+vcodRecargoAplicado);
 
             listItems();
         } catch (Exception e) {
