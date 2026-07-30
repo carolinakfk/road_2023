@@ -348,6 +348,7 @@ public class clsClasses {
 		public double sinExistencia;
 		public double cant;
 		public String umStock;
+		public String umPeso;
 		public double factor;
 		public double precio;
 		public double precioBase;

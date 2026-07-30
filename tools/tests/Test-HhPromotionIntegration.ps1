@@ -73,6 +73,10 @@ $checks = [ordered]@{
     'COMBO_ORDER_SUMMARY' = $order.Contains('ResolverCombosEnTVenta')
     'COMBO_CUSTOMER_RETURN' = $return.Contains('ResolverCombosEnDevolucion') -and
         $return.Contains('BEFORE_SAVE')
+    'RETURN_INDIVIDUAL_FALLBACK' = $combo.Contains('getAjusteIndividualDevolucion') -and
+        $combo.Contains('PROMO_RETURN_INDIVIDUAL_FALLBACK') -and
+        $combo.Contains("CASE WHEN UMVENTA='") -and
+        $combo.Contains("AND PTIPO=0 AND GLOBDESC='N'")
     'ORDER_TOTAL_USES_LINE_CENTS' = $sale.Contains('#EJC20260727 fix(hh-pedido-total-centavos)') -and
         $sale.Contains('tt=mu.round2(tt)') -and $sale.Contains('PROMO_SALE_TOTAL_DISPLAY')
 }

@@ -380,7 +380,8 @@ public class Catalogo extends PBase {
         try {
             asegurarPromoElegibleDevolucion();
             cursor = Con.OpenDT("SELECT ITEM,CODIGO,CANT,PESO,PRECIO,PRECLISTA,TOTAL,"+
-                    "UMVENTA,UMSTOCK,POR_PESO,IFNULL(PROMO_ELEGIBLE,1) FROM T_CxCD WHERE CANT>0");
+                    "UMVENTA,UMSTOCK,POR_PESO,IFNULL(PROMO_ELEGIBLE,1),UMPESO "+
+                    "FROM T_CxCD WHERE CANT>0");
             if (cursor != null && cursor.moveToFirst()) {
                 do {
                     clsClasses.VentaLinea linea = clsCls.new VentaLinea();
@@ -395,6 +396,7 @@ public class Catalogo extends PBase {
                     linea.umStock = cursor.getString(8);
                     linea.sinExistencia = "S".equalsIgnoreCase(cursor.getString(9)) ? 1 : 0;
                     linea.promoEligible = cursor.getInt(10)==1;
+                    linea.umPeso = cursor.getString(11);
                     lineas.add(linea);
                 } while (cursor.moveToNext());
             }
@@ -423,6 +425,11 @@ public class Catalogo extends PBase {
                     linea.umStock,Con,db);
             clsClasses.clsBeDescuento descuento = selector.getDescuentoRecargo(false);
             clsClasses.clsBeDescuento recargo = selector.getDescuentoRecargo(true);
+            //#CKFK20260730 fix(hh-return-individual-discount): la devolucion no debe
+            //depender de la UM global que haya dejado otra linea. Si el selector legacy
+            //no resuelve la condicion, usar la genealogia de UM persistida en T_CxCD.
+            if (descuento == null) descuento = getAjusteIndividualDevolucion(linea,false);
+            if (recargo == null) recargo = getAjusteIndividualDevolucion(linea,true);
             SapPromotionCalculator.Result calculo = SapPromotionCalculator.calculate(
                     SapPromotionCalculator.decimal(linea.precioBase),
                     SapPromotionCalculator.decimal(baseFacturacion),
@@ -439,6 +446,53 @@ public class Catalogo extends PBase {
         }
         PromotionTrace.write(cont,"INDIVIDUAL_FALLBACK","documento=DEVOLUCION;filas="+lineas.size()+
                 ";accion=recalculado_desde_precio_base");
+    }
+
+    private clsClasses.clsBeDescuento getAjusteIndividualDevolucion(
+            clsClasses.VentaLinea linea, boolean esRecargo) {
+        Cursor cursor = null;
+        try {
+            String producto = linea.producto == null ? "" : linea.producto.replace("'","''");
+            String umPeso = linea.umPeso == null ? "" : linea.umPeso.replace("'","''");
+            String baseSql = "CASE WHEN UMVENTA='"+umPeso+"' THEN "+linea.peso+
+                    " ELSE "+linea.cant+" END";
+            String sql = "SELECT PRODUCTO,PTIPO,VALOR,PORPORCENTAJE,CODDESC,DESCTIPO,"+
+                    "PRIORIDAD,IFNULL(PRIORIDAD_DESCUENTO,0),UMVENTA,RANGOINI,RANGOFIN "+
+                    "FROM T_DESC WHERE ES_RECARGO="+(esRecargo ? 1 : 0)+
+                    " AND PTIPO=0 AND GLOBDESC='N' AND (PRODUCTO='"+producto+
+                    "' OR PRODUCTO='*') AND ("+
+                    "(DESCTIPO='M' AND "+baseSql+">=RANGOINI) OR "+
+                    "(DESCTIPO='R' AND "+baseSql+">=RANGOINI AND "+baseSql+"<=RANGOFIN)) "+
+                    "ORDER BY CASE WHEN DESCTIPO='M' THEN 0 ELSE 1 END,"+
+                    "PRIORIDAD_DESCUENTO ASC,PRIORIDAD ASC";
+            cursor=Con.OpenDT(sql);
+            if (cursor == null || !cursor.moveToFirst()) return null;
+            clsClasses.clsBeDescuento ajuste=clsCls.new clsBeDescuento();
+            ajuste.producto=cursor.getString(0);
+            ajuste.pTipo=cursor.getInt(1);
+            ajuste.valor=cursor.getDouble(2);
+            ajuste.porPorcentaje=cursor.getString(3);
+            ajuste.codDesc=cursor.getInt(4);
+            ajuste.descTipo=cursor.getString(5);
+            ajuste.prioridad=cursor.getInt(6);
+            ajuste.prioridadDescuento=cursor.getInt(7);
+            ajuste.umVenta=cursor.getString(8);
+            ajuste.rangoIni=cursor.getDouble(9);
+            ajuste.rangoFin=cursor.getDouble(10);
+            double selectedBase=ajuste.umVenta != null && ajuste.umVenta.equalsIgnoreCase(linea.umPeso)
+                    ? linea.peso : linea.cant;
+            PromotionTrace.write(cont,"PROMO_RETURN_INDIVIDUAL_FALLBACK",
+                    "producto="+linea.producto+";recargo="+esRecargo+
+                    ";codDesc="+ajuste.codDesc+";base="+selectedBase+";um="+linea.um);
+            return ajuste;
+        } catch (Exception e) {
+            PromotionTrace.write(cont,"PROMO_RETURN_INDIVIDUAL_FALLBACK_ERROR",
+                    "producto="+linea.producto+";recargo="+esRecargo+
+                    ";error="+e.getClass().getSimpleName());
+            return null;
+        } finally {
+            if (cursor != null) cursor.close();
+        }
     }
 
     private void aplicarResolucionDevolucion(List<clsClasses.VentaLinea> lineas,

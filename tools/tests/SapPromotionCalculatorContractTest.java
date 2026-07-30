@@ -7,10 +7,16 @@ public final class SapPromotionCalculatorContractTest {
     private static int cases;
 
     public static void main(String[] args) {
+        if (args.length == 1 && "customer-return".equals(args[0])) {
+            customerReturnPreservesRangeDiscountTotal();
+            System.out.println("HH_RETURN_PROMOTION_TEST_OK cases=" + cases);
+            return;
+        }
         percentageMultipleDoesNotRoundIntermediate();
         percentageRangeRoundsAdjustment();
         fixedAdjustmentRoundsAfterExtending();
         roadWeightIsAlreadyTotal();
+        customerReturnPreservesRangeDiscountTotal();
         retryIsIdempotent();
         System.out.println("HH_SAP_PROMOTION_TESTS_OK cases=" + cases);
     }
@@ -50,6 +56,17 @@ public final class SapPromotionCalculatorContractTest {
                 SapPromotionCalculator.AdjustmentKind.NONE, "0",
                 SapPromotionCalculator.AdjustmentKind.NONE, "0");
         eq("56.70", r.authoritativeFinalTotal);
+        cases++;
+    }
+
+    private static void customerReturnPreservesRangeDiscountTotal() {
+        SapPromotionCalculator.Result r = calculate("2.47", "35.478",
+                SapPromotionCalculator.AdjustmentKind.PERCENTAGE_RANGE, "1",
+                SapPromotionCalculator.AdjustmentKind.NONE, "0");
+        eq("87.63", r.extendedBaseTotal);
+        eq("0.88", r.discountTotal);
+        eq("86.75", r.authoritativeFinalTotal);
+        eq("2.445177", r.derivedUnitPrice);
         cases++;
     }
 
