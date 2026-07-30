@@ -21,6 +21,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.dts.roadp.promotions.PromotionSchema;
+
+import models.Catalogo;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -52,6 +56,7 @@ public class PedidoRes extends PBase {
 	private printer prn;
 	private clsDocPedido pdoc;
     private AppMethods app;
+	private Catalogo descCombos;
 	
 	private long fecha,fechae;
 	private String itemid,cliid,corel;
@@ -95,8 +100,13 @@ public class PedidoRes extends PBase {
 
 		lblFecha.setText(du.sfecha(fechae));
         app = new AppMethods(this, gl, Con, db);
+		PromotionSchema.ensure(db);
 
 		clsDesc=new clsDescGlob(this);
+		//#EJC20260724 fix(hh-combo-pedido-resumen): PedidoRes comparte T_VENTA con
+		//FacturaRes; resuelve los mismos combos antes de mostrar y guardar totales.
+		descCombos = new Catalogo(this, Con, db);
+		descCombos.ResolverCombosEnTVenta(cliid, fecha, true);
 
 		adjustSpinner();
 		fillSpinner();
@@ -145,6 +155,10 @@ public class PedidoRes extends PBase {
 	}
 
 	//region Events
+
+	public void showProductDiscounts(View view) {
+		DiscountProductDialog.show(this, Con);
+	}
 
 	public void askSave(View view) {
 		String ss;
@@ -370,7 +384,9 @@ public class PedidoRes extends PBase {
 				totperc=stot*(gl.percepcion/100);
 				totperc=mu.round2(totperc);
 				
-				tot=stot+totimp-descmon+totperc;
+				//#EJC20260724 fix(hh-resumen-ajustes): incluye en el resultado el
+				//recargo que se presenta en el resumen.
+				tot=stot+totimp-descmon+RecargoPorProducto+totperc;
 				tot=mu.round2(tot);
 				
 				item = clsCls.new clsCDB();
@@ -404,7 +420,9 @@ public class PedidoRes extends PBase {
 			} else {
 								
 				totimp=mu.round2(totimp);
-				tot=stot-descmon;
+				//#EJC20260724 fix(hh-resumen-ajustes): subtotal - descuento +
+				//recargo conserva el total autoritativo de T_VENTA.
+				tot=stot-descmon+RecargoPorProducto;
 				tot=mu.round2(tot);
 				
 				
@@ -629,8 +647,12 @@ public class PedidoRes extends PBase {
 			db.execSQL(ins.sql());
           		
 			sql="SELECT PRODUCTO,CANT,PRECIO,IMP,DES,DESMON,TOTAL,PRECIODOC,PESO,VAL1,VAL2,UM,FACTOR,UMSTOCK," +
-					"SIN_EXISTENCIA,VAL3, RECARGO, RECARGOMONTO FROM T_VENTA";
+					"SIN_EXISTENCIA,VAL3, RECARGO, RECARGOMONTO,IFNULL(PRECIO_BASE,PRECIO),"+
+					"IFNULL(TOTAL_BASE,TOTAL),IFNULL(CODDESC_APLICADO,0),"+
+					"IFNULL(CODRECARGO_APLICADO,0) FROM T_VENTA";
 			DT=Con.OpenDT(sql);
+			db.execSQL("DELETE FROM T_PEDIDO_PROMO_STATE WHERE COREL='"+
+					corel.replace("'","''")+"'");
 	
 			DT.moveToFirst();
 			while (!DT.isAfterLast()) {
@@ -677,9 +699,17 @@ public class PedidoRes extends PBase {
                 ins.add("SIN_EXISTENCIA", DT.getInt(14)); //JP20210614
 				ins.add("RECARGO", DT.getDouble(16));
 				ins.add("RECARGOMONTO", DT.getDouble(17));
-
                 String ss=ins.sql();
                 db.execSQL(ins.sql());
+				//#EJC20260724 fix(hh-pedido-local-genealogy): persiste la base en una
+				//tabla local no sincronizada; D_PEDIDOD conserva el contrato backend.
+				String productoPromo=DT.getString(0).replace("'","''");
+				db.execSQL("INSERT OR REPLACE INTO T_PEDIDO_PROMO_STATE "+
+						"(COREL,PRODUCTO,SIN_EXISTENCIA,PRECIO_BASE,TOTAL_BASE,"+
+						"CODDESC_APLICADO,CODRECARGO_APLICADO) VALUES ('"+
+						corel.replace("'","''")+"','"+productoPromo+"',"+DT.getInt(14)+","+
+						DT.getDouble(18)+","+DT.getDouble(19)+","+DT.getInt(20)+","+
+						DT.getInt(21)+")");
 
                 if (DT.getInt(15)==1) prodstandby=true;
 
@@ -960,6 +990,7 @@ public class PedidoRes extends PBase {
 
         db.execSQL("DELETE FROM D_PEDIDO WHERE COREL='"+corel+"'");
         db.execSQL("DELETE FROM D_PEDIDOD WHERE COREL='"+corel+"'");
+		db.execSQL("DELETE FROM T_PEDIDO_PROMO_STATE WHERE COREL='"+corel+"'");
 
     }
 
@@ -973,11 +1004,12 @@ public class PedidoRes extends PBase {
 			DT.moveToFirst();
 			
 			tot=DT.getDouble(1);
-			stot0=tot+DT.getDouble(0);
+			RecargoPorProducto = DT.getDouble(3);
+			//#EJC20260724 fix(hh-resumen-ajustes): TOTAL ya contiene descuento y
+			//recargo; reconstruye el subtotal base retirando ambos ajustes.
+			stot0=tot+DT.getDouble(0)-RecargoPorProducto;
 			
 			totimp=DT.getDouble(2);
-			RecargoPorProducto = DT.getDouble(3);
-			
 			return DT.getDouble(0);
 		} catch (Exception e) {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);

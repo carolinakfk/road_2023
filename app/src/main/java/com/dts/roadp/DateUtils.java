@@ -506,5 +506,20 @@ public class DateUtils {
 
 		return strDate;
 	}
-	
+
+	public long convertirFecha(long fecha) {
+		String valor = String.valueOf(fecha);
+
+		if (valor.length() == 14) {
+			return fecha;
+		}
+
+		if (valor.length() != 12) {
+			throw new IllegalArgumentException(
+					"La fecha debe tener el formato yyMMddHHmmss"
+			);
+		}
+
+		return Long.parseLong("20" + valor);
+	}
 }

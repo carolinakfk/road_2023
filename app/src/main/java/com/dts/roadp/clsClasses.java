@@ -290,5 +290,96 @@ public class clsClasses {
 	public class clsBeDescuento {
 		public String porPorcentaje = "";
 		public double valor = 0;
+		//#EJC20260721 refactor(hh-desc-result): conserva genealogía de la condición elegida.
+		public int codDesc = 0;
+		public int prioridad = 0;
+		public int prioridadDescuento = 0;
+		public int pTipo = 0;
+		public String descTipo = "";
+		public String producto = "";
+		public String umVenta = "";
+		public double rangoIni = 0;
+		public double rangoFin = 0;
+	}
+
+	public class clsBeP_DESCUENTO {
+		public String cliente = "";
+		public String ctipo = "";
+		public String producto = "";
+		public String ptipo = "";
+		public String tiporuta = "";
+		public double rangoIni = 0;
+		public double rangoFin = 0;
+		public String descTipo = "";
+		public double valor = 0;
+		public String globDesc = "";
+		public double porcAnt = 0;
+		public String fechaIni = "";
+		public String fechaFin = "";
+		public int codDesc = 0;
+		public String nombre = "";
+		public boolean esRecargo = false;
+		public String porPorcentaje = "";
+		public int prioridad = 0;
+		public int prioridadDescuento = 0;
+		public String umVenta = "";
+		public String sucursal = "";
+		public String tipologia = "";
+	}
+
+	public class clsBeP_DESCUENTO_COMBO_DET {
+		public int codDesc = 0;
+		public int secuencia = 0;
+		public String producto = "";
+		public double cantidad = 0;
+		public String grupo = "";
+		public String umStock = "";
+		public String umVenta = "";
+		public boolean obligatorio = true;
+		public String empresa = "";
+		public String tipoParticipacion = "";
+	}
+
+	public class VentaLinea {
+		public String lineKey;
+		public String producto;
+		public String empresa;
+		public String um;
+		public double sinExistencia;
+		public double cant;
+		public String umStock;
+		public double factor;
+		public double precio;
+		public double precioBase;
+		public double totalBase;
+		public int codDescAplicado;
+		public int codRecargoAplicado;
+		public double imp;
+		public double des;
+		public double desMon;
+		public double total;
+		public double precioDoc;
+		public double peso;
+		public double val1;
+		public double val2;
+		public double val3;
+		public double val4;
+		public double percep;
+		public double cantOriginal;
+		public double pesoOriginal;
+		public double recargo;
+		public double recargoMonto;
+		public boolean promoEligible = true;
+		//#EJC20260724 state(hh-combo-individual-fallback): conserva el resultado individual
+		//para restaurarlo si un combo queda incompleto o resulta ambiguo.
+		public boolean individualSnapshot;
+		public double individualPrecio;
+		public double individualTotal;
+		public double individualDes;
+		public double individualDesMon;
+		public double individualRecargo;
+		public double individualRecargoMonto;
+		public int individualCodDesc;
+		public int individualCodRecargo;
 	}
 }

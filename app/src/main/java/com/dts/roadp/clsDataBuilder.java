@@ -132,16 +132,26 @@ public class clsDataBuilder {
 					continue;
 				}
 
+				//#EJC20260724 fix(hh-sync-local-promo-state): una base instalada durante
+				//pruebas puede conservar columnas locales; nunca se serializan al backend.
+				if (esColumnaPromocionLocal(tn,n)) {
+					PRG.moveToNext();
+					continue;
+				}
+
 				ct=getCType(n,t);
 				tcol.add(ct);
 				tnom.add(n);
 
 				s=s+n+"  "+ct+"\n";
 
-				SS=SS+n;
-				if (j<cc-1) SS=SS+",";
-
 				PRG.moveToNext();j+=1;
+			}
+			cc=tnom.size();
+			SS="SELECT ";
+			for (int i=0;i<cc;i++) {
+				SS=SS+tnom.get(i);
+				if (i<cc-1) SS=SS+",";
 			}
 
 			/*
@@ -190,8 +200,9 @@ public class clsDataBuilder {
 
 			DT=Con.OpenDT(SS);
 			if (DT==null) {
-				return true;
-			}
+		return true;
+	}
+
 			if (DT.getCount()==0) {
 				return true;
 			}
@@ -261,6 +272,28 @@ public class clsDataBuilder {
 		}
 		
 		return (!err.isEmpty()?false:true);
+	}
+
+	private boolean esColumnaPromocionLocal(String tabla,String columna) {
+		if (tabla.equalsIgnoreCase("D_FACTURA")) {
+			return columna.equalsIgnoreCase("RECARGOMONTO");
+		}
+		if (tabla.equalsIgnoreCase("D_FACTURAD")) {
+			return columna.equalsIgnoreCase("RECARGO") ||
+					columna.equalsIgnoreCase("RECARGOMONTO") ||
+					columna.equalsIgnoreCase("PRECIO_BASE") ||
+					columna.equalsIgnoreCase("TOTAL_BASE") ||
+					columna.equalsIgnoreCase("CODDESC_APLICADO") ||
+					columna.equalsIgnoreCase("CODRECARGO_APLICADO") ||
+					columna.toUpperCase().startsWith("INDIVIDUAL_");
+		}
+		if (tabla.equalsIgnoreCase("D_PEDIDOD")) {
+			return columna.equalsIgnoreCase("PRECIO_BASE") ||
+					columna.equalsIgnoreCase("TOTAL_BASE") ||
+					columna.equalsIgnoreCase("CODDESC_APLICADO") ||
+					columna.equalsIgnoreCase("CODRECARGO_APLICADO");
+		}
+		return false;
 	}
 
 	public void parametrosGlobales() {

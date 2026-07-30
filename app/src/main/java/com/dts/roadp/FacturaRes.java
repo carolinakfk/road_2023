@@ -36,6 +36,9 @@ import com.example.edocsdk.Fimador;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -53,6 +56,9 @@ import Entidades.gRucRec;
 import Entidades.gUbiRec;
 import Entidades.rFE;
 import Facturacion.CatalogoFactura;
+import models.Catalogo;
+import com.dts.roadp.promotions.PromotionSchema;
+import com.dts.roadp.promotions.PromotionTrace;
 
 public class FacturaRes extends PBase {
 
@@ -106,6 +112,7 @@ public class FacturaRes extends PBase {
 	private final rFE Factura = new rFE();
 	private final rFE NotaCredito = new rFE();
 	private CatalogoFactura Catalogo;
+	private Catalogo DescCombos;
 	private String urltoken =  "";
 	private String usuario = "";
 	private String clave = "";
@@ -122,6 +129,7 @@ public class FacturaRes extends PBase {
 		setContentView(R.layout.activity_factura_res);
 
 		super.InitBase();
+		PromotionSchema.ensure(db);
         addlog("FacturaRes",""+du.getActDateTime(),gl.vend);
 
 		listView = findViewById(R.id.listView1);
@@ -264,9 +272,18 @@ public class FacturaRes extends PBase {
 		fechae=fecha;
 		if (gl.peModal.equalsIgnoreCase("TOL")) fecha=app.fechaFactTol(du.getActDate());
 
+		//#AT20260709 Aca vamos a calcular los nuevos valores en T_VENTA
+		DescCombos = new Catalogo(this, Con, db);
+		AplicarDescuentosRecargosCombo(cliid,fecha);
+
 		clsDescGlob clsDesc = new clsDescGlob(this);
 
-		descpmon=totalDescProd();
+		//#AT20260913 Probarémos asi
+		if (gl.peModal.equalsIgnoreCase("TOL")) {
+			descpmon=totalDescProdNuevo();
+		} else {
+			descpmon = totalDescProd();
+		}
 
 		dmax= clsDesc.dmax;
 		acum= clsDesc.acum;
@@ -329,6 +346,10 @@ public class FacturaRes extends PBase {
 
 	//region Events
 
+	public void showProductDiscounts(View view) {
+		DiscountProductDialog.show(this, Con);
+	}
+
 	public void prevScreen(View view) {
 		try{
 
@@ -345,6 +366,18 @@ public class FacturaRes extends PBase {
 			}.getClass().getEnclosingMethod()).getName(),e.getMessage(),"");
 		}
 
+	}
+
+	public void AplicarDescuentosRecargosCombo(String cliente,long fechaDocumento) {
+		try {
+
+			//#EJC20260724 fix(hh-combo-summary-resolve): antes de totalizar resuelve ambos
+			//lados juntos; un empate conserva individuales y se informa al usuario.
+			DescCombos.ResolverCombosEnTVenta(cliente, fechaDocumento, true);
+		} catch (Exception e) {
+			msgbox(Objects.requireNonNull(new Object() {
+			}.getClass().getEnclosingMethod()).getName()+" . "+e.getMessage());
+		}
 	}
 
 	public void paySelect(View view) {
@@ -790,7 +823,9 @@ public class FacturaRes extends PBase {
 				totperc=stot*(gl.percepcion/100);
 				totperc=mu.round2(totperc);
 
-				tot=stot+totimp-descmon+totperc;
+				//#EJC20260724 fix(hh-resumen-ajustes): el recargo mostrado tambien
+				//participa en el total reconstruido.
+				tot=stot+totimp-descmon+RecargoMontoTotal+totperc;
 				tot=mu.round2(tot);
 
 				item = clsCls.new clsCDB();
@@ -831,7 +866,9 @@ public class FacturaRes extends PBase {
 			} else {
 
 				totimp=mu.round2(totimp);
-				tot=stot-descmon;
+				//#EJC20260724 fix(hh-resumen-ajustes): conserva la identidad
+				//subtotal - descuento + recargo = total final.
+				tot=stot-descmon+RecargoMontoTotal;
 				tot=mu.round2(tot);
 
 
@@ -840,13 +877,15 @@ public class FacturaRes extends PBase {
 				items.add(item);
 
 				item = clsCls.new clsCDB();
-				item.Cod="Descuento";item.Desc=mu.frmcur(-descmon);item.Bandera=0;
+				item.Cod = "Descuento";
+				item.Desc = mu.frmcur(-descmon);
+				item.Bandera = 0;
 				items.add(item);
 
 				item = clsCls.new clsCDB();
-				item.Cod="Recargo";
-				item.Desc=mu.frmcur(+RecargoMontoTotal);
-				item.Bandera=0;
+				item.Cod = "Recargo";
+				item.Desc = mu.frmcur(+RecargoMontoTotal);
+				item.Bandera = 0;
 				items.add(item);
 
 				if (gl.dvbrowse!=0){
@@ -1685,7 +1724,8 @@ public class FacturaRes extends PBase {
 
 			//region D_FACTURAD , D_FACTURAD_LOTES
 
-			sql="SELECT PRODUCTO,CANT,PRECIO,IMP,DES,DESMON,TOTAL,PRECIODOC,PESO,VAL1,VAL2,UM,FACTOR,UMSTOCK, RECARGO, RECARGOMONTO FROM T_VENTA";
+			sql="SELECT PRODUCTO,CANT,PRECIO,IMP,DES,DESMON,TOTAL,PRECIODOC,PESO,VAL1,VAL2,UM,FACTOR,UMSTOCK, RECARGO, RECARGOMONTO,"+
+					"IFNULL(PRECIO_BASE,PRECIO),IFNULL(TOTAL_BASE,0),IFNULL(CODDESC_APLICADO,0),IFNULL(CODRECARGO_APLICADO,0) FROM T_VENTA";
 			dt=Con.OpenDT(sql);
 
 			double TotalFact = 0;
@@ -1722,6 +1762,9 @@ public class FacturaRes extends PBase {
 				ins.add("UMPESO",gl.umpeso); //#HS_20181120_1625 Se agrego el valor gl.umpeso anteriormente estaba ""
 				ins.add("RECARGO",dt.getDouble(14));
 				ins.add("RECARGOMONTO",dt.getDouble(15));
+				PromotionTrace.write(this,"PROMO_LINE_PERSISTED","factura="+corel+";producto="+dt.getString(0)+
+						";precioBase="+dt.getDouble(16)+";totalBase="+dt.getDouble(17)+";descuento="+dt.getDouble(5)+
+						";recargo="+dt.getDouble(15)+";totalFinal="+dt.getDouble(6)+";codDesc="+dt.getInt(18)+";codRecargo="+dt.getInt(19));
 				db.execSQL(ins.sql());
 
 			    vprod=dt.getString(0);
@@ -1864,9 +1907,13 @@ public class FacturaRes extends PBase {
 				sql = "SELECT ITEM,CODPAGO,TIPO,VALOR,DESC1,DESC2,DESC3 FROM T_PAGO";
 				dt = Con.OpenDT(sql);
 
-				CodPago = dt.getInt(1);
+				//#EJC20260724 fix(hh-payment-empty-guard): nunca leer el cursor antes
+				//de posicionarlo ni guardar una factura ordinaria sin forma de pago.
+				if (dt == null || !dt.moveToFirst()) {
+					throw new IllegalStateException("No existe una forma de pago registrada para la factura.");
+				}
 
-				dt.moveToFirst();
+				CodPago = dt.getInt(1);
 
 				while (!dt.isAfterLast()) {
 
@@ -2407,7 +2454,7 @@ public class FacturaRes extends PBase {
 
 		return true;
 	}
-	
+
 	private void ActualizaFacturaTmp(String Corel, clsClasses.clsControlFEL ControlFEL) {
 		try {
 			if (!Catalogo.ExisteFacturaDControl(Corel).isEmpty()) {
@@ -2419,7 +2466,7 @@ public class FacturaRes extends PBase {
 			msgbox(new Object() {}.getClass().getEnclosingMethod().getName() + " - " + e.getMessage());
 		}
 	}
-	
+
 	public boolean ConexionValida() {
 		boolean valida = false;
 		try {
@@ -2977,6 +3024,52 @@ public class FacturaRes extends PBase {
             }else {
 			    return 0;
             }
+
+		} catch (Exception e) {
+			addlog(Objects.requireNonNull(new Object() {
+			}.getClass().getEnclosingMethod()).getName(),e.getMessage(),sql);
+			mu.msgbox("totalDescProd: " + e.getMessage());
+
+			return 0;
+		}
+
+	}
+
+	private double totalDescProdNuevo(){
+		Cursor DT;
+
+		try {
+			//#EJC20260721 fix(hh-factura-total): los ajustes ya son importes extendidos.
+			sql="SELECT SUM(DESMON)," +
+					" SUM(TOTAL)," +
+					" SUM(IMP)," +
+					" SUM(RECARGOMONTO)" +
+					"FROM (" +
+					"    SELECT DESMON, TOTAL, IMP, RECARGOMONTO," +
+					"           CASE WHEN UM = 'KG' THEN PESO ELSE CANT END AS FACTOR" +
+					"    FROM T_VENTA" +
+					")";
+			DT=Con.OpenDT(sql);
+
+			if(DT.getCount()>0){
+				DT.moveToFirst();
+
+				tot=DT.getDouble(1);
+				RecargoMontoTotal = DT.getDouble(3);
+				//#EJC20260724 fix(hh-resumen-ajustes): TOTAL ya contiene ambos
+				//ajustes; reconstruye la base retirando descuento y recargo.
+				stot0=tot+DT.getDouble(0)-RecargoMontoTotal;
+
+				totimp=DT.getDouble(2);
+
+				double rslt=DT.getDouble(0);
+				DT.close();
+
+				return rslt;
+
+			}else {
+				return 0;
+			}
 
 		} catch (Exception e) {
 			addlog(Objects.requireNonNull(new Object() {

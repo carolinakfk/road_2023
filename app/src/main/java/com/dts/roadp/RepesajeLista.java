@@ -148,7 +148,7 @@ public class RepesajeLista extends PBase {
     private void listItemsBarra() {
         Cursor dt;
         clsClasses.clsCD item;
-        double ppeso,pprec,tpeso=0,tprec=0;
+        double ppeso,pprec,tpeso=0,tprec=0,totalDocumento;
 
         items.clear();
 
@@ -175,9 +175,20 @@ public class RepesajeLista extends PBase {
 
             if(dt!=null) dt.close();
 
+            totalDocumento=tprec;
+            sql = "SELECT TOTAL FROM T_VENTA WHERE PRODUCTO='"+prodid+"'";
+            dt = Con.OpenDT(sql);
+            if (dt!=null && dt.getCount()>0) {
+                dt.moveToFirst();
+                totalDocumento=dt.getDouble(0);
+            }
+            if(dt!=null) dt.close();
+
             lblCant.setText(""+items.size());
             lblPrec.setText(mu.frmdecimal(tpeso,gl.peDecImp));
-            lblTot.setText(mu.frmdecimal(tprec,2));
+            //#EJC20260729 fix(hh-repesaje-total): muestra el total autoritativo
+            //del producto, no la suma de importes redondeados por barra.
+            lblTot.setText(mu.frmdecimal(totalDocumento,2));
 
         } catch (Exception e) {
             addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);

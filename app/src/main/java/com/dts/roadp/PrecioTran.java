@@ -4,11 +4,16 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.dts.roadp.promotions.PromotionTrace;
+import com.dts.roadp.promotions.SapPromotionCalculator;
+
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
 public class PrecioTran {
 
-	public double costo,descmon,imp,impval,tot,precsin,totsin,precdoc,precioespecial;
+	public double costo,descmon,imp,impval,tot,precsin,totsin,precdoc,precioespecial,recargoMonto,recargo,precioBase,totalBase;
+	public int codDescAplicado,codRecargoAplicado;
 
 	private int active;
 
@@ -27,6 +32,8 @@ public class PrecioTran {
 	private double cant,desc,prec;
 	private int nivel,ndec;
 	private boolean porpeso;
+	public clsClasses.clsBeDescuento BeDescuento = null;
+	public clsClasses.clsBeDescuento BeRecargo = null;
 
 	public PrecioTran(Context context, MiscUtils mutil, int numdec, BaseDatos dbconnection, SQLiteDatabase database) {
 		
@@ -45,15 +52,22 @@ public class PrecioTran {
 	}
 
 	public double precio(String prod,double pcant,int nivelprec,String unimedida,String unimedidapeso,double ppeso,String umven) {
+		return precio(prod,pcant,nivelprec,unimedida,unimedidapeso,ppeso,umven,0);
+	}
+
+	//#EJC20260728 fix(hh-rosti-price-factor): separa cantidad comercial de base monetaria convertida.
+	public double precio(String prod,double pcant,int nivelprec,String unimedida,String unimedidapeso,
+						 double ppeso,String umven,double baseFacturacionConvertida) {
 
 		prodid=prod;cant=pcant;nivel=nivelprec;
 		um=unimedida;umpeso=unimedidapeso;umventa=umven;
-		prec=0;costo=0;descmon=0;imp=0;tot=0;precioespecial=0;
+		prec=0;costo=0;descmon=0;imp=0;tot=0;precioespecial=0;recargo=0;recargoMonto=0;
 
-		clsDescuentoTran clsDesc=new clsDescuentoTran(cont,prodid,cant,Con,db);
-		desc=clsDesc.getDesc();
+		clsDescuento clsDesc=new clsDescuento(cont,prodid,cant,ppeso,umventa,Con,db);
+		BeDescuento=clsDesc.getDescuentoRecargo(false);
+		BeRecargo=clsDesc.getDescuentoRecargo(true);
 
-		if (cant>0) prodPrecio(ppeso);else prodPrecioBase();
+		if (cant>0) prodPrecio(ppeso,baseFacturacionConvertida);else prodPrecioBase();
 
 		return prec;
 	}
@@ -61,19 +75,18 @@ public class PrecioTran {
 	public boolean existePrecioEspecial(String prod,double pcant,String cliente,String clitipo,String unimedida,String unimedidapeso,double ppeso) {
 		prodid=prod;cant=pcant;um=unimedida;
 		umpeso=unimedidapeso;
-		prec=0;costo=0;descmon=0;imp=0;tot=0;precioespecial=0;
+		umventa=unimedida;
+		precioespecial=0;
 
-		if (cant==0) return false;
-
-		prodPrecioEsp(ppeso,cliente,clitipo);
-		precioespecial=prec;
-		return prec>0;
+		//#EJC20260728 fix(hh-base-price-only): P_PRODPRECIO es la unica fuente
+		//del precio base; TMP_PRECESPEC se conserva solo por compatibilidad de esquema.
+		return false;
 	}
 
 	
 	// Private
 	
-	private void prodPrecio(double ppeso) {
+	private void prodPrecio(double ppeso,double baseFacturacionConvertida) {
 		Cursor DT;
 		double pr,stot,pprec,tsimp;
 		String sprec="";
@@ -105,61 +118,46 @@ public class PrecioTran {
 			}
 	    }
 		
-		totsin=pr*cant;tsimp=mu.round(totsin,ndec);
-		
-		//percep=0;
-		
+		//#EJC20260721 fix(hh-sap-transaction): peso ROAD ya es total; total extendido autoritativo.
+		double baseFacturacion=baseFacturacionConvertida>0
+				?baseFacturacionConvertida:(ppeso>0?ppeso:cant);
+		if (baseFacturacion<=0) baseFacturacion=1;
+		SapPromotionCalculator.Result resultado=SapPromotionCalculator.calculate(
+				SapPromotionCalculator.decimal(pr),SapPromotionCalculator.decimal(baseFacturacion),
+				toAdjustment(BeDescuento),toAdjustment(BeRecargo));
+		desc=BeDescuento==null?0:BeDescuento.valor;
+		recargo=BeRecargo==null?0:BeRecargo.valor;
+		descmon=resultado.discountTotal.doubleValue();
+		recargoMonto=resultado.surchargeTotal.doubleValue();
+		precioBase=resultado.baseUnitPrice.doubleValue();
+		totalBase=resultado.extendedBaseTotal.doubleValue();
+		codDescAplicado=BeDescuento==null?0:BeDescuento.codDesc;
+		codRecargoAplicado=BeRecargo==null?0:BeRecargo.codDesc;
+		totsin=resultado.authoritativeFinalTotal.doubleValue();
+		precsin=resultado.derivedUnitPrice.doubleValue();
 		imp=getImp();
-		pr=pr*(1+imp/100);
+		BigDecimal impuestoTotal=SapPromotionCalculator.money(resultado.authoritativeFinalTotal
+				.multiply(SapPromotionCalculator.decimal(imp)).divide(new BigDecimal("100")));
+		BigDecimal totalConImpuesto=resultado.authoritativeFinalTotal.add(impuestoTotal)
+				.setScale(SapPromotionCalculator.MONEY_SCALE,SapPromotionCalculator.SAP_ROUNDING);
+		impval=impuestoTotal.doubleValue();
+		tot=totalConImpuesto.doubleValue();
+		prec=totalConImpuesto.divide(SapPromotionCalculator.decimal(baseFacturacion),
+				SapPromotionCalculator.UNIT_PRICE_SCALE,SapPromotionCalculator.SAP_ROUNDING).doubleValue();
+		precdoc=prec;
+		PromotionTrace.write(cont,"PROMO_CALCULATION_TRANSACTION",
+				"producto="+prodid+";basePrecio="+pr+";baseFacturacion="+baseFacturacion+
+				";descuento="+descmon+";recargo="+recargoMonto+";total="+tot+";precioDerivado="+prec);
 
-		// total
-		stot=pr*cant;stot=mu.round(stot,ndec);
-		if (imp>0) impval=stot-tsimp; else impval=0;
-		descmon=(double) (stot*desc/100);descmon=mu.round(descmon,ndec);
-		tot=stot-descmon;
+	}
 
-		if (cant>0) prec=(double) (tot/cant); else prec=pr;
-
-		try {
-			sprec=ffrmprec.format(prec);sprec=sprec.replace(",",".");
-			pprec=Double.parseDouble(sprec);
-			precdoc=mu.round(pprec,ndec);
-		} catch (Exception e) {
-			precdoc=prec;
-		}
-
-		if (ppeso>0) prec=prec*ppeso/cant;
-			
-		try {
-			sprec=ffrmprec.format(prec);sprec=sprec.replace(",",".");
-			pprec=Double.parseDouble(sprec);
-			pprec=mu.round(pprec,ndec);
-		} catch (Exception e) {
-			pprec=prec;
-		}
-		prec=pprec;
-
-		// total
-		stot=prec*cant;stot=mu.round(stot,ndec);
-		if (imp>0) impval=stot-tsimp; else impval=0;
-		descmon=(double) (stot*desc/100);descmon=mu.round(descmon,ndec);
-		tot=stot-descmon;
-
-		if (imp==0) precsin=prec; else precsin=prec/(1+imp/100);
-		//Toast.makeText(cont,sprec+" - "+pprec+" / "+prec+" prec sin : "+precsin, Toast.LENGTH_SHORT).show();
-		
-		totsin=mu.round(precsin*cant,ndec);
-		if (cant>0) precsin=(double) (totsin/cant);	
-		
-		try {
-			sprec=ffrmprec.format(precsin);sprec=sprec.replace(",",".");
-			pprec=Double.parseDouble(sprec);
-			pprec=mu.round(pprec,ndec);
-		} catch (Exception e) {
-			pprec=precsin;
-		}
-		precsin=pprec;
-
+	private SapPromotionCalculator.Adjustment toAdjustment(clsClasses.clsBeDescuento condicion) {
+		if (condicion==null || condicion.valor==0) return SapPromotionCalculator.Adjustment.none();
+		SapPromotionCalculator.AdjustmentKind kind;
+		if (!"S".equalsIgnoreCase(condicion.porPorcentaje)) kind=SapPromotionCalculator.AdjustmentKind.FIXED;
+		else if ("M".equalsIgnoreCase(condicion.descTipo)) kind=SapPromotionCalculator.AdjustmentKind.PERCENTAGE_MULTIPLE;
+		else kind=SapPromotionCalculator.AdjustmentKind.PERCENTAGE_RANGE;
+		return new SapPromotionCalculator.Adjustment(kind,SapPromotionCalculator.decimal(condicion.valor));
 	}
 	
 	private void prodPrecioBase() {
@@ -286,7 +284,7 @@ public class PrecioTran {
 		
 	}
 
-	private void prodPrecioEsp(double ppeso,String cliente,String clitipo) {
+	private boolean prodPrecioEsp(double ppeso,String cliente,String clitipo) {
 		Cursor dt;
 		double pr,prr,stot,pprec,tsimp;
 		String sprec="",vcod,vval;
@@ -337,56 +335,47 @@ public class PrecioTran {
 			pr=0;
 		}
 
-		totsin=pr*cant;tsimp=mu.round(totsin,ndec);
-		imp=0;
-		pr=pr*(1+imp/100);
-
-		// total
-		stot=pr*cant;stot=mu.round(stot,ndec);
-		if (imp>0) impval=stot-tsimp; else impval=0;
-		descmon=(double) (stot*desc/100);descmon=mu.round(descmon,ndec);
-		tot=stot-descmon;
-
-		if (cant>0) prec=(double) (tot/cant); else prec=pr;
-
-		try {
-			sprec=ffrmprec.format(prec);sprec=sprec.replace(",",".");
-			pprec=Double.parseDouble(sprec);
-			precdoc=mu.round(pprec,ndec);
-		} catch (Exception e) {
-			precdoc=prec;
+		if (pr<=0) {
+			PromotionTrace.write(cont,"PRICE_MODE_TRANSACTION",
+					"producto="+prodid+";modo=STANDARD_PROMOTION;precioEspecial=NO;precioBase="+precioBase+";total="+tot);
+			return false;
 		}
 
-		if (ppeso>0) prec=prec*ppeso/cant;
+		//#EJC20260724 fix(hh-special-price-exclusive): el precio especial reemplaza
+		//al precio normal y no convive con descuento, recargo ni combo.
+		double baseFacturacion=ppeso>0?ppeso:cant;
+		if (baseFacturacion<=0) baseFacturacion=1;
+		SapPromotionCalculator.Result resultado=SapPromotionCalculator.calculate(
+				SapPromotionCalculator.decimal(pr),SapPromotionCalculator.decimal(baseFacturacion),
+				SapPromotionCalculator.Adjustment.none(),SapPromotionCalculator.Adjustment.none());
+		BeDescuento=null;
+		BeRecargo=null;
+		desc=0;
+		recargo=0;
+		descmon=resultado.discountTotal.doubleValue();
+		recargoMonto=resultado.surchargeTotal.doubleValue();
+		precioBase=resultado.baseUnitPrice.doubleValue();
+		totalBase=resultado.extendedBaseTotal.doubleValue();
+		codDescAplicado=0;
+		codRecargoAplicado=0;
+		totsin=resultado.authoritativeFinalTotal.doubleValue();
+		precsin=resultado.derivedUnitPrice.doubleValue();
+		imp=getImp();
+		BigDecimal impuestoTotal=SapPromotionCalculator.money(resultado.authoritativeFinalTotal
+				.multiply(SapPromotionCalculator.decimal(imp)).divide(new BigDecimal("100")));
+		BigDecimal totalConImpuesto=resultado.authoritativeFinalTotal.add(impuestoTotal)
+				.setScale(SapPromotionCalculator.MONEY_SCALE,SapPromotionCalculator.SAP_ROUNDING);
+		impval=impuestoTotal.doubleValue();
+		tot=totalConImpuesto.doubleValue();
+		prec=totalConImpuesto.divide(SapPromotionCalculator.decimal(baseFacturacion),
+				SapPromotionCalculator.UNIT_PRICE_SCALE,SapPromotionCalculator.SAP_ROUNDING).doubleValue();
+		precdoc=prec;
+		precioespecial=prec;
 
-		try {
-			sprec=ffrmprec.format(prec);sprec=sprec.replace(",",".");
-			pprec=Double.parseDouble(sprec);
-			pprec=mu.round(pprec,ndec);
-		} catch (Exception e) {
-			pprec=prec;
-		}
-		prec=pprec;
-
-		// total
-		stot=prec*cant;stot=mu.round(stot,ndec);
-		if (imp>0) impval=stot-tsimp; else impval=0;
-		descmon=(double) (stot*desc/100);descmon=mu.round(descmon,ndec);
-		tot=stot-descmon;
-
-		if (imp==0) precsin=prec; else precsin=prec/(1+imp/100);
-		totsin=mu.round(precsin*cant,ndec);
-		if (cant>0) precsin=(double) (totsin/cant);
-
-		try {
-			sprec=ffrmprec.format(precsin);sprec=sprec.replace(",",".");
-			pprec=Double.parseDouble(sprec);
-			pprec=mu.round(pprec,ndec);
-		} catch (Exception e) {
-			pprec=precsin;
-		}
-
-		precsin=pprec;
+		PromotionTrace.write(cont,"PRICE_MODE_TRANSACTION",
+				"producto="+prodid+";modo=SPECIAL;precioEspecial="+pr+";baseFacturacion="+baseFacturacion+
+				";descuento=0;recargo=0;total="+tot+";precioDerivado="+prec);
+		return true;
 
 	}
 

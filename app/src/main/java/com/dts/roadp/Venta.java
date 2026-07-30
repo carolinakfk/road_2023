@@ -35,7 +35,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.dts.roadp.clsClasses.clsVenta;
+import com.dts.roadp.promotions.PromotionSchema;
+import com.dts.roadp.promotions.PromotionTrace;
 import java.util.ArrayList;
+
+import models.Catalogo;
 
 public class Venta extends PBase {
 
@@ -103,6 +107,7 @@ public class Venta extends PBase {
 		setContentView(R.layout.activity_venta);
 
 		super.InitBase();
+		PromotionSchema.ensure(db);
 		addlog("Venta",""+du.getActDateTime(),gl.vend);
 
 		setControls();
@@ -536,7 +541,7 @@ public class Venta extends PBase {
 	public void listItems() {
 		Cursor DT;
 		clsVenta item;
-		double tt;
+		double tt,totalPersistido=0;
 		int ii;
 
 		items.clear();tot=0;ttimp=0;ttperc=0;selidx=-1;ii=0;
@@ -576,6 +581,10 @@ public class Venta extends PBase {
 				while (!DT.isAfterLast()) {
 
 					tt=DT.getDouble(2);
+					totalPersistido+=tt;
+					//#EJC20260727 fix(hh-pedido-total-centavos): la pantalla suma
+					//los totales autoritativos de linea tal como se muestran, a dos decimales.
+					if (gl.peModal.equalsIgnoreCase("TOL")) tt=mu.round2(tt);
 
 					item = clsCls.new clsVenta();
 
@@ -666,11 +675,16 @@ public class Venta extends PBase {
 
 		if (sinimp) {
 			ttsin=tot-ttimp-ttperc;
-			ttsin=mu.round(ttsin,2);
+			ttsin=gl.peModal.equalsIgnoreCase("TOL") ? mu.round2(ttsin) : mu.round(ttsin,2);
 			lblTot.setText(mu.frmcur(ttsin));
 		} else {
-			tot=mu.round(tot,2);
+			tot=gl.peModal.equalsIgnoreCase("TOL") ? mu.round2(tot) : mu.round(tot,2);
 			lblTot.setText(mu.frmcur(tot));
+		}
+		if (gl.peModal.equalsIgnoreCase("TOL")) {
+			PromotionTrace.write(this,"PROMO_SALE_TOTAL_DISPLAY",
+					"destino="+(pedido?"PEDIDO":"FACTURA")+";totalPersistido="+totalPersistido+
+							";totalMostrado="+(sinimp?ttsin:tot)+";criterio=suma_lineas_centavos");
 		}
 
 		if (selidx>-1) {
@@ -799,16 +813,15 @@ public class Venta extends PBase {
 					gl.recargo = BeRecargo.valor;
 				}
 
-				/*if (desc > 0) {
-					gl.prommodo = 0;
-					gl.promdesc = desc;
+				if (gl.mostrar_pantalla_descuento == 1) {
+					startActivity(new Intent(this, DescBon.class));
 				} else {
-					gl.prommodo = 1;
-					gl.promdesc = mdesc;
-				}*/
+					//#AT20260713 Mostrar u ocultar la confirmacion de descuento.
+					gl.prommdesc=0;
+					gl.promapl=true;
 
-				startActivity(new Intent(this, DescBon.class));
-
+					updDesc();
+				}
 			} else {
 				if (gl.bonus.size() > 0) {
 					Intent intent = new Intent(this, BonList.class);
@@ -833,8 +846,11 @@ public class Venta extends PBase {
 			imp = prc.imp;
 			impval = prc.impval;
 			descmon = prc.descmon;
+			desc = prc.BeDescuento == null ? 0 : prc.BeDescuento.valor;
+			recargo = prc.recargo;
+			recargoMonto = prc.recargoMonto;
 
-			if (rutatipo.equalsIgnoreCase("P")) {
+			if (rutatipo.equalsIgnoreCase("P") && !gl.peModal.equalsIgnoreCase("TOL")) {
                 double factorconv=app.factorPeso(prodid);
 
 				prec=gl.precprev;
@@ -880,16 +896,21 @@ public class Venta extends PBase {
 	private void prodPrecio() {
 		try{
 			prec=prc.precio(prodid,cant,nivel,um,gl.umpeso,gl.dpeso,um);
+
+			if (prc.existePrecioEspecial(prodid,cant,gl.cliente,gl.clitipo,um,gl.umpeso,gl.dpeso)) {
+				if (prc.precioespecial>0) prec=prc.precioespecial;
+			}
+
+			//#EJC20260724 fix(hh-special-price-exclusive): copiar los ajustes despues
+			//de resolver el regimen; precio especial deja descuento y recargo en cero.
 			tot = prc.tot;
 			descmon = prc.descmon;
+			desc = prc.BeDescuento == null ? 0 : prc.BeDescuento.valor;
 			recargo = prc.recargo;
 			recargoMonto = prc.recargoMonto;
 
-            if (prc.existePrecioEspecial(prodid,cant,gl.cliente,gl.clitipo,um,gl.umpeso,gl.dpeso)) {
-                if (prc.precioespecial>0) prec=prc.precioespecial;
-            }
-
-			prec=mu.round(prec,2);
+			//#EJC20260721 fix(hh-total-extendido): conserva precio derivado a seis decimales.
+			prec=mu.round(prec,6);
 		}catch (Exception e){
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
 		}
@@ -989,11 +1010,23 @@ public class Venta extends PBase {
 			//peso=mu.round(gl.dpeso*gl.umfactor,gl.peDec);
 		}
 
-		if (porpeso) {
-			prodtot=mu.round(gl.prectemp*peso,2);
-		} else {
-			prodtot=mu.round(prec*cant,2);
+		//#EJC20260721 fix(hh-total-extendido): no reconstruye TOTAL desde precio visual.
+		prodtot=mu.round(prc.tot,2);
+
+		//#EJC20260724 fix(hh-price-zero-guard): una venta ordinaria nunca se persiste
+		//sin precio fuente. Bonificaciones usan su flujo dedicado y no pasan por aqui.
+		if (prc.precioBase<=0 || prec<=0 || prodtot<=0) {
+			PromotionTrace.write(this,"SALE_LINE_REJECTED",
+					"producto="+prodid+";precioBase="+prc.precioBase+";precio="+prec+";total="+prodtot+
+					";motivo=PRECIO_O_TOTAL_CERO");
+			mu.msgbox("No se puede agregar el producto "+prodid+" porque no tiene un precio válido definido.");
+			return;
 		}
+
+		PromotionTrace.write(this,"SALE_LINE_BEFORE_INSERT",
+				"producto="+prodid+";precioBase="+prc.precioBase+";precio="+prec+";totalBase="+prc.totalBase+
+				";descuento="+prc.descmon+";recargo="+prc.recargoMonto+";total="+prodtot+
+				";precioEspecial="+(prc.precioespecial>0));
 
         if (rutatipo.equalsIgnoreCase("V")) {
             gl.umstock=app.umStock(prodid);
@@ -1064,13 +1097,17 @@ public class Venta extends PBase {
 			ins.add("IMP",impval);
 			ins.add("DES",desc);
 			ins.add("DESMON",descmon);
-			ins.add("RECARGO",0);
-			ins.add("RECARGOMONTO",0);
+			ins.add("RECARGO",recargo);
+			ins.add("RECARGOMONTO",recargoMonto);
+			ins.add("PRECIO_BASE",prc.precioBase);
+			ins.add("TOTAL_BASE",prc.totalBase);
+			ins.add("CODDESC_APLICADO",prc.codDescAplicado);
+			ins.add("CODRECARGO_APLICADO",prc.codRecargoAplicado);
 
             if (rutatipo.equalsIgnoreCase("V")) {
-                if (porpeso) {
-                    ins.add("PRECIO",gl.prectemp);
-                    ins.add("PRECIODOC",gl.prectemp);
+				if (porpeso) {
+					ins.add("PRECIO",prec);
+					ins.add("PRECIODOC",prc.precdoc);
                 } else {
                     ins.add("PRECIO",prec);
                     ins.add("PRECIODOC",precdoc);
@@ -1079,9 +1116,9 @@ public class Venta extends PBase {
                 ins.add("PESO",peso);
 
             } else {
-                 if (porpeso) {
-                    ins.add("PRECIO",gl.prectemp);vprec=gl.prectemp;
-                    ins.add("PRECIODOC",gl.prectemp);vprecdoc=gl.prectemp;
+				 if (porpeso) {
+					ins.add("PRECIO",prec);vprec=prec;
+					ins.add("PRECIODOC",prc.precdoc);vprecdoc=prc.precdoc;
                 } else {
                     ins.add("PRECIO",prec);vprec=prec;
                     ins.add("PRECIODOC",precdoc);vprecdoc=precdoc;
@@ -1101,7 +1138,11 @@ public class Venta extends PBase {
 
                 ins.add("PESO",pesopv);
 
-                if (porpeso) {
+                if (gl.peModal.equalsIgnoreCase("TOL") && !gl.tolprodcrit) {
+                    // #EJC20260727 fix(hh-pedido-total-promocional): conserva el
+                    // total extendido autoritativo; PRECIO queda derivado a 6 decimales.
+                    ins.add("TOTAL",prodtot);
+                } else if (porpeso) {
                     //precapp=gl.precuni*gl.umfactor*cantapp;
                     //precapp=cantapp*gl.prectemp;
                     precapp=pesopv*gl.prectemp;
@@ -1163,6 +1204,10 @@ public class Venta extends PBase {
                 ins.add("IMP",impval);
                 ins.add("DES",desc);
                 ins.add("DESMON",descmon);
+				ins.add("PRECIO_BASE",prc.precioBase);
+				ins.add("TOTAL_BASE",prc.totalBase);
+				ins.add("CODDESC_APLICADO",prc.codDescAplicado);
+				ins.add("CODRECARGO_APLICADO",prc.codRecargoAplicado);
 
                 ins.add("PRECIO",vprec);
                 ins.add("PRECIODOC",vprecdoc);
@@ -1205,6 +1250,7 @@ public class Venta extends PBase {
 			mu.msgbox("Error : " + e.getMessage());
 		}
 
+		reevaluarCombosDocumento("LINE_ADDED");
 		listItems();
 
 	}
@@ -1223,6 +1269,11 @@ public class Venta extends PBase {
 			upd.add("PRECIODOC",prec);
 			upd.add("RECARGO",recargo);
 			upd.add("RECARGOMONTO",recargoMonto);
+			upd.add("PRECIO_BASE",prc.precioBase);
+			upd.add("TOTAL_BASE",prc.totalBase);
+			upd.add("CODDESC_APLICADO",prc.codDescAplicado);
+			upd.add("CODRECARGO_APLICADO",prc.codRecargoAplicado);
+			upd.add("INDIVIDUAL_SNAPSHOT",0);
 
 			upd.Where("PRODUCTO='"+prodid+"'");
 
@@ -1233,6 +1284,7 @@ public class Venta extends PBase {
 			mu.msgbox("Error : " + e.getMessage());
 		}
 
+		reevaluarCombosDocumento("LINE_EDITED");
     	listItems();
 
 	}
@@ -1247,7 +1299,7 @@ public class Venta extends PBase {
 			String bprod="";
 
 			if (gl.iddespacho !=null ){
-				if (!gl.iddespacho.isEmpty()) actualizaTotalesBarraDespacho();
+				if (!gl.iddespacho.isEmpty() && app.prodBarra(prodid)) actualizaTotalesBarraDespacho();
 			}
 
 			gl.bonbarprod=prodid;
@@ -1272,6 +1324,7 @@ public class Venta extends PBase {
 				removerBonif(bprod,(bontotal-bon));
 			}
 
+			reevaluarCombosDocumento("LINE_DELETED");
 	    	listItems();
 		} catch (SQLException e) {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
@@ -1286,8 +1339,16 @@ public class Venta extends PBase {
 
             db.beginTransaction();
 
-            sql="SELECT PRODUCTO,SIN_EXISTENCIA,UMVENTA,CANT,FACTOR,PRECIO,IMP,DES,DESMON,TOTAL,PRECIODOC,PESO,VAL1,VAL2, RECARGO, RECARGOMONTO " +
-                "FROM D_PEDIDOD WHERE COREL='"+gl.modpedid+"'";
+            //#EJC20260724 fix(hh-pedido-local-genealogy): recupera la base desde el
+            //estado auxiliar local sin exigir columnas nuevas en D_PEDIDOD/backend.
+            sql="SELECT D.PRODUCTO,D.SIN_EXISTENCIA,D.UMVENTA,D.CANT,D.FACTOR,D.PRECIO,"+
+					"D.IMP,D.DES,D.DESMON,D.TOTAL,D.PRECIODOC,D.PESO,D.VAL1,D.VAL2,"+
+					"D.RECARGO,D.RECARGOMONTO,IFNULL(S.PRECIO_BASE,D.PRECIO),"+
+					"IFNULL(S.TOTAL_BASE,D.TOTAL),IFNULL(S.CODDESC_APLICADO,0),"+
+					"IFNULL(S.CODRECARGO_APLICADO,0) FROM D_PEDIDOD D "+
+					"LEFT JOIN T_PEDIDO_PROMO_STATE S ON S.COREL=D.COREL "+
+					"AND S.PRODUCTO=D.PRODUCTO AND S.SIN_EXISTENCIA=D.SIN_EXISTENCIA "+
+					"WHERE D.COREL='"+gl.modpedid+"'";
             dt=Con.OpenDT(sql);
 
 			if (dt==null) return;
@@ -1320,6 +1381,10 @@ public class Venta extends PBase {
                     ins.add("PERCEP",0);
 					ins.add("RECARGO",dt.getDouble(14));
 					ins.add("RECARGOMONTO",dt.getDouble(15));
+					ins.add("PRECIO_BASE",dt.getDouble(16));
+					ins.add("TOTAL_BASE",dt.getDouble(17));
+					ins.add("CODDESC_APLICADO",dt.getInt(18));
+					ins.add("CODRECARGO_APLICADO",dt.getInt(19));
 
                     db.execSQL(ins.sql());
 
@@ -1807,6 +1872,10 @@ public class Venta extends PBase {
 
 			if (dt != null) dt.close();
 
+			if (rutatipo.equalsIgnoreCase("V")) {
+				gl.umstock=app.umStock(prodid);
+			}
+
 			sql = "SELECT Barra FROM T_BARRA WHERE (BARRA='" + barcode + "') ";
 			dt2 = Con.OpenDT(sql);
 			if (dt2.getCount() > 0) {
@@ -1920,14 +1989,17 @@ public class Venta extends PBase {
 					if (prc.precioespecial > 0) prec = prc.precioespecial;
 				}
 			} else {
-				prec = prc.precio(prodid, cant, nivel, um, gl.umpeso, 0, umven);
+				//#EJC20260728 fix(hh-rosti-price-factor): precio UN usa cantidad CA convertida.
+				double baseFacturacionConvertida=cant*(factbolsa>0?factbolsa:1);
+				prec = prc.precio(prodid, cant, nivel, um, gl.umpeso, 0, umven,
+						baseFacturacionConvertida);
 				if (prc.existePrecioEspecial(prodid, cant, gl.cliente, gl.clitipo, umven, gl.umpeso, 0)) {
 					if (prc.precioespecial > 0) prec = prc.precioespecial;
 				}
 			}
 
 			//if (prodPorPeso(prodid)) prec=mu.round2(prec/ppeso);
-			if (prodPorPeso(prodid)) prec = mu.round2(prec);
+			if (prodPorPeso(prodid)) prec = mu.round(prec,6);
 
 			if (prec == 0) {
 				msgbox("El producto no tiene precio definido para nivel de precio " + gl.nivel);
@@ -1943,7 +2015,7 @@ public class Venta extends PBase {
 			}else{
                 prodtot = prec;
             }
-			if (prodPorPeso(prodid)) prodtot = prec * ppeso;
+			prodtot = prc.tot;
 
 			//#AT20230125 Se quito el reondeo en total, por error en el total de la factura
             //prodtot = mu.round2(prodtot);
@@ -2056,6 +2128,10 @@ public class Venta extends PBase {
 			ins.add("DES", 0);
 			ins.add("DESMON", 0);
 			ins.add("TOTAL", prodtot);
+			ins.add("PRECIO_BASE",prc.precioBase);
+			ins.add("TOTAL_BASE",prc.totalBase);
+			ins.add("CODDESC_APLICADO",prc.codDescAplicado);
+			ins.add("CODRECARGO_APLICADO",prc.codRecargoAplicado);
 
 			if (prodPorPeso(prodid)) {
 				//ins.add("PRECIODOC",gl.prectemp);
@@ -2071,6 +2147,8 @@ public class Venta extends PBase {
 			ins.add("VAL4", "");
 			ins.add("PERCEP", percep);
 			ins.add("SIN_EXISTENCIA", 0);
+			ins.add("RECARGO",0);
+			ins.add("RECARGOMONTO",0);
 
 			try {
 				db.execSQL(ins.sql());
@@ -2079,6 +2157,9 @@ public class Venta extends PBase {
 			}
 
 			actualizaTotalesBarra();
+
+			//#AT20260723 feat(hh-barra-desc-post-suma): revalida el descuento/recargo ya con la cantidad acumulada.
+			revalidaDescuentoBarra();
 
 			if (gl.iddespacho !=null ){
 				if (!gl.iddespacho.isEmpty()) actualizaTotalesBarraDespacho();
@@ -2331,13 +2412,17 @@ public class Venta extends PBase {
 					if (prctr.precioespecial>0) prec=prctr.precioespecial;
 				}
 			} else {
-				prec = prctr.precio(prodid, cant, nivel, um, gl.umpeso, 0,umven);
+				//#EJC20260728 fix(hh-rosti-price-factor): precio UN usa cantidad CA convertida.
+				double baseFacturacionConvertida=cant*(factbolsa>0?factbolsa:1);
+				prec = prctr.precio(prodid, cant, nivel, um, gl.umpeso, 0,umven,
+						baseFacturacionConvertida);
 				if (prctr.existePrecioEspecial(prodid,cant,gl.cliente,gl.clitipo,uum,gl.umpeso,0)) {
 					if (prctr.precioespecial>0) prec=prctr.precioespecial;
 				}
 			}
 
-			if (prodPorPeso(prodid)) prec=mu.round2(prec/ppeso);
+			//#EJC20260721 fix(hh-peso-total): Precio ya retorna valor unitario derivado.
+			if (prodPorPeso(prodid)) prec=mu.round(prec,6);
 			pprecdoc = prec;
 
 			//#CKFK 19-09-2019 Agregué la siguiente validación, de forma tal que el precio solo se multiplique por la el factbolsa
@@ -2350,7 +2435,7 @@ public class Venta extends PBase {
 
 			//#AT20230125 Se quito el reondeo en total de t_barra, por error en el total de la factura
 			//if (prodPorPeso(prodid)) prodtot=mu.round2(prec*ppeso);
-			if (prodPorPeso(prodid)) prodtot=prec*ppeso;
+			prodtot=prctr.tot;
 			//region T_BARRA
 
 			try {
@@ -2426,7 +2511,7 @@ public class Venta extends PBase {
 
 			//endregion
 
-			prec=mu.round(prec,2);
+			prec=mu.round(prec,6);
 			prodtot=mu.round(prodtot,2);
 
 			ins.init("T_VENTA");
@@ -2473,6 +2558,10 @@ public class Venta extends PBase {
 			ins.add("DES",0);
 			ins.add("DESMON",0);
 			ins.add("TOTAL",prodtot);
+			ins.add("PRECIO_BASE",prctr.precioBase);
+			ins.add("TOTAL_BASE",prctr.totalBase);
+			ins.add("CODDESC_APLICADO",prctr.codDescAplicado);
+			ins.add("CODRECARGO_APLICADO",prctr.codRecargoAplicado);
 
 			if (prodPorPeso(prodid)) {
 				//ins.add("PRECIODOC",gl.prectemp);
@@ -2487,6 +2576,8 @@ public class Venta extends PBase {
 			ins.add("VAL3",0);
 			ins.add("VAL4","");
 			ins.add("PERCEP",percep);
+			ins.add("RECARGO",0);
+			ins.add("RECARGOMONTO",0);
 
 			try {
 				db.execSQL(ins.sql());
@@ -2495,6 +2586,9 @@ public class Venta extends PBase {
 			}
 
 			actualizaTotalesBarra();
+
+			//#AT20260723 feat(hh-barra-desc-post-suma): revalida el descuento/recargo ya con la cantidad acumulada.
+			revalidaDescuentoBarra();
 
 			if (gl.iddespacho !=null ){
 				if (!gl.iddespacho.isEmpty()) actualizaTotalesBarraDespacho();
@@ -2568,6 +2662,106 @@ public class Venta extends PBase {
 		}
 	}
 
+	//#AT20260723 Recalcular descuentos  nuevamente
+	private void revalidaDescuentoBarra() {
+		Cursor dt;
+		double ccant,ppeso,factor;
+		String umventa;
+		double vtot,vprecdoc,vdescmon,vrecargoMonto,vprecioBase,vtotalBase,vdesValor,vrecargoValor;
+		int vcodDescAplicado,vcodRecargoAplicado;
+
+		try {
+
+			sql="SELECT Cant,Peso,Factor FROM T_VENTA WHERE PRODUCTO='"+prodid+"'";
+			dt=Con.OpenDT(sql);
+
+			if (dt.getCount()==0) {
+				if(dt!=null) dt.close();
+				return;
+			}
+
+			dt.moveToFirst();
+			ccant=dt.getDouble(0);
+			ppeso=dt.getDouble(1);
+			factor=dt.getDouble(2);
+
+			if(dt!=null) dt.close();
+
+			umventa=app.umVenta(prodid);
+
+			if (contrans) {
+				if (prodPorPeso(prodid)) {
+					prctr.precio(prodid, ccant, nivel, umventa, gl.umpeso, ppeso, umventa);
+					prctr.existePrecioEspecial(prodid, ccant, gl.cliente, gl.clitipo, umventa, gl.umpeso, ppeso);
+				} else {
+					//#EJC20260728 fix(hh-rosti-price-factor): conserva la base convertida al recalcular.
+					prctr.precio(prodid, ccant, nivel, umventa, gl.umpeso, 0, umventa,
+							ccant*(factor>0?factor:1));
+					prctr.existePrecioEspecial(prodid, ccant, gl.cliente, gl.clitipo, umventa, gl.umpeso, 0);
+				}
+				vtot=prctr.tot;vprecdoc=prctr.precdoc;vdescmon=prctr.descmon;vrecargoMonto=prctr.recargoMonto;
+				vprecioBase=prctr.precioBase;vtotalBase=prctr.totalBase;
+				vdesValor=(prctr.BeDescuento==null?0:prctr.BeDescuento.valor);
+				vrecargoValor=(prctr.BeRecargo==null?0:prctr.BeRecargo.valor);
+				vcodDescAplicado=prctr.codDescAplicado;vcodRecargoAplicado=prctr.codRecargoAplicado;
+			} else {
+				if (prodPorPeso(prodid)) {
+					prc.precio(prodid, ccant, nivel, umventa, gl.umpeso, ppeso, umventa);
+					prc.existePrecioEspecial(prodid, ccant, gl.cliente, gl.clitipo, umventa, gl.umpeso, ppeso);
+				} else {
+					prc.precio(prodid, ccant, nivel, umventa, gl.umpeso, 0, umventa,
+							ccant*(factor>0?factor:1));
+					prc.existePrecioEspecial(prodid, ccant, gl.cliente, gl.clitipo, umventa, gl.umpeso, 0);
+				}
+				vtot=prc.tot;vprecdoc=prc.precdoc;vdescmon=prc.descmon;vrecargoMonto=prc.recargoMonto;
+				vprecioBase=prc.precioBase;vtotalBase=prc.totalBase;
+				vdesValor=(prc.BeDescuento==null?0:prc.BeDescuento.valor);
+				vrecargoValor=(prc.BeRecargo==null?0:prc.BeRecargo.valor);
+				vcodDescAplicado=prc.codDescAplicado;vcodRecargoAplicado=prc.codRecargoAplicado;
+			}
+
+			sql="UPDATE T_VENTA SET Total="+mu.round(vtot,2)+
+					",Precio="+mu.round(vprecdoc,6)+",PrecioDoc="+mu.round(vprecdoc,6)+
+					",Des="+vdesValor+",DesMon="+vdescmon+
+					",Recargo="+vrecargoValor+",RecargoMonto="+vrecargoMonto+
+					",Precio_Base="+vprecioBase+",Total_Base="+vtotalBase+
+					",CodDesc_Aplicado="+vcodDescAplicado+",CodRecargo_Aplicado="+vcodRecargoAplicado+
+					",INDIVIDUAL_SNAPSHOT=0"+
+					" WHERE PRODUCTO='"+prodid+"'";
+			db.execSQL(sql);
+
+			//#EJC20260724 fix(hh-repesaje-promociones): deja evidencia del recalculo
+			//completo posterior a cambios de peso/cantidad.
+			PromotionTrace.write(this,"PROMO_REWEIGH_RECALCULATED",
+					"producto="+prodid+"|cantidad="+ccant+"|peso="+ppeso+
+					"|precioBase="+vprecioBase+"|totalBase="+vtotalBase+
+					"|descuento="+vdescmon+"|recargo="+vrecargoMonto+
+					"|totalFinal="+mu.round(vtot,2)+"|codDesc="+vcodDescAplicado+
+					"|codRecargo="+vcodRecargoAplicado);
+
+			reevaluarCombosDocumento("WEIGHT_OR_BARCODE_EDITED");
+			listItems();
+		} catch (Exception e) {
+			msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+		}
+	}
+
+	//#EJC20260724 fix(hh-combo-live-reevaluation): la venta alimenta pedidos y facturas;
+	//cada mutacion restaura el individual y reevalua combos sobre el documento completo.
+	private void reevaluarCombosDocumento(String motivo) {
+		try {
+			long fechaDocumento=du.getActDateTime();
+			if (gl.peModal.equalsIgnoreCase("TOL")) fechaDocumento=app.fechaFactTol(du.getActDate());
+			Catalogo resolver=new Catalogo(this,Con,db);
+			resolver.ResolverCombosEnTVenta(gl.cliente,fechaDocumento,true);
+			PromotionTrace.write(this,"PROMO_DOCUMENT_RESOLVED","motivo="+motivo+
+					";cliente="+gl.cliente+";destino="+(pedido?"PEDIDO":"FACTURA"));
+		} catch (Exception e) {
+			PromotionTrace.write(this,"PROMO_DOCUMENT_RESOLVE_ERROR","motivo="+motivo+
+					";error="+e.getClass().getSimpleName());
+		}
+	}
+
 	private void actualizaTotalesBarraDespacho() {
 		Cursor dt;
 		int ccant;
@@ -2577,6 +2771,10 @@ public class Venta extends PBase {
 
 			sql="SELECT Factor FROM T_VENTA_DESPACHO WHERE PRODUCTO='"+prodid+"'";
 			dt=Con.OpenDT(sql);
+			if (dt==null || dt.getCount()==0) {
+				if(dt!=null) dt.close();
+				return;
+			}
 			dt.moveToFirst();
 			unfactor=dt.getDouble(0);
 			if(dt!=null) dt.close();
@@ -3124,11 +3322,8 @@ public class Venta extends PBase {
 								//#CKFK 20210927 Vuelvo a obtener el precio del producto para obtener el total a facturar
 								getPrecio();
 
-								if (porpeso) {
-									prodtot=mu.round(prec*item.peso,2);
-								} else {
-									prodtot=mu.round(prec*cant,2);
-								}
+								//#EJC20260721 fix(hh-total-extendido): resultado autoritativo del motor.
+								prodtot=prc.tot;
 
 								item.precio = prec;
 								item.imp= prc.imp;
@@ -3138,10 +3333,6 @@ public class Venta extends PBase {
 							}
 
 							if (respuesta.equals("")){
-
-								if (porpeso) {
-									item.total=mu.round(item.precio*item.peso,2);
-								}
 
 								ins.init("T_VENTA");
 								ins.add("PRODUCTO",item.producto);
@@ -3154,7 +3345,13 @@ public class Venta extends PBase {
 								ins.add("IMP",item.imp);
 								ins.add("DES",item.des);
 								ins.add("DESMON",item.desmon);
+								ins.add("RECARGO",prc.recargo);
+								ins.add("RECARGOMONTO",prc.recargoMonto);
 								ins.add("TOTAL",item.total);
+								ins.add("PRECIO_BASE",prc.precioBase);
+								ins.add("TOTAL_BASE",prc.totalBase);
+								ins.add("CODDESC_APLICADO",prc.codDescAplicado);
+								ins.add("CODRECARGO_APLICADO",prc.codRecargoAplicado);
 								ins.add("PRECIODOC",item.precio);
 								ins.add("PESO",item.peso);
 								ins.add("VAL1",i+1);
@@ -3672,7 +3869,10 @@ public class Venta extends PBase {
 		gl.ref2="";
 		gl.ref3="";
 
-		clsDescFiltro clsDFilt=new clsDescFiltro(this,gl.ruta,gl.cliente);
+		//#EJC20260721 fix(hh-desc-selection): vigencia basada en fecha de factura ROAD.
+		long fechaDocumentoDescuento = gl.peModal.equalsIgnoreCase("TOL") ? app.fechaFactTol(du.getActDate()) : du.getActDate();
+		fechaDocumentoDescuento = du.convertirFecha(fechaDocumentoDescuento);
+		clsDescFiltro clsDFilt=new clsDescFiltro(this,gl.ruta,gl.cliente,fechaDocumentoDescuento);
 
 		clsBonFiltro  clsBFilt=new clsBonFiltro(this,gl.ruta,gl.cliente);
 
@@ -4168,7 +4368,21 @@ public class Venta extends PBase {
 	}
 
 	//endregion
+	private void GetMostrarPantallaDesc() {
+		Cursor DT;
 
+		try {
+			sql="SELECT MOSTRAR_PANTALLA_DESCUENTO FROM P_EMPRESA";
+			DT=Con.OpenDT(sql);
+			DT.moveToFirst();
+
+			gl.mostrar_pantalla_descuento=DT.getInt(0);
+		} catch (Exception e) {
+			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
+			gl.mostrar_pantalla_descuento=0;
+		}
+
+	}
 	public void setEventosRecycler() {
 		adapter.setOnItemClickListener(position -> {
 			try {
@@ -4264,7 +4478,9 @@ public class Venta extends PBase {
 			}
 
 			if (browse==4) {
-				browse=0;listItems();return;
+				//#EJC20260724 fix(hh-repesaje-promociones): el repesaje modifica la
+				//base extendida; reconstruye descuento, recargo, total y combos.
+				browse=0;revalidaDescuentoBarra();return;
 			}
 
 			if (browse==5) {

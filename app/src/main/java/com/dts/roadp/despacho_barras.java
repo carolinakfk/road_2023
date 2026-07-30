@@ -24,6 +24,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import java.util.ArrayList;
 
+import com.dts.roadp.promotions.PromotionTrace;
+
+import models.Catalogo;
+
 public class despacho_barras extends PBase {
 
     private ListView listView;
@@ -932,7 +936,10 @@ public class despacho_barras extends PBase {
                     if (prc.precioespecial > 0) prec = prc.precioespecial;
                 }
             } else {
-                prec = prc.precio(prodid, cant, nivel, um, gl.umpeso, 0, umven);
+                //#EJC20260728 fix(hh-rosti-price-factor): precio UN usa cantidad CA convertida.
+                double baseFacturacionConvertida=cant*(factbolsa>0?factbolsa:1);
+                prec = prc.precio(prodid, cant, nivel, um, gl.umpeso, 0, umven,
+                        baseFacturacionConvertida);
                 if (prc.existePrecioEspecial(prodid, cant, gl.cliente, gl.clitipo, umven, gl.umpeso, 0)) {
                     if (prc.precioespecial > 0) prec = prc.precioespecial;
                 }
@@ -955,7 +962,7 @@ public class despacho_barras extends PBase {
             }else{
                 prodtot = prec;
             }
-            if (prodPorPeso(prodid)) prodtot = prec * ppeso;
+            prodtot=prc.tot;
 
             //#CKFK20231120 Se quito el reondeo en total, por error en el total de la factura
             //prodtot = mu.round2(prodtot);
@@ -1058,8 +1065,16 @@ public class despacho_barras extends PBase {
             }
 
             ins.add("IMP", 0);
-            ins.add("DES", 0);
-            ins.add("DESMON", 0);
+            ins.add("DES", prc.BeDescuento == null ? 0 : prc.BeDescuento.valor);
+            ins.add("DESMON", prc.descmon);
+            //#EJC20260729 fix(hh-despacho-promociones): T_VENTA exige estos
+            // campos y el despacho debe conservar el calculo promocional aplicado.
+            ins.add("RECARGO", prc.recargo);
+            ins.add("RECARGOMONTO", prc.recargoMonto);
+            ins.add("PRECIO_BASE", prc.precioBase);
+            ins.add("TOTAL_BASE", prc.totalBase);
+            ins.add("CODDESC_APLICADO", prc.codDescAplicado);
+            ins.add("CODRECARGO_APLICADO", prc.codRecargoAplicado);
             ins.add("TOTAL", prodtot);
 
             if (prodPorPeso(prodid)) {
@@ -1083,11 +1098,13 @@ public class despacho_barras extends PBase {
                 Log.d(e.getMessage(), "");
             }
 
+            actualizaTotalesBarra();
+
             if (gl.iddespacho !=null ){
                 if (!gl.iddespacho.isEmpty()) actualizaTotalesBarraDespacho();
             }
 
-            actualizaTotalesBarra();
+            revalidaDescuentoBarra();
 
             if (isnew) validaBarraBon();
 
@@ -1234,7 +1251,10 @@ public class despacho_barras extends PBase {
                     if (prctr.precioespecial>0) prec=prctr.precioespecial;
                 }
             } else {
-                prec = prctr.precio(prodid, cant, nivel, um, gl.umpeso, 0,umven);
+                //#EJC20260728 fix(hh-rosti-price-factor): precio UN usa cantidad CA convertida.
+                double baseFacturacionConvertida=cant*(factbolsa>0?factbolsa:1);
+                prec = prctr.precio(prodid, cant, nivel, um, gl.umpeso, 0,umven,
+                        baseFacturacionConvertida);
                 if (prctr.existePrecioEspecial(prodid,cant,gl.cliente,gl.clitipo,uum,gl.umpeso,0)) {
                     if (prctr.precioespecial>0) prec=prctr.precioespecial;
                 }
@@ -1250,7 +1270,7 @@ public class despacho_barras extends PBase {
             }else{
                 prodtot = prec;
             }
-            if (prodPorPeso(prodid)) prodtot=mu.round2(prec*ppeso);
+            prodtot=prctr.tot;
 
             //region T_BARRA
 
@@ -1364,8 +1384,16 @@ public class despacho_barras extends PBase {
             }
 
             ins.add("IMP",0);
-            ins.add("DES",0);
-            ins.add("DESMON",0);
+            ins.add("DES",prctr.BeDescuento == null ? 0 : prctr.BeDescuento.valor);
+            ins.add("DESMON",prctr.descmon);
+            //#EJC20260729 fix(hh-despacho-promociones): mismo contrato T_VENTA
+            // para el flujo transaccional.
+            ins.add("RECARGO",prctr.recargo);
+            ins.add("RECARGOMONTO",prctr.recargoMonto);
+            ins.add("PRECIO_BASE",prctr.precioBase);
+            ins.add("TOTAL_BASE",prctr.totalBase);
+            ins.add("CODDESC_APLICADO",prctr.codDescAplicado);
+            ins.add("CODRECARGO_APLICADO",prctr.codRecargoAplicado);
             ins.add("TOTAL",prodtot);
 
             if (prodPorPeso(prodid)) {
@@ -1381,6 +1409,7 @@ public class despacho_barras extends PBase {
             ins.add("VAL3",0);
             ins.add("VAL4","");
             ins.add("PERCEP",percep);
+            ins.add("SIN_EXISTENCIA",0);
 
             try {
                 db.execSQL(ins.sql());
@@ -1393,6 +1422,8 @@ public class despacho_barras extends PBase {
             if (gl.iddespacho !=null ){
                 if (!gl.iddespacho.isEmpty()) actualizaTotalesBarraDespacho();
             }
+
+            revalidaDescuentoBarra();
 
             if (isnew) validaBarraBon();
 
@@ -1476,6 +1507,8 @@ public class despacho_barras extends PBase {
                 if (!gl.iddespacho.isEmpty()) actualizaTotalesBarraDespacho();
             }
 
+            revalidaDescuentoBarra();
+
             gl.bonbarprod=prodid;
 
             bcant=cantBolsa();
@@ -1513,6 +1546,11 @@ public class despacho_barras extends PBase {
 
             sql="SELECT Factor FROM T_VENTA WHERE PRODUCTO='"+prodid+"'";
             dt=Con.OpenDT(sql);
+
+            if (dt.getCount()==0) {
+                if(dt!=null) dt.close();
+                return;
+            }
             dt.moveToFirst();
             unfactor=dt.getDouble(0);
 
@@ -1552,6 +1590,91 @@ public class despacho_barras extends PBase {
         }
     }
 
+    private void revalidaDescuentoBarra() {
+        Cursor dt;
+        double ccant,ppeso,factor;
+        String umventa;
+        double vtot,vprecdoc,vdescmon,vrecargoMonto,vprecioBase,vtotalBase,vdesValor,vrecargoValor;
+        int vcodDescAplicado,vcodRecargoAplicado;
+
+        try {
+            sql="SELECT Cant,Peso,Factor FROM T_VENTA WHERE PRODUCTO='"+prodid+"'";
+            dt=Con.OpenDT(sql);
+
+            if (dt==null || dt.getCount()==0) {
+                if(dt!=null) dt.close();
+                return;
+            }
+
+            dt.moveToFirst();
+            ccant=dt.getDouble(0);
+            ppeso=dt.getDouble(1);
+            factor=dt.getDouble(2);
+            dt.close();
+
+            umventa=app.umVenta(prodid);
+
+            if (contrans) {
+                if (prodPorPeso(prodid)) {
+                    prctr.precio(prodid,ccant,nivel,umventa,gl.umpeso,ppeso,umventa);
+                    prctr.existePrecioEspecial(prodid,ccant,gl.cliente,gl.clitipo,umventa,gl.umpeso,ppeso);
+                } else {
+                    prctr.precio(prodid,ccant,nivel,umventa,gl.umpeso,0,umventa,
+                            ccant*(factor>0?factor:1));
+                    prctr.existePrecioEspecial(prodid,ccant,gl.cliente,gl.clitipo,umventa,gl.umpeso,0);
+                }
+                vtot=prctr.tot;vprecdoc=prctr.precdoc;vdescmon=prctr.descmon;vrecargoMonto=prctr.recargoMonto;
+                vprecioBase=prctr.precioBase;vtotalBase=prctr.totalBase;
+                vdesValor=(prctr.BeDescuento==null?0:prctr.BeDescuento.valor);
+                vrecargoValor=(prctr.BeRecargo==null?0:prctr.BeRecargo.valor);
+                vcodDescAplicado=prctr.codDescAplicado;vcodRecargoAplicado=prctr.codRecargoAplicado;
+            } else {
+                if (prodPorPeso(prodid)) {
+                    prc.precio(prodid,ccant,nivel,umventa,gl.umpeso,ppeso,umventa);
+                    prc.existePrecioEspecial(prodid,ccant,gl.cliente,gl.clitipo,umventa,gl.umpeso,ppeso);
+                } else {
+                    prc.precio(prodid,ccant,nivel,umventa,gl.umpeso,0,umventa,
+                            ccant*(factor>0?factor:1));
+                    prc.existePrecioEspecial(prodid,ccant,gl.cliente,gl.clitipo,umventa,gl.umpeso,0);
+                }
+                vtot=prc.tot;vprecdoc=prc.precdoc;vdescmon=prc.descmon;vrecargoMonto=prc.recargoMonto;
+                vprecioBase=prc.precioBase;vtotalBase=prc.totalBase;
+                vdesValor=(prc.BeDescuento==null?0:prc.BeDescuento.valor);
+                vrecargoValor=(prc.BeRecargo==null?0:prc.BeRecargo.valor);
+                vcodDescAplicado=prc.codDescAplicado;vcodRecargoAplicado=prc.codRecargoAplicado;
+            }
+
+            sql="UPDATE T_VENTA SET Total="+mu.round(vtot,2)+
+                    ",Precio="+mu.round(vprecdoc,6)+",PrecioDoc="+mu.round(vprecdoc,6)+
+                    ",Des="+vdesValor+",DesMon="+vdescmon+
+                    ",Recargo="+vrecargoValor+",RecargoMonto="+vrecargoMonto+
+                    ",Precio_Base="+vprecioBase+",Total_Base="+vtotalBase+
+                    ",CodDesc_Aplicado="+vcodDescAplicado+",CodRecargo_Aplicado="+vcodRecargoAplicado+
+                    ",INDIVIDUAL_SNAPSHOT=0 WHERE PRODUCTO='"+prodid+"'";
+            db.execSQL(sql);
+
+            if (gl.iddespacho!=null && !gl.iddespacho.isEmpty()) {
+                sql="UPDATE T_VENTA_DESPACHO SET TOTAL="+mu.round(vtot,2)+
+                        " WHERE PRODUCTO='"+prodid+"'";
+                db.execSQL(sql);
+            }
+
+            Catalogo resolver=new Catalogo(this,Con,db);
+            resolver.ResolverCombosEnTVenta(gl.cliente,app.fechaFactTol(du.getActDate()),true);
+
+            PromotionTrace.write(this,"PROMO_BARCODE_TOTAL_RECALCULATED",
+                    "producto="+prodid+"|cantidad="+ccant+"|peso="+ppeso+
+                    "|precioBase="+vprecioBase+"|totalBase="+vtotalBase+
+                    "|descuento="+vdescmon+"|recargo="+vrecargoMonto+
+                    "|totalFinal="+mu.round(vtot,2)+"|codDesc="+vcodDescAplicado+
+                    "|codRecargo="+vcodRecargoAplicado);
+
+            listItems();
+        } catch (Exception e) {
+            msgbox(new Object(){}.getClass().getEnclosingMethod().getName()+" . "+e.getMessage());
+        }
+    }
+
     private void actualizaTotalesBarraDespacho() {
         Cursor dt;
         int ccant;
@@ -1561,6 +1684,11 @@ public class despacho_barras extends PBase {
 
             sql="SELECT Factor FROM T_VENTA_DESPACHO WHERE PRODUCTO='"+prodid+"'";
             dt=Con.OpenDT(sql);
+
+            if (dt.getCount()==0) {
+                if(dt!=null) dt.close();
+                return;
+            }
             dt.moveToFirst();
             unfactor=dt.getDouble(0);
 

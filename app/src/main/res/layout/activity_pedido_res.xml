@@ -196,6 +196,18 @@
             android:paddingTop="4dp"
             android:src="@drawable/regalo" />
 
+        <ImageView
+            android:id="@+id/imgProductDiscounts"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/imageView1"
+            android:clickable="true"
+            android:contentDescription="Descuentos aplicados"
+            android:onClick="showProductDiscounts"
+            android:padding="5dp"
+            android:src="@drawable/promocion" />
+
     </RelativeLayout>
 
 </RelativeLayout>

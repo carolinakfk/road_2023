@@ -208,6 +208,34 @@
             android:onClick="showCanastas"
             android:src="@drawable/canasta_redonda" />
 
+        <ImageView
+            android:id="@+id/imgProductDiscounts"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_below="@+id/imageView6"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="18dp"
+            android:clickable="true"
+            android:contentDescription="Descuentos y recargos aplicados"
+            android:onClick="showProductDiscounts"
+            android:padding="5dp"
+            android:src="@drawable/promocion" />
+
+        <TextView
+            android:id="@+id/lblProductDiscounts"
+            android:layout_width="128dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/imgProductDiscounts"
+            android:layout_centerHorizontal="true"
+            android:clickable="true"
+            android:gravity="center"
+            android:onClick="showProductDiscounts"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:text="Desc. / Recargos"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textSize="15sp" />
+
     </RelativeLayout>
 
     <TextView

@@ -17,6 +17,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
@@ -35,6 +36,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.PropertyInfo;
@@ -2760,6 +2762,7 @@ public class ComWS extends PBase {
 		String s, val = "";
 
 		try {
+			ensurePromotionCompatibilityTables();
 
 			if (TieneInventarioSinVentas()) {
 				return false;
@@ -2825,6 +2828,9 @@ public class ComWS extends PBase {
 			if (!AddTable("P_LINEA")) return false;
 			if (!AddTable("TMP_PRECESPEC")) return false;
 			if (!AddTable("P_DESCUENTO")) return false;
+			//#EJC20260721 fix(hh-sync-exclusiones): completa catálogos requeridos por promociones.
+			if (!AddTable("P_DESCUENTO_COMBO_DET")) return false;
+			if (!AddTable("P_CLIENTE_PROD_EXCLUIDOS")) return false;
 			if (!AddTable("P_EMPRESA")) return false;
 			if (!AddTable("P_SUCURSAL")) return false;
 			if (!AddTable("P_BANCO")) return false;
@@ -3021,6 +3027,17 @@ public class ComWS extends PBase {
 
 		}
 
+	}
+
+	private void ensurePromotionCompatibilityTables() {
+		//#EJC20260721 fix(hh-sync-exclusiones): soporta equipos con BD creada antes de b053866.
+		try {
+			db.execSQL("CREATE TABLE IF NOT EXISTS P_CLIENTE_PROD_EXCLUIDOS ("+
+					"CODCLIPRODEXC INTEGER NOT NULL,CLIENTE TEXT NOT NULL,PRODUCTO TEXT NOT NULL,"+
+					"FECHAINI TEXT,FECHAFIN TEXT,ACTIVO INT,ID_TRAZA_INTEGRACION_SAP INTEGER,"+
+					"FEC_AGR TEXT,USR_AGR TEXT,FEC_MOD TEXT,USR_MOD TEXT,PRIMARY KEY (CODCLIPRODEXC))");
+		} catch (Exception ignored) { }
+		try { db.execSQL("ALTER TABLE P_DESCUENTO ADD COLUMN PRIORIDAD_DESCUENTO INTEGER DEFAULT 0"); } catch (Exception ignored) { }
 	}
 
 	private boolean getData() {
@@ -3677,6 +3694,12 @@ public class ComWS extends PBase {
 		String sqlDel= "DELETE FROM "+TN;
 
 		try {
+			//#EJC20260728 fix(hh-base-price-only): elimina residuos locales y no
+			//descarga precios especiales; la fuente vigente es P_PRODPRECIO.
+			if (TN.equalsIgnoreCase("TMP_PRECESPEC")) {
+				dbT.execSQL("DELETE FROM TMP_PRECESPEC");
+				return true;
+			}
 
 			fprog = TN;	if (cargastockpv) fprog="Procesando datos . . .";
          	idbg = TN;
@@ -3889,7 +3912,7 @@ public class ComWS extends PBase {
 				SQL += "BODEGA, COD_PAIS, FACT_VS_FACT, CHEQUEPOST, PERCEPCION, TIPO_CONTRIBUYENTE, ID_DESPACHO, ID_FACTURACION," +
 						"MODIF_PRECIO, INGRESA_CANASTAS, PRIORIZACION, CONTACTO, GEOREFERENCIA_CANASTA," +
 						"GEOREFERENCIA_PREFACTURA,GEOREFERENCIA_PREVENTA, GEOREFERENCIA_AUTOVENTA, TIPORECEPTOR, CIUDAD, DESCRIPCION_PAGO," +
-						"PERMITIR_PEDIDO_EXTRA_RUTA,TIPOLOGIA ";
+						"PERMITIR_PEDIDO_EXTRA_RUTA,TIPOLOGIA,SUBTIPOLOGIA ";
 				SQL += "FROM P_CLIENTE ";
 				SQL += "WHERE (CODIGO IN (SELECT CLIENTE FROM P_CLIRUTA WHERE (RUTA='" + ActRuta + "') )) ";
 
@@ -4004,7 +4027,7 @@ public class ComWS extends PBase {
 			return SQL;
 		}
 
-		if (TN.equalsIgnoreCase("TMP_PRECESPEC")) {
+		/*if (TN.equalsIgnoreCase("TMP_PRECESPEC")) {
 
 			if (!cargasuper) {
 				SQL = "SELECT CODIGO,VALOR,PRODUCTO,PRECIO,UNIDADMEDIDA FROM TMP_PRECESPEC ";
@@ -4017,13 +4040,34 @@ public class ComWS extends PBase {
 			}
 
 			return SQL;
-		}
+		}*/
 
 		if (TN.equalsIgnoreCase("P_DESCUENTO")) {
-			SQL = "SELECT  CLIENTE,CTIPO,PRODUCTO,PTIPO,TIPORUTA,RANGOINI,RANGOFIN,DESCTIPO,VALOR,GLOBDESC,PORCANT," +
-					"dbo.AndrDateIni(FECHAINI),dbo.AndrDateFin(FECHAFIN),CODDESC,NOMBRE, ES_RECARGO, " +
-					"PORPORCENTAJE, PRIORIDAD, UMVENTA ";
+			SQL = "SELECT  CLIENTE,CTIPO,PRODUCTO,PTIPO,TIPORUTA,RANGOINI,RANGOFIN,DESCTIPO,VALOR,GLOBDESC,PORCANT,dbo.AndrDateIni(FECHAINI),dbo.AndrDateFin(FECHAFIN),CODDESC,NOMBRE, ES_RECARGO, " +
+					"PORPORCENTAJE, PRIORIDAD, PRIORIDAD_DESCUENTO, UMVENTA, SUCURSAL, TIPOLOGIA, CODCOMBO  ";
 			SQL += "FROM P_DESCUENTO WHERE DATEDIFF(D, FECHAINI,GETDATE()) >=0 AND DATEDIFF(D,GETDATE(), FECHAFIN) >=0";
+			return SQL;
+		}
+
+		if (TN.equalsIgnoreCase("P_DESCUENTO_COMBO_DET")) {
+			SQL = "SELECT DET.CODDESC, DET.SECUENCIA, DET.GRUPO, DET.PRODUCTO, DET.CANTIDAD, DET.UMSTOCK, DET.UMVENTA, DET.OBLIGATORIO, " +
+					" DET.EMP, DET.TIPO_PARTICIPACION_COMBO ";
+			SQL += "FROM P_DESCUENTO_COMBO_DET DET ";
+			SQL += "INNER JOIN P_DESCUENTO DES ON DET.CODDESC = DES.CODDESC ";
+			SQL += "WHERE DATEDIFF(D, DES.FECHAINI, GETDATE()) >= 0 AND DATEDIFF(D, GETDATE(), DES.FECHAFIN) >= 0";
+			return SQL;
+		}
+
+		if (TN.equalsIgnoreCase("P_CLIENTE_PROD_EXCLUIDOS")) {
+			//#EJC20260721 fix(hh-sync-exclusiones): normaliza fechas al contrato numérico Android.
+			SQL = " SELECT E.CODCLIPRODEXC,E.CLIENTE,E.PRODUCTO,dbo.AndrDateIni(E.FECHAINI),dbo.AndrDateFin(E.FECHAFIN)," +
+					"E.ACTIVO,E.ID_TRAZA_INTEGRACION_SAP,E.FEC_AGR,E.USR_AGR,E.FEC_MOD,E.USR_MOD " +
+					"FROM P_CLIENTE_PROD_EXCLUIDOS E WHERE E.ACTIVO = 1 " +
+					" AND CAST(GETDATE() AS DATE) >= CAST(E.FECHAINI AS DATE) " +
+					" AND CAST(GETDATE() AS DATE) <= CAST(E.FECHAFIN AS DATE) " +
+					" AND EXISTS (SELECT 1 FROM P_CLIRUTA CR WHERE CR.CLIENTE = E.CLIENTE " +
+					" AND CR.RUTA = '" + ActRuta + "') " +
+					" ORDER BY E.CLIENTE, E.PRODUCTO";
 			return SQL;
 		}
 
@@ -4035,7 +4079,7 @@ public class ComWS extends PBase {
 				  " INCIDENCIA_NO_LECTURA, IMPRIMIR_TOTALES_PEDIDO, URL_AUTENTICACION, USUARIO_API, CLAVE_API, URL_ANULACION, " +
 				  " URL_CONSULTA_DOCUMENTOS_POR_CRITERIO,URL_EMISION_FACTURA_B2C, URL_EMISION_NC_B2C,URL_EMISION_ND_B2C," +
 				  " URL_BASE,URL_TOKEN, QR_API,ARCHIVO_P12, QR_CLAVE, URL_B2C_HH, URL_DOC, URL_EMISION_NC_B2B_HH, URL_EMISION_ND_B2B_HH," +
-				  " UNIDAD_MEDIDA_DEFECTO, AMBIENTE, URL_CONSULTAR_DOCUMENTO_POR_RUTA, URL_LOTE_RUC_DV " +
+				  " UNIDAD_MEDIDA_DEFECTO, AMBIENTE, URL_CONSULTAR_DOCUMENTO_POR_RUTA, URL_LOTE_RUC_DV, MOSTRAR_PANTALLA_DESCUENTO " +
 				  " FROM P_EMPRESA WHERE EMPRESA = '" + gEmpresa + "'";
 			return SQL;
 		}
@@ -5181,11 +5225,16 @@ public class ComWS extends PBase {
 					nombretabla="P_TIPOLOGIA";break;
 				case 78:
 					nombretabla="P_MONTO_MINIMO_CLIENTE";break;
+				case 79:
+					nombretabla="P_DESCUENTO_COMBO_DET";break;
+				case 80:
+					//#EJC20260721 fix(hh-sync-exclusiones): la tabla tenía query pero no paso de descarga.
+					ensurePromotionCompatibilityTables();
+					nombretabla="P_CLIENTE_PROD_EXCLUIDOS";break;
+				case 81://#CKFK 20210813 Cambié esto para el final
+					nombretabla="Procesando tablas ...";break;
 
-                case 79://#CKFK 20210813 Cambié esto para el final
-                    nombretabla="Procesando tablas ...";break;
-
-                case 80:
+				case 82:
 					procesaDatos();
 					//#AT 20220322 Se cambia el valor de las variables
 					//gl.permitir_cantidad_mayor, gl.permitir_producto_nuevo, gl.validar_posicion_georef

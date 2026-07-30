@@ -449,7 +449,7 @@ public class DevolCli extends PBase {
 			ins.add("CODDEV",raz);
 			ins.add("TOTAL",gl.dvtotal);
 			ins.add("PRECIO",gl.dvprec);
-			ins.add("PRECLISTA",0);
+			ins.add("PRECLISTA",gl.dvpreclista);
 			ins.add("REF","Ninguna");
 			ins.add("PESO",gl.dvpeso);
 			ins.add("FECHA_CAD",0);
@@ -459,6 +459,7 @@ public class DevolCli extends PBase {
 			ins.add("UMPESO",gl.dvumpeso);
 			ins.add("FACTOR",gl.dvfactor);
 			ins.add("POR_PESO",(gl.dvporpeso?"S":"N"));
+			ins.add("PROMO_ELEGIBLE",(gl.dvPromoElegible?1:0));
 			ins.add("TIENE_LOTE",gl.tienelote);
 
 			db.execSQL(ins.sql());
@@ -476,6 +477,7 @@ public class DevolCli extends PBase {
 			mu.msgbox("Error : " + e.getMessage());
 		}
 
+		reevaluarCombosDevolucion("LINE_ADDED");
 		listItems();
 
 	}
@@ -491,6 +493,10 @@ public class DevolCli extends PBase {
 
 		fecha=du.getActDateTime();
 		if (gl.peModal.equalsIgnoreCase("TOL")) fecha=app.fechaFactTol(du.getActDate());
+		//#EJC20260724 fix(hh-combo-return-before-save): el documento se resuelve otra
+		//vez antes de persistir para no guardar un combo obsoleto.
+		reevaluarCombosDevolucion("BEFORE_SAVE");
+		listItems();
 
 		cntotl=mu.round(cntotl,2);
 
@@ -1096,6 +1102,7 @@ public class DevolCli extends PBase {
 
 			db.execSQL("DELETE FROM T_CxCD WHERE CODIGO='"+prodid+"'");
 
+			reevaluarCombosDevolucion("LINE_DELETED");
 			listItems();
 
 			adapter=new ListAdaptDevCli(this,items);
@@ -1110,6 +1117,22 @@ public class DevolCli extends PBase {
 		} catch (SQLException e) {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
 			mu.msgbox("Error : " + e.getMessage());
+		}
+	}
+
+	//#EJC20260724 fix(hh-combo-return-events): las altas, ediciones, bajas y guardado
+	//de la devolucion usan las mismas reglas de combo que pedido y factura.
+	private void reevaluarCombosDevolucion(String motivo) {
+		try {
+			long fechaDocumento=du.getActDateTime();
+			if (gl.peModal.equalsIgnoreCase("TOL")) fechaDocumento=app.fechaFactTol(du.getActDate());
+			models.Catalogo resolver=new models.Catalogo(this,Con,db);
+			resolver.ResolverCombosEnDevolucion(gl.cliente,fechaDocumento,true);
+			com.dts.roadp.promotions.PromotionTrace.write(this,"PROMO_RETURN_RESOLVED",
+					"motivo="+motivo+";cliente="+gl.cliente);
+		} catch (Exception e) {
+			com.dts.roadp.promotions.PromotionTrace.write(this,"PROMO_RETURN_RESOLVE_ERROR",
+					"motivo="+motivo+";error="+e.getClass().getSimpleName());
 		}
 	}
 
