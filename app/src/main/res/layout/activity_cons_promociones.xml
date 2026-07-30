@@ -5,16 +5,6 @@
     android:background="@layout/back"
     android:orientation="vertical">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="#1A8AC6"
-        android:gravity="center_vertical"
-        android:paddingStart="16dp"
-        android:text="Promociones"
-        android:textColor="#FFFFFF"
-        android:textSize="20sp" />
-
     <EditText
         android:id="@+id/txtFiltroPromocion"
         android:layout_width="match_parent"

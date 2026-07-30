@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -66,6 +67,7 @@ public class ConsPromociones extends PBase {
         promociones.clear();
         try {
             Map<Integer,String> detallesCombo=cargarDetallesCombo();
+            Map<String,PromocionItem> agrupadas=new LinkedHashMap<>();
             String cliente=txtCliente.getText().toString().trim().replace("'","''");
             sql="SELECT CASE WHEN IFNULL(D.PTIPO,0)=6 "+
                     "THEN COALESCE(NULLIF(D.CODCOMBO,''),D.PRODUCTO) ELSE D.PRODUCTO END,"+
@@ -74,7 +76,7 @@ public class ConsPromociones extends PBase {
                     "IFNULL(D.NOMBRE,''),D.RANGOINI,D.RANGOFIN,D.VALOR,"+
                     "IFNULL(D.PORCANT,''),IFNULL(D.PORPORCENTAJE,''),"+
                     "IFNULL(D.ES_RECARGO,0),IFNULL(D.PTIPO,0),IFNULL(D.CODDESC,0),"+
-                    "D.FECHAINI,D.FECHAFIN "+
+                    "IFNULL(D.DESCTIPO,''),D.FECHAINI,D.FECHAFIN "+
                     "FROM P_DESCUENTO D LEFT JOIN P_PRODUCTO P ON P.CODIGO=D.PRODUCTO ";
             if (!cliente.isEmpty()) sql+=filtroAplicabilidadCliente(cliente);
             sql+=
@@ -82,24 +84,44 @@ public class ConsPromociones extends PBase {
             cursor=Con.OpenDT(sql);
             if (cursor != null && cursor.moveToFirst()) {
                 do {
-                    PromocionItem item=new PromocionItem();
-                    item.codigo=texto(cursor.getString(0));
-                    item.producto=texto(cursor.getString(1));
-                    item.nombre=texto(cursor.getString(2));
-                    item.rangoIni=cursor.getDouble(3);
-                    item.rangoFin=cursor.getDouble(4);
-                    item.valor=cursor.getDouble(5);
-                    item.porCantidad=texto(cursor.getString(6));
-                    item.porPorcentaje=texto(cursor.getString(7));
-                    item.esRecargo=cursor.getInt(8)==1;
-                    item.pTipo=cursor.getInt(9);
-                    item.codDesc=cursor.getInt(10);
-                    item.fechaIni=cursor.getLong(11);
-                    item.fechaFin=cursor.getLong(12);
-                    item.detalleCombo=detallesCombo.get(item.codDesc);
-                    promociones.add(item);
+                    String codigo=texto(cursor.getString(0));
+                    int codDesc=cursor.getInt(10);
+                    int pTipo=cursor.getInt(9);
+                    boolean esRecargo=cursor.getInt(8)==1;
+                    String descTipo=texto(cursor.getString(11));
+                    String clave;
+                    if (pTipo==6 || "R".equalsIgnoreCase(descTipo)) {
+                        clave=codDesc+"|"+codigo+"|"+esRecargo+"|"+pTipo+"|"+descTipo;
+                    } else {
+                        clave=codDesc+"|"+codigo+"|"+esRecargo+"|"+pTipo+"|"+descTipo+
+                                "|"+cursor.getDouble(3)+"|"+cursor.getDouble(5);
+                    }
+                    PromocionItem item=agrupadas.get(clave);
+                    if (item==null) {
+                        item=new PromocionItem();
+                        item.codigo=codigo;
+                        item.producto=texto(cursor.getString(1));
+                        item.nombre=texto(cursor.getString(2));
+                        item.porCantidad=texto(cursor.getString(6));
+                        item.porPorcentaje=texto(cursor.getString(7));
+                        item.esRecargo=esRecargo;
+                        item.pTipo=pTipo;
+                        item.codDesc=codDesc;
+                        item.descTipo=descTipo;
+                        item.fechaIni=cursor.getLong(12);
+                        item.fechaFin=cursor.getLong(13);
+                        item.detalleCombo=detallesCombo.get(item.codDesc);
+                        agrupadas.put(clave,item);
+                    }
+                    EscalaItem escala=new EscalaItem();
+                    escala.rangoIni=cursor.getDouble(3);
+                    escala.rangoFin=cursor.getDouble(4);
+                    escala.valor=cursor.getDouble(5);
+                    escala.porPorcentaje=texto(cursor.getString(7));
+                    item.escalas.add(escala);
                 } while (cursor.moveToNext());
             }
+            promociones.addAll(agrupadas.values());
         } catch (Exception e) {
             addlog(new Object(){}.getClass().getEnclosingMethod().getName(),
                     e.getMessage(),sql);
@@ -184,7 +206,7 @@ public class ConsPromociones extends PBase {
                         builders.put(codDesc,detalle);
                     }
                     if (detalle.length()>0) detalle.append("\n");
-                    detalle.append(cursor.getString(1)).append(" - ")
+                    detalle.append("• ").append(cursor.getString(1)).append(" - ")
                             .append(texto(cursor.getString(2)))
                             .append("\n  Cantidad: ")
                             .append(formato(cursor.getDouble(3)));
@@ -236,6 +258,7 @@ public class ConsPromociones extends PBase {
         String porCantidad;
         String porPorcentaje;
         String detalleCombo;
+        String descTipo;
         double rangoIni;
         double rangoFin;
         double valor;
@@ -245,13 +268,25 @@ public class ConsPromociones extends PBase {
         int codDesc;
         boolean esRecargo;
         boolean expandido;
+        final ArrayList<EscalaItem> escalas=new ArrayList<>();
 
         boolean esCombo() {
             return pTipo==6;
         }
 
+        boolean tieneEscalas() {
+            return "R".equalsIgnoreCase(descTipo) && escalas.size()>1;
+        }
+
         String textoBusqueda() {
             return (codigo+" "+producto+" "+nombre+" "+codDesc).toLowerCase(Locale.US);
         }
+    }
+
+    static final class EscalaItem {
+        double rangoIni;
+        double rangoFin;
+        double valor;
+        String porPorcentaje;
     }
 }
