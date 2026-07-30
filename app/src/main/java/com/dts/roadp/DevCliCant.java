@@ -18,18 +18,21 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class DevCliCant extends PBase {
 
 	private EditText txtCant,lblPrec,txtLote,txtkgs,txtPrecio;
 	private RelativeLayout rlCant;
-	private TextView lblDesc,lblBU,lblPrecVenta;
+	private TextView lblDesc,lblBU,lblPrecVenta,lblPrecioBase,lblPromotionApplied;
+	private ImageView imgPromotionApplied;
 	private Spinner spin,cmbum;
 	private CheckBox chkTieneLote;
 
@@ -99,6 +102,12 @@ public class DevCliCant extends PBase {
 	}
 
 	// Events
+
+	public void showCurrentProductDiscounts(View view) {
+		DiscountProductDialog.showCurrentProduct(this,prodid,
+				lblDesc == null ? prodid : lblDesc.getText().toString(),
+				precioBasePromocion,precioventa,prc.BeDescuento,prc.BeRecargo);
+	}
 
 	public void sendCant(View view) {
 
@@ -434,6 +443,7 @@ public class DevCliCant extends PBase {
 			}
 			precioBasePromocion=gl.dvPromoElegible && prc.precioBase>0
 					? prc.precioBase : precioventa;
+			mostrarInformacionPromocion();
 
 			//#CKFK 20190329_08:37AM Agregué esta validación cuando el precio es 0.
 			if (precioventa==0) {
@@ -702,6 +712,9 @@ public class DevCliCant extends PBase {
 			lblDesc=(TextView) findViewById(R.id.lblFecha);
 			lblPrecVenta = (TextView)findViewById(R.id.lblPrecioVenta);
 			lblBU=(TextView) findViewById(R.id.lblBU);
+			lblPrecioBase=(TextView)findViewById(R.id.lblPrecioBase);
+			lblPromotionApplied=(TextView)findViewById(R.id.lblPromotionApplied);
+			imgPromotionApplied=(ImageView)findViewById(R.id.imgPromotionApplied);
 
 			spin = (Spinner) findViewById(R.id.spinner1);
 			cmbum = (Spinner) findViewById(R.id.cmbUM);
@@ -714,6 +727,32 @@ public class DevCliCant extends PBase {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
 		}
 
+	}
+
+	private void mostrarInformacionPromocion() {
+		if (lblPrecioBase == null || imgPromotionApplied == null || lblPromotionApplied == null) return;
+		lblPrecioBase.setText("Precio base: "+
+				String.format(Locale.US,"%.2f",precioBasePromocion));
+		boolean tieneDescuento=gl.dvPromoElegible && prc.BeDescuento != null &&
+				prc.BeDescuento.valor != 0;
+		boolean tieneRecargo=gl.dvPromoElegible && prc.BeRecargo != null &&
+				prc.BeRecargo.valor != 0;
+		if (!tieneDescuento && !tieneRecargo) {
+			imgPromotionApplied.setVisibility(View.GONE);
+			lblPromotionApplied.setVisibility(View.GONE);
+			return;
+		}
+		String detalle="";
+		if (tieneDescuento) detalle="Desc. "+formatoAjuste(prc.BeDescuento);
+		if (tieneRecargo) detalle+=(detalle.isEmpty()?"":" · ")+"Rec. "+formatoAjuste(prc.BeRecargo);
+		imgPromotionApplied.setVisibility(View.VISIBLE);
+		lblPromotionApplied.setText(detalle);
+		lblPromotionApplied.setVisibility(View.VISIBLE);
+	}
+
+	private String formatoAjuste(clsClasses.clsBeDescuento ajuste) {
+		return String.format(Locale.US,"%.2f",ajuste.valor)+
+				("S".equalsIgnoreCase(ajuste.porPorcentaje)?"%":"");
 	}
 
 	private void getUMCliente(){

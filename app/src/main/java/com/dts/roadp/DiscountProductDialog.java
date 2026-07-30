@@ -111,6 +111,71 @@ final class DiscountProductDialog {
         dialog.show();
     }
 
+    static void showCurrentProduct(Activity activity, String productCode, String productName,
+                                   double basePrice, double promotionalPrice,
+                                   clsClasses.clsBeDescuento discount,
+                                   clsClasses.clsBeDescuento surcharge) {
+        TableLayout table = new TableLayout(activity);
+        table.setStretchAllColumns(false);
+        addRow(activity, table, new String[]{
+                "CODIGO", "PRODUCTO", "DESCUENTO / RECARGO",
+                "PRECIO BASE", "PRECIO PROMOCIONAL"
+        }, true, false);
+
+        int rowIndex = 0;
+        if (discount != null && discount.valor != 0) {
+            addRow(activity, table, new String[]{
+                    safeText(productCode), safeText(productName),
+                    adjustmentText("Descuento",discount),
+                    formatBasePrice(basePrice), formatPromotionalPrice(promotionalPrice)
+            }, false, false);
+            rowIndex++;
+        }
+        if (surcharge != null && surcharge.valor != 0) {
+            addRow(activity, table, new String[]{
+                    safeText(productCode), safeText(productName),
+                    adjustmentText("Recargo",surcharge),
+                    formatBasePrice(basePrice), formatPromotionalPrice(promotionalPrice)
+            }, false, rowIndex % 2 != 0);
+            rowIndex++;
+        }
+        if (rowIndex == 0) {
+            addRow(activity, table, new String[]{
+                    safeText(productCode), safeText(productName),
+                    "No hay descuento ni recargo aplicado.",
+                    formatBasePrice(basePrice), formatPromotionalPrice(promotionalPrice)
+            }, false, false);
+        }
+        showDialog(activity, table);
+    }
+
+    private static String adjustmentText(String type, clsClasses.clsBeDescuento adjustment) {
+        String value=String.format(Locale.US,"%.2f",adjustment.valor);
+        if ("S".equalsIgnoreCase(adjustment.porPorcentaje)) value+="%";
+        return type+" "+value+" · CODDESC "+adjustment.codDesc;
+    }
+
+    private static void showDialog(Activity activity, TableLayout table) {
+        ScrollView verticalScroll = new ScrollView(activity);
+        verticalScroll.addView(table);
+        HorizontalScrollView horizontalScroll = new HorizontalScrollView(activity);
+        horizontalScroll.setFillViewport(true);
+        horizontalScroll.addView(verticalScroll);
+        AlertDialog dialog = new AlertDialog.Builder(activity)
+                .setTitle("Descuentos y recargos aplicados")
+                .setView(horizontalScroll)
+                .setPositiveButton("Cerrar", null)
+                .create();
+        dialog.setOnShowListener(ignored -> {
+            Window window = dialog.getWindow();
+            if (window != null) {
+                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT);
+            }
+        });
+        dialog.show();
+    }
+
     private static void addRow(Activity activity, TableLayout table, String[] values,
                                boolean header, boolean alternate) {
         TableRow row = new TableRow(activity);
