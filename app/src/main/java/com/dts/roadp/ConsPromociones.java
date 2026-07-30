@@ -308,7 +308,9 @@ public class ConsPromociones extends PBase {
         }
 
         String textoBusqueda() {
-            return (codigo+" "+producto+" "+nombre+" "+codDesc).toLowerCase(Locale.US);
+            // #EJC20260730 fix(hh-promotion-search): incluye productos del detalle de combos
+            return (codigo+" "+producto+" "+nombre+" "+codDesc+" "+
+                    texto(detalleCombo)).toLowerCase(Locale.US);
         }
     }
 
