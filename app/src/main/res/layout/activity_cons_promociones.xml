@@ -38,6 +38,13 @@
             android:layout_height="48dp"
             android:onClick="filtrarPorCliente"
             android:text="Filtrar" />
+
+        <Button
+            android:id="@+id/btnLimpiarCliente"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:onClick="limpiarFiltroCliente"
+            android:text="Limpiar" />
     </LinearLayout>
 
     <TextView

@@ -111,6 +111,7 @@ public class DevolCli extends PBase {
 		gl.devrazon="0"; gl.devcord ="";gl.devtotal=0;
 
 		clearData();
+		cargarDescuentosClienteDevolucion();
 
 		printcallback= () -> askPrint();
 
@@ -1151,6 +1152,24 @@ public class DevolCli extends PBase {
 		} catch (SQLException e) {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
 			mu.msgbox("Error : " + e.getMessage());
+		}
+	}
+
+	// #EJC20260730 fix(hh-return-client-promotions): la nota de credito debe
+	// cargar T_DESC para el cliente activo igual que Venta antes de calcular.
+	private void cargarDescuentosClienteDevolucion() {
+		try {
+			long fechaDocumento=gl.peModal.equalsIgnoreCase("TOL")
+					? app.fechaFactTol(du.getActDate()) : du.getActDate();
+			fechaDocumento=du.convertirFecha(fechaDocumento);
+			new clsDescFiltro(this,gl.ruta,gl.cliente,fechaDocumento);
+			com.dts.roadp.promotions.PromotionTrace.write(this,
+					"PROMO_RETURN_CLIENT_FILTER",
+					"cliente="+gl.cliente+";estado=completado");
+		} catch (Exception e) {
+			com.dts.roadp.promotions.PromotionTrace.write(this,
+					"PROMO_RETURN_CLIENT_FILTER_ERROR",
+					"cliente="+gl.cliente+";error="+e.getClass().getSimpleName());
 		}
 	}
 

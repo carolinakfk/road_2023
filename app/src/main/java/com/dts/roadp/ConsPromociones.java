@@ -198,6 +198,13 @@ public class ConsPromociones extends PBase {
         cargarPromociones();
     }
 
+    public void limpiarFiltroCliente(View view) {
+        txtCliente.setText("");
+        txtFiltro.setText("");
+        lblCliente.setText("Mostrando todas las promociones activas");
+        cargarPromociones();
+    }
+
     private Map<Integer,String> cargarDetallesCombo() {
         Map<Integer,StringBuilder> builders=new HashMap<>();
         Cursor cursor=null;
