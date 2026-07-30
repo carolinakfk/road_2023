@@ -379,8 +379,10 @@ public class Catalogo extends PBase {
         Cursor cursor = null;
         try {
             asegurarPromoElegibleDevolucion();
+            asegurarTrazabilidadPromocionDevolucion();
             cursor = Con.OpenDT("SELECT ITEM,CODIGO,CANT,PESO,PRECIO,PRECLISTA,TOTAL,"+
-                    "UMVENTA,UMSTOCK,POR_PESO,IFNULL(PROMO_ELEGIBLE,1),UMPESO "+
+                    "UMVENTA,UMSTOCK,POR_PESO,IFNULL(PROMO_ELEGIBLE,1),UMPESO,"+
+                    "IFNULL(PRECIO_BASE,0) "+
                     "FROM T_CxCD WHERE CANT>0");
             if (cursor != null && cursor.moveToFirst()) {
                 do {
@@ -390,7 +392,8 @@ public class Catalogo extends PBase {
                     linea.cant = cursor.getDouble(2);
                     linea.peso = cursor.getDouble(3);
                     linea.precio = cursor.getDouble(4);
-                    linea.precioBase = cursor.getDouble(5)>0 ? cursor.getDouble(5) : linea.precio;
+                    linea.precioBase = cursor.getDouble(12)>0 ? cursor.getDouble(12) :
+                            (cursor.getDouble(5)>0 ? cursor.getDouble(5) : linea.precio);
                     linea.total = cursor.getDouble(6);
                     linea.um = cursor.getString(7);
                     linea.umStock = cursor.getString(8);
@@ -505,10 +508,12 @@ public class Catalogo extends PBase {
                     recargo.seleccion.participantes.contains(linea.lineKey);
             if (aplicaDescuento) {
                 linea.desMon=calcularAjusteCombo(linea,descuento.seleccion.condicion).doubleValue();
+                linea.des=descuento.seleccion.condicion.valor;
                 linea.codDescAplicado=descuento.seleccion.condicion.codDesc;
             }
             if (aplicaRecargo) {
                 linea.recargoMonto=calcularAjusteCombo(linea,recargo.seleccion.condicion).doubleValue();
+                linea.recargo=recargo.seleccion.condicion.valor;
                 linea.codRecargoAplicado=recargo.seleccion.condicion.codDesc;
             }
             BigDecimal total=SapPromotionCalculator.decimal(linea.totalBase)
@@ -521,7 +526,14 @@ public class Catalogo extends PBase {
                     SapPromotionCalculator.UNIT_PRICE_SCALE,SapPromotionCalculator.SAP_ROUNDING).doubleValue();
             try {
                 int item=Integer.parseInt(linea.lineKey.substring(4));
+                // #EJC20260730 feat(hh-return-promo-trace): conserva en la tabla temporal
+                // la base inmutable y la condicion final resuelta para UI y auditoria local.
                 db.execSQL("UPDATE T_CxCD SET PRECIO="+linea.precio+",TOTAL="+linea.total+
+                        ",PRECIO_BASE="+linea.precioBase+",TOTAL_BASE="+linea.totalBase+
+                        ",DES="+linea.des+",DESMON="+linea.desMon+
+                        ",RECARGO="+linea.recargo+",RECARGOMONTO="+linea.recargoMonto+
+                        ",CODDESC_APLICADO="+linea.codDescAplicado+
+                        ",CODRECARGO_APLICADO="+linea.codRecargoAplicado+
                         " WHERE ITEM="+item);
                 PromotionTrace.write(cont,"PROMO_RETURN_APPLIED","item="+item+
                         ";producto="+linea.producto+";codDesc="+linea.codDescAplicado+
@@ -530,6 +542,23 @@ public class Catalogo extends PBase {
                 PromotionTrace.write(cont,"PROMO_RETURN_APPLY_ERROR","linea="+linea.lineKey+
                         ";error="+e.getClass().getSimpleName());
             }
+        }
+    }
+
+    private void asegurarTrazabilidadPromocionDevolucion() {
+        String[] columnas = {
+                "PRECIO_BASE REAL DEFAULT 0 NOT NULL",
+                "TOTAL_BASE REAL DEFAULT 0 NOT NULL",
+                "DES REAL DEFAULT 0 NOT NULL",
+                "DESMON REAL DEFAULT 0 NOT NULL",
+                "RECARGO REAL DEFAULT 0 NOT NULL",
+                "RECARGOMONTO REAL DEFAULT 0 NOT NULL",
+                "CODDESC_APLICADO INTEGER DEFAULT 0 NOT NULL",
+                "CODRECARGO_APLICADO INTEGER DEFAULT 0 NOT NULL"
+        };
+        for (String columna : columnas) {
+            try { db.execSQL("ALTER TABLE T_CxCD ADD COLUMN "+columna); }
+            catch (Exception ignored) { }
         }
     }
 

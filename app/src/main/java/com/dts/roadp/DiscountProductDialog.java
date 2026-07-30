@@ -149,6 +149,70 @@ final class DiscountProductDialog {
         showDialog(activity, table);
     }
 
+    static void showReturnProduct(Activity activity, BaseDatos connection,
+                                  String productCode, String productName,
+                                  double basePrice, double promotionalPrice,
+                                  clsClasses.clsBeDescuento discount,
+                                  clsClasses.clsBeDescuento surcharge) {
+        Cursor cursor=null;
+        try {
+            String code=safeText(productCode).replace("'","''");
+            cursor=connection.OpenDT("SELECT IFNULL(PRECIO_BASE,PRECLISTA),PRECIO,"+
+                    "IFNULL(DESMON,0),IFNULL(RECARGOMONTO,0),"+
+                    "IFNULL(CODDESC_APLICADO,0),IFNULL(CODRECARGO_APLICADO,0) "+
+                    "FROM T_CxCD WHERE CODIGO='"+code+"' ORDER BY ITEM DESC LIMIT 1");
+            if (cursor != null && cursor.moveToFirst()) {
+                showResolvedReturnProduct(activity,productCode,productName,
+                        cursor.getDouble(0),cursor.getDouble(1),
+                        cursor.getDouble(2),cursor.getDouble(3),
+                        cursor.getInt(4),cursor.getInt(5));
+                return;
+            }
+        } catch (Exception ignored) {
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        showCurrentProduct(activity,productCode,productName,basePrice,promotionalPrice,
+                discount,surcharge);
+    }
+
+    private static void showResolvedReturnProduct(Activity activity, String productCode,
+                                                   String productName, double basePrice,
+                                                   double promotionalPrice, double discountAmount,
+                                                   double surchargeAmount, int discountCode,
+                                                   int surchargeCode) {
+        TableLayout table = new TableLayout(activity);
+        table.setStretchAllColumns(false);
+        addRow(activity, table, new String[]{
+                "CODIGO", "PRODUCTO", "DESCUENTO / RECARGO",
+                "PRECIO BASE", "PRECIO PROMOCIONAL"
+        }, true, false);
+        int rowIndex=0;
+        if (discountCode != 0 && discountAmount != 0) {
+            addRow(activity,table,new String[]{safeText(productCode),safeText(productName),
+                    "Descuento $"+String.format(Locale.US,"%.2f",discountAmount)+
+                            " - CODDESC "+discountCode,
+                    formatBasePrice(basePrice),formatPromotionalPrice(promotionalPrice)},
+                    false,false);
+            rowIndex++;
+        }
+        if (surchargeCode != 0 && surchargeAmount != 0) {
+            addRow(activity,table,new String[]{safeText(productCode),safeText(productName),
+                    "Recargo $"+String.format(Locale.US,"%.2f",surchargeAmount)+
+                            " - CODDESC "+surchargeCode,
+                    formatBasePrice(basePrice),formatPromotionalPrice(promotionalPrice)},
+                    false,rowIndex % 2 != 0);
+            rowIndex++;
+        }
+        if (rowIndex==0) {
+            addRow(activity,table,new String[]{safeText(productCode),safeText(productName),
+                    "No hay descuento ni recargo aplicado.",
+                    formatBasePrice(basePrice),formatPromotionalPrice(promotionalPrice)},
+                    false,false);
+        }
+        showDialog(activity,table);
+    }
+
     private static String adjustmentText(String type, clsClasses.clsBeDescuento adjustment) {
         String value=String.format(Locale.US,"%.2f",adjustment.valor);
         if ("S".equalsIgnoreCase(adjustment.porPorcentaje)) value+="%";

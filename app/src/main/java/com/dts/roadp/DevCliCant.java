@@ -46,6 +46,8 @@ public class DevCliCant extends PBase {
 
 	private String prodid,estado,razon,devrazon,raz;
 	private double cant,icant,factor=0.0,precioventa=0.0,pesoprom=0.0,clcpeso=0.0,precioBasePromocion=0.0;
+	private int codDescFinal=0,codRecargoFinal=0;
+	private double descuentoFinal=0.0,recargoFinal=0.0;
 	private  String um="", ummin="",umcambiar="";
 	private Precio prc;
 
@@ -104,7 +106,7 @@ public class DevCliCant extends PBase {
 	// Events
 
 	public void showCurrentProductDiscounts(View view) {
-		DiscountProductDialog.showCurrentProduct(this,prodid,
+		DiscountProductDialog.showReturnProduct(this,Con,prodid,
 				lblDesc == null ? prodid : lblDesc.getText().toString(),
 				precioBasePromocion,precioventa,prc.BeDescuento,prc.BeRecargo);
 	}
@@ -299,6 +301,7 @@ public class DevCliCant extends PBase {
 							}
 							vEditando = false;
 						}
+						actualizarPromocionProvisional();
 
 						txtCant.requestFocus();
 
@@ -355,6 +358,7 @@ public class DevCliCant extends PBase {
 							}
 
 						}
+						actualizarPromocionProvisional();
 
 					}catch (Exception ex){
 						msgbox(ex.getMessage());
@@ -455,8 +459,12 @@ public class DevCliCant extends PBase {
 
 			try { db.execSQL("ALTER TABLE T_CxCD ADD COLUMN PROMO_ELEGIBLE INTEGER DEFAULT 1 NOT NULL"); }
 			catch (Exception ignored) { }
+			asegurarTrazabilidadPromocionTemporal();
 			sql="SELECT CANT,PESO,PRECIO,UMVENTA,LOTE,TIENE_LOTE,PRECLISTA,"+
-					"IFNULL(PROMO_ELEGIBLE,1) FROM T_CxCD WHERE CODIGO='"+prodid+"'";
+					"IFNULL(PROMO_ELEGIBLE,1),IFNULL(PRECIO_BASE,0),"+
+					"IFNULL(DESMON,0),IFNULL(RECARGOMONTO,0),"+
+					"IFNULL(CODDESC_APLICADO,0),IFNULL(CODRECARGO_APLICADO,0) "+
+					"FROM T_CxCD WHERE CODIGO='"+prodid+"'";
 			DT=Con.OpenDT(sql);
 
 			if (DT.getCount()>0){
@@ -468,8 +476,15 @@ public class DevCliCant extends PBase {
 				txtPrecio.setText(String.valueOf(DT.getDouble(2)));
 				txtkgs.setText(String.valueOf(DT.getDouble(1)));
 				gl.tienelote = DT.getInt(5);
-				precioBasePromocion=DT.getDouble(6)>0?DT.getDouble(6):precioBasePromocion;
+				precioBasePromocion=DT.getDouble(8)>0?DT.getDouble(8):
+						(DT.getDouble(6)>0?DT.getDouble(6):precioBasePromocion);
 				gl.dvPromoElegible=DT.getInt(7)==1;
+				descuentoFinal=DT.getDouble(9);
+				recargoFinal=DT.getDouble(10);
+				codDescFinal=DT.getInt(11);
+				codRecargoFinal=DT.getInt(12);
+				precioventa=DT.getDouble(2);
+				mostrarInformacionPromocion();
 				txtLote.setText(DT.getString(4));
 
 				if(gl.tienelote==1){
@@ -733,16 +748,23 @@ public class DevCliCant extends PBase {
 		if (lblPrecioBase == null || imgPromotionApplied == null || lblPromotionApplied == null) return;
 		lblPrecioBase.setText("Precio base: "+
 				String.format(Locale.US,"%.2f",precioBasePromocion));
-		boolean tieneDescuento=gl.dvPromoElegible && prc.BeDescuento != null &&
+		boolean tieneResultadoFinal=codDescFinal!=0 || codRecargoFinal!=0;
+		boolean tieneDescuentoFinal=codDescFinal!=0 && descuentoFinal!=0;
+		boolean tieneRecargoFinal=codRecargoFinal!=0 && recargoFinal!=0;
+		boolean tieneDescuento=!tieneResultadoFinal && gl.dvPromoElegible && prc.BeDescuento != null &&
 				prc.BeDescuento.valor != 0;
-		boolean tieneRecargo=gl.dvPromoElegible && prc.BeRecargo != null &&
+		boolean tieneRecargo=!tieneResultadoFinal && gl.dvPromoElegible && prc.BeRecargo != null &&
 				prc.BeRecargo.valor != 0;
-		if (!tieneDescuento && !tieneRecargo) {
+		if (!tieneDescuentoFinal && !tieneRecargoFinal && !tieneDescuento && !tieneRecargo) {
 			imgPromotionApplied.setVisibility(View.GONE);
 			lblPromotionApplied.setVisibility(View.GONE);
 			return;
 		}
 		String detalle="";
+		if (tieneDescuentoFinal) detalle="Desc. $"+
+				String.format(Locale.US,"%.2f",descuentoFinal)+" - CODDESC "+codDescFinal;
+		if (tieneRecargoFinal) detalle+=(detalle.isEmpty()?"":" / ")+"Rec. $"+
+				String.format(Locale.US,"%.2f",recargoFinal)+" - CODDESC "+codRecargoFinal;
 		if (tieneDescuento) detalle="Desc. "+formatoAjuste(prc.BeDescuento);
 		if (tieneRecargo) detalle+=(detalle.isEmpty()?"":" · ")+"Rec. "+formatoAjuste(prc.BeRecargo);
 		imgPromotionApplied.setVisibility(View.VISIBLE);
@@ -750,9 +772,49 @@ public class DevCliCant extends PBase {
 		lblPromotionApplied.setVisibility(View.VISIBLE);
 	}
 
+	// #EJC20260730 fix(hh-return-promo-visibility): la pantalla abre con cantidad
+	// cero; reevalua el ajuste al cambiar cantidad o UM para mostrar el icono.
+	private void actualizarPromocionProvisional() {
+		if (vEditando || txtCant == null || txtkgs == null || lblPrec == null) return;
+		double cantidadActual;
+		double pesoActual;
+		try {
+			cantidadActual=Double.parseDouble(txtCant.getText().toString());
+			pesoActual=mu.emptystr(txtkgs.getText().toString())
+					? 0 : Double.parseDouble(txtkgs.getText().toString());
+		} catch (Exception ignored) {
+			return;
+		}
+		if (cantidadActual<=0) return;
+
+		double pesoPrecio=gl.dvporpeso ? pesoActual : 0;
+		precioventa=prc.precio(prodid,cantidadActual,gl.nivel,um,gl.umpeso,pesoPrecio,umcambiar);
+		precioBasePromocion=prc.precioBase>0 ? prc.precioBase : precioventa;
+		codDescFinal=0;
+		codRecargoFinal=0;
+		descuentoFinal=0;
+		recargoFinal=0;
+		lblPrec.setText(String.valueOf(mu.round(precioventa,2)));
+		mostrarInformacionPromocion();
+	}
+
 	private String formatoAjuste(clsClasses.clsBeDescuento ajuste) {
 		return String.format(Locale.US,"%.2f",ajuste.valor)+
 				("S".equalsIgnoreCase(ajuste.porPorcentaje)?"%":"");
+	}
+
+	private void asegurarTrazabilidadPromocionTemporal() {
+		String[] columnas = {
+				"PRECIO_BASE REAL DEFAULT 0 NOT NULL", "TOTAL_BASE REAL DEFAULT 0 NOT NULL",
+				"DES REAL DEFAULT 0 NOT NULL", "DESMON REAL DEFAULT 0 NOT NULL",
+				"RECARGO REAL DEFAULT 0 NOT NULL", "RECARGOMONTO REAL DEFAULT 0 NOT NULL",
+				"CODDESC_APLICADO INTEGER DEFAULT 0 NOT NULL",
+				"CODRECARGO_APLICADO INTEGER DEFAULT 0 NOT NULL"
+		};
+		for (String columna : columnas) {
+			try { db.execSQL("ALTER TABLE T_CxCD ADD COLUMN "+columna); }
+			catch (Exception ignored) { }
+		}
 	}
 
 	private void getUMCliente(){

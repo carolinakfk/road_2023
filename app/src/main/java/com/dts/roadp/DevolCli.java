@@ -441,6 +441,7 @@ public class DevolCli extends PBase {
 
 		try {
 
+			asegurarTrazabilidadPromocionTemporal();
 			ins.init("T_CxCD");
 
 			ins.add("Item",id);
@@ -460,6 +461,18 @@ public class DevolCli extends PBase {
 			ins.add("FACTOR",gl.dvfactor);
 			ins.add("POR_PESO",(gl.dvporpeso?"S":"N"));
 			ins.add("PROMO_ELEGIBLE",(gl.dvPromoElegible?1:0));
+			// #EJC20260730 feat(hh-return-promo-trace): la base se guarda antes
+			// de reevaluar el documento para evitar ajustes encadenados.
+			ins.add("PRECIO_BASE",gl.dvpreclista);
+			ins.add("TOTAL_BASE",gl.dvporpeso
+					? mu.round(gl.dvpreclista*gl.dvpeso,2)
+					: mu.round(gl.dvpreclista*cant,2));
+			ins.add("DES",0);
+			ins.add("DESMON",0);
+			ins.add("RECARGO",0);
+			ins.add("RECARGOMONTO",0);
+			ins.add("CODDESC_APLICADO",0);
+			ins.add("CODRECARGO_APLICADO",0);
 			ins.add("TIENE_LOTE",gl.tienelote);
 
 			db.execSQL(ins.sql());
@@ -480,6 +493,23 @@ public class DevolCli extends PBase {
 		reevaluarCombosDevolucion("LINE_ADDED");
 		listItems();
 
+	}
+
+	private void asegurarTrazabilidadPromocionTemporal() {
+		String[] columnas = {
+				"PRECIO_BASE REAL DEFAULT 0 NOT NULL",
+				"TOTAL_BASE REAL DEFAULT 0 NOT NULL",
+				"DES REAL DEFAULT 0 NOT NULL",
+				"DESMON REAL DEFAULT 0 NOT NULL",
+				"RECARGO REAL DEFAULT 0 NOT NULL",
+				"RECARGOMONTO REAL DEFAULT 0 NOT NULL",
+				"CODDESC_APLICADO INTEGER DEFAULT 0 NOT NULL",
+				"CODRECARGO_APLICADO INTEGER DEFAULT 0 NOT NULL"
+		};
+		for (String columna : columnas) {
+			try { db.execSQL("ALTER TABLE T_CxCD ADD COLUMN "+columna); }
+			catch (Exception ignored) { }
+		}
 	}
 
 	private void saveDevol(){
