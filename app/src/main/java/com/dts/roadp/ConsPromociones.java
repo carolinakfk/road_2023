@@ -135,7 +135,8 @@ public class ConsPromociones extends PBase {
 
     private String filtroAplicabilidadCliente(String cliente) {
         int dia=Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        long fecha=du.getActDateTime();
+        dia=dia==Calendar.SUNDAY ? 7 : dia-1;
+        long fecha=fechaActualSap();
         String ruta=gl.ruta == null ? "" : gl.ruta.replace("'","''");
         return "INNER JOIN P_CLIENTE C ON C.CODIGO='"+cliente+"' WHERE ("+
                 "D.CTIPO=0 OR "+
@@ -161,6 +162,18 @@ public class ConsPromociones extends PBase {
                 "AND NOT EXISTS (SELECT 1 FROM P_CLIENTE_PROD_EXCLUIDOS E "+
                 "WHERE E.CLIENTE=C.CODIGO AND E.PRODUCTO=D.PRODUCTO AND E.ACTIVO=1 "+
                 "AND E.FECHAINI<="+fecha+" AND E.FECHAFIN>="+fecha+") ";
+    }
+
+    // #EJC20260730 fix(hh-promotion-query-date): P_DESCUENTO guarda vigencia
+    // yyyyMMddHHmmss; DateUtils legacy devuelve yyMMddHHmmss.
+    private long fechaActualSap() {
+        Calendar actual=Calendar.getInstance();
+        return actual.get(Calendar.YEAR)*10000000000L+
+                (actual.get(Calendar.MONTH)+1)*100000000L+
+                actual.get(Calendar.DAY_OF_MONTH)*1000000L+
+                actual.get(Calendar.HOUR_OF_DAY)*10000L+
+                actual.get(Calendar.MINUTE)*100L+
+                actual.get(Calendar.SECOND);
     }
 
     public void filtrarPorCliente(View view) {
