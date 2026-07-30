@@ -373,7 +373,10 @@ public class Producto extends PBase {
 					break;
 
                 case 4:
-                    sql="SELECT CODIGO,DESCCORTA,UNIDBAS FROM P_PRODUCTO WHERE (P_PRODUCTO.ES_VENDIBLE=1) AND (P_PRODUCTO.ES_CANASTA = 0)  ";
+					//#CKFK20260730 fix(hh-nc-productos-promocion): muestra indicador sin duplicar productos.
+                    sql="SELECT P_PRODUCTO.CODIGO,P_PRODUCTO.DESCCORTA,P_PRODUCTO.UNIDBAS, " +
+							"CASE WHEN EXISTS (SELECT 1 FROM P_DESCUENTO D WHERE D.PRODUCTO=P_PRODUCTO.CODIGO) THEN 1 ELSE 0 END AS PROMOCION " +
+							"FROM P_PRODUCTO WHERE (P_PRODUCTO.ES_VENDIBLE=1) AND (P_PRODUCTO.ES_CANASTA = 0)  ";
                     if (!famid.equalsIgnoreCase("0")) sql=sql+"AND (LINEA='"+famid+"') ";
                     if (vF.length()>0) sql=sql+"AND ((DESCCORTA LIKE '%" + vF + "%') " +
 							                   "OR (CODIGO LIKE '%" + vF + "%')" +
@@ -401,7 +404,7 @@ public class Producto extends PBase {
 			  
 			  vItem.Cod=cod;
 			  vItem.Desc=name;
-			  vItem.promocion = DT.getInt(3);
+			  vItem.promocion = 0;
 
 			  //#EJC20181127: En aprof. no tienen un viene vacío, colocar por defecto un.
 			  if (um.equalsIgnoreCase(""))  um="UN";
@@ -413,7 +416,7 @@ public class Producto extends PBase {
               if (prodtipo==0 && modotol) {
                   if (DT.getString(3).equalsIgnoreCase("C")) vItem.bandera=true;
 				  vItem.promocion = DT.getInt(6);
-              } else {
+              } else if (prodtipo==1 || prodtipo==4) {
 				  vItem.promocion = DT.getInt(3);
 			  }
 
