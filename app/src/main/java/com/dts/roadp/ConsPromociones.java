@@ -21,6 +21,8 @@ import java.util.Map;
 
 public class ConsPromociones extends PBase {
 
+    public static final String EXTRA_CLIENTE_FIJO="CLIENTE_FIJO";
+
     private RecyclerView recyclerView;
     private EditText txtFiltro;
     private EditText txtCliente;
@@ -57,7 +59,14 @@ public class ConsPromociones extends PBase {
             @Override public void afterTextChanged(Editable s) { }
         });
 
-        cargarPromociones();
+        String clienteFijo=getIntent().getStringExtra(EXTRA_CLIENTE_FIJO);
+        if (clienteFijo != null && !clienteFijo.trim().isEmpty()) {
+            findViewById(R.id.layoutFiltroClientePromocion).setVisibility(View.GONE);
+            txtCliente.setText(clienteFijo.trim());
+            filtrarPorCliente(null);
+        } else {
+            cargarPromociones();
+        }
     }
 
     // #EJC20260730 feat(hh-promotion-query): consulta local eficiente con detalle

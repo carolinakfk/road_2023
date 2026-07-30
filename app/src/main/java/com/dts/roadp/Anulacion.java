@@ -832,8 +832,9 @@ public class Anulacion extends PBase {
 						" no se puede continuar con la anulación de la nota de crédito.");
 			}
 
-			int vNroDF = Integer.valueOf(gl.dvcorelnd.substring(3,9));
-			String vSerie = StringUtils.right("000" + gl.dvcorelnd.substring(0,3), 3);
+			// #EJC20260730 fix(anulacion-nc-hh): usa los componentes del correlativo sin asumir serie de 3 caracteres
+			int vNroDF = Integer.valueOf(gl.dvactualnd);
+			String vSerie = StringUtils.right("000" + gl.dvSeriend, 3);
 
 			corelFactura=tieneFacturaNC(itemid);
 
@@ -1231,8 +1232,9 @@ public class Anulacion extends PBase {
 						" no se puede continuar con la anulación de la nota de crédito.");
 			}
 
-			int vNroDF = Integer.valueOf(gl.dvcorelnd.substring(3,9));
-			String vSerie = StringUtils.right("000" + gl.dvcorelnd.substring(0,3), 3);
+			// #EJC20260730 fix(anulacion-nc-hh): usa los componentes del correlativo sin asumir serie de 3 caracteres
+			int vNroDF = Integer.valueOf(gl.dvactualnd);
+			String vSerie = StringUtils.right("000" + gl.dvSeriend, 3);
 
 			corelFactura=tieneFacturaNC(CorelNC);
 
@@ -1622,8 +1624,13 @@ public class Anulacion extends PBase {
 			gl.dvcorreld = Catalogo.obtienecorrel("D");
 			gl.dvcorelnd = Catalogo.obtienecorrel("ND");
 
-			int vNroDF = Integer.valueOf(gl.dvcorelnd.substring(3,9));
-			String vSerie = StringUtils.right("000" + gl.dvcorelnd.substring(0,3), 3);
+			if (gl.dvcorelnd.equals("")) {
+				throw new Exception("No esta definido correlativo para notas de debito; no se puede anular la nota de credito.");
+			}
+
+			// #EJC20260730 fix(anulacion-nc-hh): usa los componentes del correlativo sin asumir serie de 3 caracteres
+			int vNroDF = Integer.valueOf(gl.dvactualnd);
+			String vSerie = StringUtils.right("000" + gl.dvSeriend, 3);
 
 			if (!GuardarNotaDebito(CorelNC)) {
 				throw new Exception("Error al guardar encabezado ND");
@@ -2938,7 +2945,9 @@ public class Anulacion extends PBase {
 				msgAsk("Anular nota de crédito con factura");
 			}else{
 
-				CrearNotaDebito();
+				if (!CrearNotaDebito()) {
+					throw new Exception("No se pudo crear la nota de debito; la nota de credito no fue anulada.");
+				}
 
 				vCorelDevol = itemid;
 
@@ -3791,7 +3800,10 @@ public class Anulacion extends PBase {
 							corelNotaCre = CorelNC.get();
 							corelFactura=itemid;
 							//#CKFK20230331 Aquí se genera la nota de débito de la nota de crédito
-							AnularNotaCreditoConFactura(corelNotaCre, corelFactura);
+							if (!AnularNotaCreditoConFactura(corelNotaCre, corelFactura)) {
+								msgbox("No se pudo crear la nota de debito; la nota de credito no fue anulada.");
+								return;
+							}
 						}
 					}
 				} else if (tipo == 6) {
@@ -4154,7 +4166,9 @@ public class Anulacion extends PBase {
 
 		try{
 
-			CrearNotaDebito(vCorelNotaC);
+			if (!CrearNotaDebito(vCorelNotaC)) {
+				throw new Exception("No se pudo crear la nota de debito; la nota de credito no fue anulada.");
+			}
 
 			//String EstadoNC = getEstadoNC(vCorelNotaC);
 			String vCorelDevol = getCorelDevol(vCorelNotaC);

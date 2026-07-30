@@ -302,6 +302,14 @@ public class CliDet extends PBase {
 		}
 	}
 
+	// #EJC20260730 feat(hh-customer-promotions): abre la consulta reutilizable
+	// con el cliente actual fijo y conserva la busqueda por producto/promocion.
+	public void showPromocionesCliente(View view) {
+		Intent intent=new Intent(this,ConsPromociones.class);
+		intent.putExtra(ConsPromociones.EXTRA_CLIENTE_FIJO,cod);
+		startActivity(intent);
+	}
+
 	public void showDespacho(View view) {
 		//#CKFK 20240313 Inicializa la variable de la orden de compra
 		gl.ordenCompra = "";
