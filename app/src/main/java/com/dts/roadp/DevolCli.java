@@ -495,6 +495,10 @@ public class DevolCli extends PBase {
 
 	}
 
+	public void showAppliedPromotions(View view) {
+		DiscountProductDialog.showReturns(this,Con);
+	}
+
 	private void asegurarTrazabilidadPromocionTemporal() {
 		String[] columnas = {
 				"PRECIO_BASE REAL DEFAULT 0 NOT NULL",

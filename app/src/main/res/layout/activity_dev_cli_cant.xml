@@ -18,52 +18,6 @@
         android:text="Producto"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <LinearLayout
-        android:id="@+id/layoutPromotionInfo"
-        android:layout_width="match_parent"
-        android:layout_height="32dp"
-        android:layout_below="@+id/imgNext"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingStart="5dp"
-        android:paddingEnd="5dp">
-
-        <TextView
-            android:id="@+id/lblPrecioBase"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
-            android:text="Precio base: --"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textStyle="bold" />
-
-        <ImageView
-            android:id="@+id/imgPromotionApplied"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginStart="10dp"
-            android:clickable="true"
-            android:contentDescription="Promoción aplicada"
-            android:onClick="showCurrentProductDiscounts"
-            android:scaleType="fitCenter"
-            android:src="@drawable/promocion"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/lblPromotionApplied"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="4dp"
-            android:layout_weight="1"
-            android:ellipsize="end"
-            android:gravity="center_vertical"
-            android:maxLines="1"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="#1A8AC6"
-            android:textStyle="bold"
-            android:visibility="gone" />
-    </LinearLayout>
-
     <RelativeLayout
         android:id="@+id/rlCant"
         android:layout_width="match_parent"
@@ -296,7 +250,7 @@
         android:id="@+id/spinner1"
         android:layout_width="match_parent"
         android:layout_height="35dp"
-        android:layout_below="@+id/layoutPromotionInfo"
+        android:layout_below="@+id/imgNext"
         android:layout_alignParentEnd="true"
         android:layout_toEndOf="@+id/textView77"
         android:background="@layout/spinner_style" />
@@ -398,7 +352,7 @@
         android:layout_width="105dp"
         android:layout_height="35dp"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/layoutPromotionInfo"
+        android:layout_below="@+id/imgNext"
         android:layout_marginStart="3dp"
         android:text="Razón: "
         android:textAppearance="@android:style/TextAppearance.Holo.Medium" />

@@ -111,6 +111,63 @@ final class DiscountProductDialog {
         dialog.show();
     }
 
+    static void showReturns(Activity activity, BaseDatos connection) {
+        TableLayout table = new TableLayout(activity);
+        table.setStretchAllColumns(false);
+        addRow(activity, table, new String[]{
+                "CODIGO", "PRODUCTO", "DESCUENTO / RECARGO",
+                "PRECIO BASE", "PRECIO PROMOCIONAL"
+        }, true, false);
+
+        Cursor cursor = null;
+        int rowIndex = 0;
+        try {
+            // #EJC20260730 feat(hh-return-promo-summary): la pantalla principal
+            // presenta los ajustes finales por producto despues de resolver combos.
+            String sql = "SELECT C.CODIGO,"+
+                    "COALESCE(NULLIF(P.DESCLARGA,''),P.DESCCORTA,''),"+
+                    "C.PRECIO_BASE,C.PRECIO,C.DESMON,C.RECARGOMONTO,"+
+                    "C.CODDESC_APLICADO,C.CODRECARGO_APLICADO "+
+                    "FROM T_CxCD C LEFT JOIN P_PRODUCTO P ON P.CODIGO=C.CODIGO "+
+                    "WHERE C.CANT>0 ORDER BY C.ITEM";
+            cursor=connection.OpenDT(sql);
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    String productCode=safeText(cursor.getString(0));
+                    String productName=safeText(cursor.getString(1));
+                    double basePrice=cursor.getDouble(2);
+                    double promotionalPrice=cursor.getDouble(3);
+                    double discountAmount=cursor.getDouble(4);
+                    double surchargeAmount=cursor.getDouble(5);
+                    int discountCode=cursor.getInt(6);
+                    int surchargeCode=cursor.getInt(7);
+                    if (discountCode != 0 && discountAmount != 0) {
+                        addRow(activity,table,new String[]{productCode,productName,
+                                "Descuento $"+String.format(Locale.US,"%.2f",discountAmount)+
+                                        " - CODDESC "+discountCode,
+                                formatBasePrice(basePrice),formatPromotionalPrice(promotionalPrice)},
+                                false,rowIndex++ % 2 != 0);
+                    }
+                    if (surchargeCode != 0 && surchargeAmount != 0) {
+                        addRow(activity,table,new String[]{productCode,productName,
+                                "Recargo $"+String.format(Locale.US,"%.2f",surchargeAmount)+
+                                        " - CODDESC "+surchargeCode,
+                                formatBasePrice(basePrice),formatPromotionalPrice(promotionalPrice)},
+                                false,rowIndex++ % 2 != 0);
+                    }
+                } while (cursor.moveToNext());
+            }
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        if (rowIndex == 0) {
+            addRow(activity,table,new String[]{"",
+                    "No hay descuentos ni recargos aplicados por producto.","","",""},
+                    false,false);
+        }
+        showDialog(activity,table);
+    }
+
     static void showCurrentProduct(Activity activity, String productCode, String productName,
                                    double basePrice, double promotionalPrice,
                                    clsClasses.clsBeDescuento discount,

@@ -185,6 +185,11 @@
             android:label="@string/title_activity_cons_precio"
             android:screenOrientation="portrait" />
         <activity
+            android:name=".ConsPromociones"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="Promociones"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".Pago"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_pago"

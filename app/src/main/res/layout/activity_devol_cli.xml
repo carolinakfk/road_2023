@@ -127,6 +127,21 @@
         android:onClick="showProd"
         android:src="@drawable/mas" />
 
+    <ImageView
+        android:id="@+id/imgPromotionApplied"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_below="@+id/relRoad"
+        android:layout_toStartOf="@+id/imgImg"
+        android:layout_marginTop="14dp"
+        android:layout_marginEnd="8dp"
+        android:clickable="true"
+        android:contentDescription="Descuentos y recargos aplicados"
+        android:onClick="showAppliedPromotions"
+        android:padding="4dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/promocion" />
+
     <TextView
         android:id="@+id/lblProdutos"
         android:layout_width="wrap_content"

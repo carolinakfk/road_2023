@@ -18,21 +18,18 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Locale;
 
 public class DevCliCant extends PBase {
 
 	private EditText txtCant,lblPrec,txtLote,txtkgs,txtPrecio;
 	private RelativeLayout rlCant;
-	private TextView lblDesc,lblBU,lblPrecVenta,lblPrecioBase,lblPromotionApplied;
-	private ImageView imgPromotionApplied;
+	private TextView lblDesc,lblBU,lblPrecVenta;
 	private Spinner spin,cmbum;
 	private CheckBox chkTieneLote;
 
@@ -104,12 +101,6 @@ public class DevCliCant extends PBase {
 	}
 
 	// Events
-
-	public void showCurrentProductDiscounts(View view) {
-		DiscountProductDialog.showReturnProduct(this,Con,prodid,
-				lblDesc == null ? prodid : lblDesc.getText().toString(),
-				precioBasePromocion,precioventa,prc.BeDescuento,prc.BeRecargo);
-	}
 
 	public void sendCant(View view) {
 
@@ -198,7 +189,9 @@ public class DevCliCant extends PBase {
 				gl.dvprec =Double.parseDouble(txtPrecio.getText().toString());
 				//#EJC20260724 state(hh-return-promotion-base): evita encadenar el combo
 				//sobre el precio individual ya ajustado de la devolucion.
-				gl.dvpreclista = precioBasePromocion>0 ? precioBasePromocion : gl.dvprec;
+				// #EJC20260730 fix(hh-return-combo-unit-price): la base del combo debe
+				// persistirse en la UM seleccionada (ej. CA), no en la UM minima.
+				gl.dvpreclista = obtenerPrecioBaseUnidadSeleccionada();
 			}
 
 			gl.dvfactor = factor;
@@ -447,8 +440,6 @@ public class DevCliCant extends PBase {
 			}
 			precioBasePromocion=gl.dvPromoElegible && prc.precioBase>0
 					? prc.precioBase : precioventa;
-			mostrarInformacionPromocion();
-
 			//#CKFK 20190329_08:37AM Agregué esta validación cuando el precio es 0.
 			if (precioventa==0) {
 				hidekeyb();
@@ -484,7 +475,6 @@ public class DevCliCant extends PBase {
 				codDescFinal=DT.getInt(11);
 				codRecargoFinal=DT.getInt(12);
 				precioventa=DT.getDouble(2);
-				mostrarInformacionPromocion();
 				txtLote.setText(DT.getString(4));
 
 				if(gl.tienelote==1){
@@ -727,10 +717,6 @@ public class DevCliCant extends PBase {
 			lblDesc=(TextView) findViewById(R.id.lblFecha);
 			lblPrecVenta = (TextView)findViewById(R.id.lblPrecioVenta);
 			lblBU=(TextView) findViewById(R.id.lblBU);
-			lblPrecioBase=(TextView)findViewById(R.id.lblPrecioBase);
-			lblPromotionApplied=(TextView)findViewById(R.id.lblPromotionApplied);
-			imgPromotionApplied=(ImageView)findViewById(R.id.imgPromotionApplied);
-
 			spin = (Spinner) findViewById(R.id.spinner1);
 			cmbum = (Spinner) findViewById(R.id.cmbUM);
 
@@ -744,36 +730,8 @@ public class DevCliCant extends PBase {
 
 	}
 
-	private void mostrarInformacionPromocion() {
-		if (lblPrecioBase == null || imgPromotionApplied == null || lblPromotionApplied == null) return;
-		lblPrecioBase.setText("Precio base: "+
-				String.format(Locale.US,"%.2f",precioBasePromocion));
-		boolean tieneResultadoFinal=codDescFinal!=0 || codRecargoFinal!=0;
-		boolean tieneDescuentoFinal=codDescFinal!=0 && descuentoFinal!=0;
-		boolean tieneRecargoFinal=codRecargoFinal!=0 && recargoFinal!=0;
-		boolean tieneDescuento=!tieneResultadoFinal && gl.dvPromoElegible && prc.BeDescuento != null &&
-				prc.BeDescuento.valor != 0;
-		boolean tieneRecargo=!tieneResultadoFinal && gl.dvPromoElegible && prc.BeRecargo != null &&
-				prc.BeRecargo.valor != 0;
-		if (!tieneDescuentoFinal && !tieneRecargoFinal && !tieneDescuento && !tieneRecargo) {
-			imgPromotionApplied.setVisibility(View.GONE);
-			lblPromotionApplied.setVisibility(View.GONE);
-			return;
-		}
-		String detalle="";
-		if (tieneDescuentoFinal) detalle="Desc. $"+
-				String.format(Locale.US,"%.2f",descuentoFinal)+" - CODDESC "+codDescFinal;
-		if (tieneRecargoFinal) detalle+=(detalle.isEmpty()?"":" / ")+"Rec. $"+
-				String.format(Locale.US,"%.2f",recargoFinal)+" - CODDESC "+codRecargoFinal;
-		if (tieneDescuento) detalle="Desc. "+formatoAjuste(prc.BeDescuento);
-		if (tieneRecargo) detalle+=(detalle.isEmpty()?"":" · ")+"Rec. "+formatoAjuste(prc.BeRecargo);
-		imgPromotionApplied.setVisibility(View.VISIBLE);
-		lblPromotionApplied.setText(detalle);
-		lblPromotionApplied.setVisibility(View.VISIBLE);
-	}
-
-	// #EJC20260730 fix(hh-return-promo-visibility): la pantalla abre con cantidad
-	// cero; reevalua el ajuste al cambiar cantidad o UM para mostrar el icono.
+	// #EJC20260730 fix(hh-return-promo-price): reevalua el precio al cambiar
+	// cantidad o UM; la informacion visual se muestra solo en la lista principal.
 	private void actualizarPromocionProvisional() {
 		if (vEditando || txtCant == null || txtkgs == null || lblPrec == null) return;
 		double cantidadActual;
@@ -795,12 +753,20 @@ public class DevCliCant extends PBase {
 		descuentoFinal=0;
 		recargoFinal=0;
 		lblPrec.setText(String.valueOf(mu.round(precioventa,2)));
-		mostrarInformacionPromocion();
 	}
 
-	private String formatoAjuste(clsClasses.clsBeDescuento ajuste) {
-		return String.format(Locale.US,"%.2f",ajuste.valor)+
-				("S".equalsIgnoreCase(ajuste.porPorcentaje)?"%":"");
+	private double obtenerPrecioBaseUnidadSeleccionada() {
+		double base=precioBasePromocion>0 ? precioBasePromocion : gl.dvprec;
+		if (gl.dvporpeso || umcambiar == null || um == null ||
+				umcambiar.equalsIgnoreCase(um)) {
+			return base;
+		}
+		double factorSeleccionado=getFactor(umcambiar);
+		double factorPrecio=getFactor(um);
+		if (factorSeleccionado>0 && factorPrecio>0) {
+			base=base*(factorSeleccionado/factorPrecio);
+		}
+		return base>0 ? base : gl.dvprec;
 	}
 
 	private void asegurarTrazabilidadPromocionTemporal() {

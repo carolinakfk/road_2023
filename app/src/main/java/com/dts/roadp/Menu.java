@@ -930,12 +930,12 @@ public class Menu extends PBase {
 
 		try{
 			final AlertDialog Dialog;
-			int tmp= 0, itemcnt = 6;
+			int tmp= 0, itemcnt = 7;
 
 			menudlg = new AlertDialog.Builder(this);
 			menudlg.setTitle("Consultas");
 
-			if (rutatipo.equalsIgnoreCase("D") || rutatipo.equalsIgnoreCase("T")) itemcnt = 8;
+			if (rutatipo.equalsIgnoreCase("D") || rutatipo.equalsIgnoreCase("T")) itemcnt = 9;
 
 			final String[] selitems = new String[itemcnt];
 
@@ -950,6 +950,7 @@ public class Menu extends PBase {
 			selitems[tmp]="Objetivo por cobro";tmp++;
 			selitems[tmp]="Inventario bodega";tmp++;
 			selitems[tmp]="Consulta de precios";tmp++;
+			selitems[tmp]="Promociones";tmp++;
 
 			menudlg.setItems(selitems , new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int item) {
@@ -963,6 +964,7 @@ public class Menu extends PBase {
 					if (mt.equalsIgnoreCase("Objetivo por cobro")) menuObjCobro();
 					if (mt.equalsIgnoreCase("Inventario bodega")) menuInvBod();
 					if (mt.equalsIgnoreCase("Consulta de precios")) menuPrecios();
+					if (mt.equalsIgnoreCase("Promociones")) menuPromociones();
 				}
 			});
 
@@ -1052,6 +1054,16 @@ public class Menu extends PBase {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
 		}
 
+	}
+
+	// #EJC20260730 feat(hh-promotion-query): acceso a descuentos, recargos y combos locales.
+	private void menuPromociones() {
+		try{
+			Intent intent = new Intent(this,ConsPromociones.class);
+			startActivity(intent);
+		}catch (Exception e){
+			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
+		}
 	}
 
 	// #AT 20211027
