@@ -64,7 +64,7 @@ public class MainActivity extends PBase {
     //private String cs1, cs2, cs3, barcode;
 
     //Código con monto mínimo
-    private final String parNumVer = "10.0.13 / ";
+    private final String parNumVer = "10.0.15 / ";
     private final String  parFechaVer = "31-07-2026";
     private final String parTipoVer = "ROAD QAS";
 

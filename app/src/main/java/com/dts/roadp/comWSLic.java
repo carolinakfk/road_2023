@@ -1007,9 +1007,8 @@ public class comWSLic extends PBase {
     private void datosLicencia() {
 
         CryptUtil cu = new CryptUtil();
-        Cursor dt;
-        String lic, lickey, licruta, rutaencrypt, rutades,licdes ;
-        Integer msgLic = 0;
+        Cursor dt = null;
+        String lic, lickey, licruta, rutaencrypt;
 
         try {
 
@@ -1018,28 +1017,62 @@ public class comWSLic extends PBase {
 
             sql = "SELECT lic, licparam FROM Params";
             dt = Con.OpenDT(sql);
-            dt.moveToFirst();
+            if (dt == null || !dt.moveToFirst()) {
+                addlog("datosLicencia", "LICENSE_DATA_MISSING", "Params sin filas");
+                lblDatosLicencia.setText("Estado de licencia: datos no disponibles.\n" +
+                        "Realice nuevamente la solicitud o carga de licencia.");
+                return;
+            }
+
             lic = dt.getString(0);
             licruta = dt.getString(1);
-            rutades = cu.decrypt(licruta);
-            licdes = cu.decrypt(lic);
 
-            lblDatosLicencia.setText("gl.deviceId: " + gl.deviceId +
-                    " gl.ruta: " + gl.ruta +
-                    " lickey: " + lickey +
-                    " rutaencrypt: " + rutaencrypt  +
-                    " Params lic: " + lic +
-                    " Params licruta: " + licruta  +
-                    " Params licdes: " + licdes +
-                    " Params rutades: " + rutades);
+            String estadoHH = estadoDatoLicencia(lic, lickey);
+            String estadoRuta = estadoDatoLicencia(licruta, rutaencrypt);
+            String trace = "hh=" + estadoHH + ",ruta=" + estadoRuta +
+                    ",licLen=" + longitudSegura(lic) +
+                    ",licParamLen=" + longitudSegura(licruta);
+
+            addlog("datosLicencia", "LICENSE_DATA_STATUS", trace);
+            Log.i("ROAD_LICENSE", "LICENSE_DATA_STATUS " + trace);
+
+            lblDatosLicencia.setText("Licencia del equipo: " + mensajeEstadoLicencia(estadoHH) + "\n" +
+                    "Licencia de ruta: " + mensajeEstadoLicencia(estadoRuta));
 
         } catch (Exception e) {
-            addlog(new Object() {
-            }.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
-            mu.msgbox(new Object() {
-            }.getClass().getEnclosingMethod().getName() + " : " + e.getMessage());
+            addlog("datosLicencia", "LICENSE_DATA_READ_ERROR",
+                    e.getClass().getSimpleName());
+            Log.e("ROAD_LICENSE", "LICENSE_DATA_READ_ERROR", e);
+            lblDatosLicencia.setText("No fue posible verificar la licencia.\n" +
+                    "Intente nuevamente; si el problema continúa, contacte a soporte.");
+        } finally {
+            if (dt != null && !dt.isClosed()) dt.close();
         }
 
+    }
+
+    private String estadoDatoLicencia(String valor, String esperado) {
+        if (mu.emptystr(valor)) return "EMPTY";
+
+        try {
+            byte[] datos = android.util.Base64.decode(valor, android.util.Base64.DEFAULT);
+            if (datos.length == 0 || datos.length % 8 != 0) return "INVALID_FORMAT";
+        } catch (IllegalArgumentException e) {
+            return "INVALID_FORMAT";
+        }
+
+        return valor.equalsIgnoreCase(esperado) ? "VALID" : "NOT_MATCHING";
+    }
+
+    private int longitudSegura(String valor) {
+        return valor == null ? 0 : valor.length();
+    }
+
+    private String mensajeEstadoLicencia(String estado) {
+        if ("VALID".equals(estado)) return "válida";
+        if ("EMPTY".equals(estado)) return "pendiente";
+        if ("INVALID_FORMAT".equals(estado)) return "datos incompletos";
+        return "no corresponde a este dispositivo o ruta";
     }
 
     //endregion

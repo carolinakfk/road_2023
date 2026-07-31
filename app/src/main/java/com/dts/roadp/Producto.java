@@ -279,8 +279,8 @@ public class Producto extends PBase {
 
                     if (modotol) { // La empresa es Toledano
 
-                        sql="SELECT DISTINCT P_PRODUCTO.CODIGO, P_PRODUCTO.DESCCORTA, P_PRODPRECIO.UNIDADMEDIDA, P_STOCK_PV.ESTADO , P_STOCK_PV.CANT, P_STOCK_PV.PESO, " +
-								"CASE WHEN P_DESCUENTO.PRODUCTO IS NOT NULL THEN 1 ELSE 0 END AS PROMOCION  " +
+						sql="SELECT DISTINCT P_PRODUCTO.CODIGO, P_PRODUCTO.DESCCORTA, P_PRODPRECIO.UNIDADMEDIDA, P_STOCK_PV.ESTADO , P_STOCK_PV.CANT, P_STOCK_PV.PESO, " +
+								"CASE WHEN P_DESCUENTO.PRODUCTO IS NOT NULL OR "+existeComboAplicable("P_PRODUCTO.CODIGO")+" THEN 1 ELSE 0 END AS PROMOCION  " +
                                 "FROM P_PRODUCTO INNER JOIN	P_STOCK_PV ON P_STOCK_PV.CODIGO=P_PRODUCTO.CODIGO INNER JOIN " +
                                 "P_PRODPRECIO ON (P_STOCK_PV.CODIGO=P_PRODPRECIO.CODIGO)  " +
 								"LEFT JOIN P_DESCUENTO ON P_DESCUENTO.PRODUCTO = P_STOCK_PV.CODIGO " +
@@ -309,7 +309,7 @@ public class Producto extends PBase {
 				case 1:  // Venta
 
 					sql="SELECT DISTINCT P_PRODUCTO.CODIGO, P_PRODUCTO.DESCCORTA, P_PRODPRECIO.UNIDADMEDIDA, " +
-						" CASE WHEN P_DESCUENTO.PRODUCTO IS NOT NULL THEN 1 ELSE 0 END AS PROMOCION " +
+						" CASE WHEN P_DESCUENTO.PRODUCTO IS NOT NULL OR "+existeComboAplicable("P_PRODUCTO.CODIGO")+" THEN 1 ELSE 0 END AS PROMOCION " +
 						"FROM P_PRODUCTO INNER JOIN	P_STOCK ON P_STOCK.CODIGO=P_PRODUCTO.CODIGO INNER JOIN " +
 						"P_PRODPRECIO ON (P_STOCK.CODIGO=P_PRODPRECIO.CODIGO) " +
 						" LEFT JOIN P_DESCUENTO ON P_DESCUENTO.PRODUCTO = P_STOCK.CODIGO  " +
@@ -322,7 +322,7 @@ public class Producto extends PBase {
 					sql+="UNION ";
 
 					sql+="SELECT DISTINCT P_PRODUCTO.CODIGO, P_PRODUCTO.DESCCORTA, P_PRODPRECIO.UNIDADMEDIDA, " +
-						" CASE WHEN P_DESCUENTO.PRODUCTO IS NOT NULL THEN 1 ELSE 0 END AS PROMOCION " +
+						" CASE WHEN P_DESCUENTO.PRODUCTO IS NOT NULL OR "+existeComboAplicable("P_PRODUCTO.CODIGO")+" THEN 1 ELSE 0 END AS PROMOCION " +
 						"FROM P_PRODUCTO INNER JOIN	P_STOCKB ON P_STOCKB.CODIGO=P_PRODUCTO.CODIGO INNER JOIN " +
 						"P_PRODPRECIO ON (P_STOCKB.CODIGO=P_PRODPRECIO.CODIGO) " +
 						" LEFT JOIN P_DESCUENTO ON P_DESCUENTO.PRODUCTO = P_STOCKB.CODIGO  " +
@@ -374,8 +374,9 @@ public class Producto extends PBase {
 
                 case 4:
 					//#CKFK20260730 fix(hh-nc-productos-promocion): muestra indicador sin duplicar productos.
-                    sql="SELECT P_PRODUCTO.CODIGO,P_PRODUCTO.DESCCORTA,P_PRODUCTO.UNIDBAS, " +
-							"CASE WHEN EXISTS (SELECT 1 FROM P_DESCUENTO D WHERE D.PRODUCTO=P_PRODUCTO.CODIGO) THEN 1 ELSE 0 END AS PROMOCION " +
+					sql="SELECT P_PRODUCTO.CODIGO,P_PRODUCTO.DESCCORTA,P_PRODUCTO.UNIDBAS, " +
+							"CASE WHEN EXISTS (SELECT 1 FROM P_DESCUENTO D WHERE D.PRODUCTO=P_PRODUCTO.CODIGO) OR "+
+							existeComboAplicable("P_PRODUCTO.CODIGO")+" THEN 1 ELSE 0 END AS PROMOCION " +
 							"FROM P_PRODUCTO WHERE (P_PRODUCTO.ES_VENDIBLE=1) AND (P_PRODUCTO.ES_CANASTA = 0)  ";
                     if (!famid.equalsIgnoreCase("0")) sql=sql+"AND (LINEA='"+famid+"') ";
                     if (vF.length()>0) sql=sql+"AND ((DESCCORTA LIKE '%" + vF + "%') " +
@@ -453,6 +454,17 @@ public class Producto extends PBase {
 
         pbar.setVisibility(View.INVISIBLE);
 
+	}
+
+	//#EJC20260731 feat(hh-producto-indicador-combo): los materiales de un combo
+	//viven en P_DESCUENTO_COMBO_DET, no en PRODUCTO de la cabecera. T_DESC limita
+	//el indicador a condiciones ya filtradas para el cliente/ruta activos.
+	private String existeComboAplicable(String productoSql) {
+		return "EXISTS (SELECT 1 FROM P_DESCUENTO_COMBO_DET CD " +
+				"INNER JOIN P_DESCUENTO D ON D.CODDESC=CD.CODDESC " +
+				"INNER JOIN T_DESC T ON T.CODDESC=D.CODDESC " +
+				"AND T.DESCTIPO=D.DESCTIPO AND T.ES_RECARGO=D.ES_RECARGO " +
+				"WHERE CD.PRODUCTO="+productoSql+" AND D.PTIPO=6)";
 	}
 	
 	private void appProd(){

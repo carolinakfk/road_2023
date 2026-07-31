@@ -2,6 +2,7 @@ package com.dts.roadp;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.util.Log;
 
 import com.dts.roadp.promotions.PromotionTrace;
 import com.dts.roadp.promotions.SapPromotionCalculator;
@@ -166,10 +167,14 @@ public class Precio {
 				SapPromotionCalculator.UNIT_PRICE_SCALE, SapPromotionCalculator.SAP_ROUNDING).doubleValue();
 		precdoc = prec;
 
-		PromotionTrace.write(cont,"PROMO_CALCULATION",
-				"producto="+prodid+";basePrecio="+pr+";baseFacturacion="+baseFacturacion+
+		String detalleCalculo="producto="+prodid+";cantidad="+cant+";peso="+ppeso+
+				";umPrecio="+umventa+";basePrecio="+pr+";baseFacturacion="+baseFacturacion+
+				";baseConvertida="+baseFacturacionConvertida+
 				";codDesc="+(BeDescuento==null?0:BeDescuento.codDesc)+";tipo="+(BeDescuento==null?"":BeDescuento.descTipo)+
-				";descuento="+descmon+";recargo="+recargoMonto+";total="+tot+";precioDerivado="+prec);
+				";descuento="+descmon+";recargo="+recargoMonto+";total="+tot+";precioDerivado="+prec;
+		PromotionTrace.write(cont,"PROMO_CALCULATION",detalleCalculo);
+		//#EJC20260731 trace(hh-rosti-price): evidencia visible en Logcat del cálculo final.
+		Log.i("ROAD_PRICE_TRACE",detalleCalculo);
 
 	}
 

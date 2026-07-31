@@ -1591,6 +1591,17 @@ public class FacturaRes extends PBase {
 					ins.add("FACTOR",DT.getDouble(13));
 					ins.add("TIPO_DOCUMENTO", "NC");
 					db.execSQL(ins.sql());
+					//#EJC20260731 trace(hh-rosti-nc): la NC conserva los valores de la
+					//devolucion sin recalcular nuevamente el factor de presentacion.
+					if (app.esRosty(DT.getString(1))) {
+						String detalleRostiNc="documento=NC;producto="+DT.getString(1)+
+								";cantidad="+DT.getDouble(2)+";umVenta="+DT.getString(10)+
+								";umStock="+DT.getString(11)+";factor="+DT.getDouble(13)+
+								";precio="+DT.getDouble(5)+";total="+DT.getDouble(4)+
+								";modo=COPIA_TOTAL_DEVOLUCION";
+						Log.i("ROAD_ROSTI_TRACE",detalleRostiNc);
+						PromotionTrace.write(this,"ROSTI_CREDIT_NOTE_PERSISTED",detalleRostiNc);
+					}
 
 					double ntPeso = DT.getDouble(8);
 					Double ntFactor = DT.getDouble(13);
@@ -1766,6 +1777,17 @@ public class FacturaRes extends PBase {
 						";precioBase="+dt.getDouble(16)+";totalBase="+dt.getDouble(17)+";descuento="+dt.getDouble(5)+
 						";recargo="+dt.getDouble(15)+";totalFinal="+dt.getDouble(6)+";codDesc="+dt.getInt(18)+";codRecargo="+dt.getInt(19));
 				db.execSQL(ins.sql());
+				//#EJC20260731 trace(hh-rosti-factura): la factura persiste el total
+				//autoritativo calculado en T_VENTA; no vuelve a aplicar el factor.
+				if (app.esRosty(dt.getString(0))) {
+					String detalleRostiFactura="documento=FACTURA;producto="+dt.getString(0)+
+							";cantidad="+dt.getDouble(1)+";umVenta="+dt.getString(11)+
+							";umStock="+dt.getString(13)+";factor="+dt.getDouble(12)+
+							";precio="+dt.getDouble(2)+";totalBase="+dt.getDouble(17)+
+							";totalFinal="+dt.getDouble(6)+";modo=COPIA_TOTAL_T_VENTA";
+					Log.i("ROAD_ROSTI_TRACE",detalleRostiFactura);
+					PromotionTrace.write(this,"ROSTI_INVOICE_PERSISTED",detalleRostiFactura);
+				}
 
 			    vprod=dt.getString(0);
 				vumstock=dt.getString(13);

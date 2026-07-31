@@ -3,6 +3,7 @@ package models;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.dts.roadp.BaseDatos;
 import com.dts.roadp.DateUtils;
@@ -203,7 +204,7 @@ public class Catalogo extends PBase {
 					"IFNULL(INDIVIDUAL_PRECIO,0),IFNULL(INDIVIDUAL_TOTAL,0),IFNULL(INDIVIDUAL_DES,0),"+
 					"IFNULL(INDIVIDUAL_DESMON,0),IFNULL(INDIVIDUAL_RECARGO,0),"+
 					"IFNULL(INDIVIDUAL_RECARGOMONTO,0),IFNULL(INDIVIDUAL_CODDESC,0),"+
-					"IFNULL(INDIVIDUAL_CODRECARGO,0) FROM T_VENTA";
+					"IFNULL(INDIVIDUAL_CODRECARGO,0),IFNULL(UMSTOCK,UM),IFNULL(FACTOR,1) FROM T_VENTA";
             DT = Con.OpenDT(vSQL);
             if (DT.getCount() == 0) return lista;
 
@@ -233,6 +234,10 @@ public class Catalogo extends PBase {
 				l.individualRecargoMonto=DT.getDouble(21);
 				l.individualCodDesc=DT.getInt(22);
 				l.individualCodRecargo=DT.getInt(23);
+				//#EJC20260731 fix(hh-combo-umstock): conserva la UM comercial y el
+				//factor para evaluar requisitos sin confundirlos con la UM del precio.
+				l.umStock=DT.getString(24);
+				l.factor=DT.getDouble(25);
 				if (l.precioBase<=0) l.precioBase = preciosBaseSesion.containsKey(lineKey(l.producto,l.um,DT.getInt(5)))
 						? preciosBaseSesion.get(lineKey(l.producto,l.um,DT.getInt(5))) : l.precio;
 				l.sinExistencia = DT.getInt(5);
@@ -289,7 +294,7 @@ public class Catalogo extends PBase {
 			for (clsClasses.VentaLinea l : lineas) {
                 if (l.producto == null) continue;
 				if (l.producto.equals(itemCombo.producto) && umCompatible(l,itemCombo)) {
-					double cantidadRow = ObtenerCantidadLinea(l);
+					double cantidadRow = ObtenerCantidadRequisito(l,itemCombo);
 					cantidadAcumulada += cantidadRow;
 					filasEncontradas.add(l);
 				}
@@ -690,8 +695,15 @@ public class Catalogo extends PBase {
                 if (linea.promoEligible && linea.producto != null &&
                         linea.producto.equals(detalle.producto) &&
                         umCompatible(linea, detalle)) {
-                    acumulado += ObtenerCantidadLinea(linea);
+					double cantidadCompatible=ObtenerCantidadRequisito(linea,detalle);
+					acumulado += cantidadCompatible;
                     participantes.add(linea.lineKey);
+					String detalleUm="codDesc="+condicion.codDesc+";producto="+linea.producto+
+							";umRequerida="+detalle.umVenta+";umLinea="+linea.um+
+							";umStock="+linea.umStock+";factor="+linea.factor+
+							";cantidadLinea="+linea.cant+";cantidadCompatible="+cantidadCompatible;
+					Log.i("ROAD_COMBO_TRACE",detalleUm);
+					PromotionTrace.write(cont,"PROMO_COMBO_UM_RESOLVED",detalleUm);
                 }
             }
 
@@ -700,7 +712,7 @@ public class Catalogo extends PBase {
                     ";producto="+detalle.producto+";um="+detalle.umVenta+
                     ";obligatorio="+detalle.obligatorio+";cantidadCobrada="+acumulado+
                     ";requerida="+detalle.cantidad+";cumple="+cumple+
-                    ";bonificadosIncluidos=0");
+                    ";bonificadosIncluidos=0;criterio=UM_LINEA_O_UMSTOCK");
 
             if (!cumple) {
                 if (detalle.obligatorio) result.completo = false;
@@ -843,7 +855,25 @@ public class Catalogo extends PBase {
 	}
 
 	private boolean umCompatible(clsClasses.VentaLinea linea, clsClasses.clsBeP_DESCUENTO_COMBO_DET detalle) {
-		return detalle.umVenta == null || detalle.umVenta.trim().isEmpty() || detalle.umVenta.equalsIgnoreCase(linea.um);
+		if (detalle.umVenta == null || detalle.umVenta.trim().isEmpty()) return true;
+		return detalle.umVenta.equalsIgnoreCase(linea.um) ||
+				detalle.umVenta.equalsIgnoreCase(linea.umStock) ||
+				detalle.umVenta.equalsIgnoreCase(gll.umpeso);
+	}
+
+	//#EJC20260731 fix(hh-combo-cantidad-comercial): los rangos/requisitos usan la
+	//UM solicitada por el detalle. CANT esta persistida en UMSTOCK; solo se convierte
+	//al factor cuando el requisito esta expresado en la UM del precio.
+	private double ObtenerCantidadRequisito(clsClasses.VentaLinea linea,
+			clsClasses.clsBeP_DESCUENTO_COMBO_DET detalle) {
+		String umRequerida=detalle.umVenta==null?"":detalle.umVenta.trim();
+		if (umRequerida.equalsIgnoreCase(gll.umpeso)) return linea.peso;
+		if (umRequerida.equalsIgnoreCase(linea.umStock)) return linea.cant;
+		if (umRequerida.equalsIgnoreCase(linea.um) && linea.umStock != null &&
+				!linea.um.equalsIgnoreCase(linea.umStock) && linea.factor>0) {
+			return linea.cant*linea.factor;
+		}
+		return linea.cant;
 	}
 
 	private String comboKey(clsClasses.clsBeP_DESCUENTO_COMBO_DET detalle) {
@@ -875,6 +905,9 @@ public class Catalogo extends PBase {
     }
 
     public double ObtenerCantidadLinea(clsClasses.VentaLinea l) {
+		//#EJC20260731 fix(hh-combo-base-extendida): TOTAL_BASE/PRECIO_BASE conserva
+		//la base monetaria autoritativa (por ejemplo, 3 CA x 16 = 48 UN para Rosti).
+		if (l.totalBase>0 && l.precioBase>0) return l.totalBase/l.precioBase;
         boolean esDevolucionPorPeso = l.lineKey != null && l.lineKey.startsWith("DEV|") &&
                 l.sinExistencia == 1;
         boolean esPorPeso = esDevolucionPorPeso || (l.um != null && l.um.equals(gll.umpeso));

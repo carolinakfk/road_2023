@@ -2010,6 +2010,13 @@ public class ComWS extends PBase {
 					} else {
 						try {
 							sql = str;
+							//#EJC20260731 fix(hh-sync-descuentos): conserva el nombre
+							//SQLite aunque la cabecera piloto venga de P_DESCUENTO_I.
+							if (nombretabla.equalsIgnoreCase("P_DESCUENTO")) {
+								sql = sql.replaceFirst(
+										"(?i)^INSERT\\s+INTO\\s+P_DESCUENTO_I\\b",
+										"INSERT INTO P_DESCUENTO");
+							}
 							listItems.add(sql);
 							sstr = str;
 						} catch (Exception e) {

@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import models.Catalogo;
 
 public class Venta extends PBase {
+	private static final String ROSTI_TRACE_TAG = "ROAD_ROSTI_TRACE";
 
 	private ListView listView;
 	private TextView lblProd,lblPres,lblCant,lblPrec,lblTot,lblTit,lblVer;
@@ -836,7 +837,9 @@ public class Venta extends PBase {
 					if (prc.precioespecial>0) prec=prc.precioespecial;
 				}
 			} else {
-				prec = prc.precio(prodid, cant, nivel, um, gl.umpeso, 0,um);
+				double baseFacturacionConvertida=baseFacturacionRosti(cant,0,"PROCESS_CANT");
+				prec = prc.precio(prodid, cant, nivel, um, gl.umpeso, 0,um,
+						baseFacturacionConvertida);
 				if (prc.existePrecioEspecial(prodid,cant,gl.cliente,gl.clitipo,um,gl.umpeso,0)) {
 					if (prc.precioespecial>0) prec=prc.precioespecial;
 				}
@@ -895,7 +898,10 @@ public class Venta extends PBase {
 
 	private void prodPrecio() {
 		try{
-			prec=prc.precio(prodid,cant,nivel,um,gl.umpeso,gl.dpeso,um);
+			double baseFacturacionConvertida=prodPorPeso(prodid)
+					?0:baseFacturacionRosti(cant,0,"PROD_PRECIO");
+			prec=prc.precio(prodid,cant,nivel,um,gl.umpeso,gl.dpeso,um,
+					baseFacturacionConvertida);
 
 			if (prc.existePrecioEspecial(prodid,cant,gl.cliente,gl.clitipo,um,gl.umpeso,gl.dpeso)) {
 				if (prc.precioespecial>0) prec=prc.precioespecial;
@@ -929,7 +935,9 @@ public class Venta extends PBase {
 					if (prc.precioespecial>0) prec=prc.precioespecial;
 				}
 			} else {
-				prec = prc.precio(prodid, cant, nivel, um, gl.umpeso, 0,um);
+				double baseFacturacionConvertida=baseFacturacionRosti(cant,0,"GET_PRECIO");
+				prec = prc.precio(prodid, cant, nivel, um, gl.umpeso, 0,um,
+						baseFacturacionConvertida);
 				if (prcEsp.existePrecioEspecial(prodid,cant,gl.cliente,gl.clitipo,um,gl.umpeso,0)) {
 					prc=prcEsp;
 					//if (prcEsp.precioespecial>0) prec=prcEsp.precioespecial;
@@ -1990,7 +1998,7 @@ public class Venta extends PBase {
 				}
 			} else {
 				//#EJC20260728 fix(hh-rosti-price-factor): precio UN usa cantidad CA convertida.
-				double baseFacturacionConvertida=cant*(factbolsa>0?factbolsa:1);
+				double baseFacturacionConvertida=baseFacturacionRosti(cant,factbolsa,"BARRA");
 				prec = prc.precio(prodid, cant, nivel, um, gl.umpeso, 0, umven,
 						baseFacturacionConvertida);
 				if (prc.existePrecioEspecial(prodid, cant, gl.cliente, gl.clitipo, umven, gl.umpeso, 0)) {
@@ -2413,7 +2421,7 @@ public class Venta extends PBase {
 				}
 			} else {
 				//#EJC20260728 fix(hh-rosti-price-factor): precio UN usa cantidad CA convertida.
-				double baseFacturacionConvertida=cant*(factbolsa>0?factbolsa:1);
+				double baseFacturacionConvertida=baseFacturacionRosti(cant,factbolsa,"BARRA_TRANSACCION");
 				prec = prctr.precio(prodid, cant, nivel, um, gl.umpeso, 0,umven,
 						baseFacturacionConvertida);
 				if (prctr.existePrecioEspecial(prodid,cant,gl.cliente,gl.clitipo,uum,gl.umpeso,0)) {
@@ -4150,6 +4158,29 @@ public class Venta extends PBase {
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
 			return false;
 		}
+	}
+
+	//#EJC20260731 fix(hh-rosti-base-facturacion): la cantidad comercial se conserva
+	//en UMSTOCK y el total se calcula en la UM del precio. Para venta por KG Precio
+	//continua usando el peso y no entra a esta conversion.
+	private double baseFacturacionRosti(double cantidad,double factorConocido,String origen) {
+		boolean rosti=app.esRosty(prodid);
+		// Las barras de otros productos ya utilizaban el factor conocido; se conserva
+		// ese comportamiento y solo se consulta el factor en el flujo manual Rosti.
+		if (!rosti && factorConocido<=0) return 0;
+
+		double factor=factorConocido>0
+				?factorConocido:DameProporcionVenta(prodid,gl.cliente,gl.nivel);
+		if (factor<=0) factor=1;
+		double baseFacturacion=cantidad*factor;
+		String detalle="origen="+origen+";producto="+prodid+";cantidad="+cantidad+
+				";umVenta="+um+";umStock="+gl.umstock+";factor="+factor+
+				";baseFacturacion="+baseFacturacion+";modo=UNIDAD_CONVERTIDA";
+		if (rosti) {
+			Log.i(ROSTI_TRACE_TAG,detalle);
+			PromotionTrace.write(this,"ROSTI_BILLING_BASE",detalle);
+		}
+		return baseFacturacion;
 	}
 
 	private boolean prodBarra(String prodid) {
