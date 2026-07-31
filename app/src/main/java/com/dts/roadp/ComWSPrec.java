@@ -377,7 +377,7 @@ public class ComWSPrec extends PBase {
             DT.close();
 
             if(TieneRuta && TieneProd && TieneClientes){
-                if (!AddTable("TMP_PRECESPEC")) return false;
+                // #EJC20260730 feat(hh-no-special-price): road_2028 no importa TMP_PRECESPEC.
                 if (!AddTable("P_PRODPRECIO")) return false;
                 if (!AddTable("P_FACTORCONV")) return false;
             }else{

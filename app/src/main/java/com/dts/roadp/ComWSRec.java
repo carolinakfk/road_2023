@@ -418,7 +418,7 @@ public class ComWSRec extends PBase {
                 if (!AddTable_SinBorrar("P_STOCK")) return false;
                 if (!AddTable_SinBorrar("P_STOCK_PALLET")) return false;
                 if (!AddTable_SinBorrar("P_STOCKB")) return false;
-                if (!AddTable("TMP_PRECESPEC")) return false;
+                // #EJC20260730 feat(hh-no-special-price): road_2028 no importa TMP_PRECESPEC.
                 if (!AddTable("P_PRODPRECIO")) return false;
                 if (!AddTable("P_FACTORCONV")) return false;
             }else{

@@ -312,6 +312,8 @@ public class Precio {
 	}
 
 	private boolean prodPrecioEsp(double ppeso,String cliente,String clitipo) {
+		// #EJC20260730 feat(hh-no-special-price): road_2028 usa P_PRODPRECIO y promociones.
+		if (!preciosEspecialesHabilitados()) return false;
 		Cursor dt = null;
 		double pr,prr,stot,pprec,tsimp;
 		String sprec="",vcod,vval;
@@ -409,6 +411,10 @@ public class Precio {
 				";descuento=0;recargo=0;total="+tot+";precioDerivado="+prec);
 		return true;
 
+	}
+
+	private boolean preciosEspecialesHabilitados() {
+		return false;
 	}
 
 

@@ -379,7 +379,7 @@ public class ComWSExist extends PBase {
 
 			if(TieneRuta && TieneProd && TieneClientes){
 				if (!AddTable("P_STOCKINV")) return false;
-				if (!AddTable("TMP_PRECESPEC")) return false;
+				// #EJC20260730 feat(hh-no-special-price): road_2028 no importa TMP_PRECESPEC.
 				if (!AddTable("P_PRODPRECIO")) return false;
 				if (!AddTable("P_STOCK")) return false;
 				if (!AddTable("P_STOCK_PALLET")) return false;
