@@ -64,7 +64,7 @@ public class MainActivity extends PBase {
     //private String cs1, cs2, cs3, barcode;
 
     //Código con monto mínimo
-    private final String parNumVer = "10.0.15 / ";
+    private final String parNumVer = "10.0.16 / ";
     private final String  parFechaVer = "31-07-2026";
     private final String parTipoVer = "ROAD QAS";
 
@@ -80,6 +80,7 @@ public class MainActivity extends PBase {
     private static final String PREFS           = "ROAD_PREFS";
     private static final String KEY_MIGRATED_V1 = "db_migrated_v1";
     private static final String KEY_DB_SEEDED   = "db_seeded_v1";
+    private static final String KEY_INITIAL_PERMISSIONS_ASKED = "initial_permissions_asked_v1";
 
     private static final int REQ_COMWS     = 1001;
     private static final int REQ_PERMS     = 100;   // único requestCode
@@ -91,6 +92,7 @@ public class MainActivity extends PBase {
     private boolean sessionInited = false;
     private boolean pendingLaunchComWS = false;
     private boolean appReady = true;
+    private boolean permissionRequestInProgress = false;
 
     //region Activity lifecycle
 
@@ -100,8 +102,10 @@ public class MainActivity extends PBase {
         setContentView(R.layout.activity_main);
         installCrashHandler(this);
 
-        // 1) Pedir permisos si faltan
-        if (!haveAllInitialPermissions()) {
+        // Los permisos funcionales se solicitan una vez, pero no bloquean el arranque.
+        boolean permissionsAsked = getSharedPreferences(PREFS, MODE_PRIVATE)
+                .getBoolean(KEY_INITIAL_PERMISSIONS_ASKED, false);
+        if (!permissionsAsked && !haveAllInitialPermissions()) {
             askInitialPermissions();
             return; // esperar onRequestPermissionsResult
         }
@@ -114,6 +118,10 @@ public class MainActivity extends PBase {
     protected void onResume() {
         try {
             super.onResume();
+
+            // Evita ejecutar el arranque y volver a pedir permisos mientras el
+            // dialogo del sistema sigue visible.
+            if (permissionRequestInProgress) return;
 
             // 1) Conexión DB
             safeOpenDb();
@@ -197,10 +205,6 @@ public class MainActivity extends PBase {
 
         ok &= (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED);
-        ok &= (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE)
-                == PackageManager.PERMISSION_GRANTED);
-        ok &= (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
-                == PackageManager.PERMISSION_GRANTED);
         ok &= (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED);
 
@@ -230,12 +234,6 @@ public class MainActivity extends PBase {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) toAsk.add(Manifest.permission.ACCESS_FINE_LOCATION);
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE)
-                != PackageManager.PERMISSION_GRANTED) toAsk.add(Manifest.permission.CALL_PHONE);
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
-                != PackageManager.PERMISSION_GRANTED) toAsk.add(Manifest.permission.READ_PHONE_STATE);
-
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) toAsk.add(Manifest.permission.CAMERA);
 
@@ -262,6 +260,7 @@ public class MainActivity extends PBase {
         }
 
         logBeforeAsking();
+        permissionRequestInProgress = true;
         ActivityCompat.requestPermissions(this, toAsk.toArray(new String[0]), REQ_PERMS);
     }
 
@@ -271,8 +270,6 @@ public class MainActivity extends PBase {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             perms = new String[]{
                     Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.CALL_PHONE,
-                    Manifest.permission.READ_PHONE_STATE,
                     Manifest.permission.CAMERA,
                     Manifest.permission.BLUETOOTH_SCAN,
                     Manifest.permission.BLUETOOTH_CONNECT
@@ -280,8 +277,6 @@ public class MainActivity extends PBase {
         } else {
             perms = new String[]{
                     Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.CALL_PHONE,
-                    Manifest.permission.READ_PHONE_STATE,
                     Manifest.permission.CAMERA,
                     Manifest.permission.BLUETOOTH,
                     Manifest.permission.BLUETOOTH_ADMIN
@@ -316,6 +311,10 @@ public class MainActivity extends PBase {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == REQ_PERMS) {
+            permissionRequestInProgress = false;
+            getSharedPreferences(PREFS, MODE_PRIVATE).edit()
+                    .putBoolean(KEY_INITIAL_PERMISSIONS_ASKED, true).apply();
+
             // Log global del estado real tras el callback
             logPerms("onRequestPermissionsResult");
 
@@ -326,9 +325,7 @@ public class MainActivity extends PBase {
                 }
             }
 
-            if (allGranted) {
-                startApplication();
-            } else {
+            if (!allGranted) {
                 // Construir lista de denegados y marcar cuáles son “permanentes” (no volver a preguntar / política MDM)
                 ArrayList<String> denied = new ArrayList<>();
                 ArrayList<String> deniedPermanent = new ArrayList<>();
@@ -368,8 +365,11 @@ public class MainActivity extends PBase {
                 //     startActivity(i);
                 // }
 
-                pendingLaunchComWS = false;
+                Log.w("PERMS", "ROAD continuara; las funciones asociadas a permisos denegados pueden quedar limitadas.");
             }
+
+            // Ningun permiso opcional debe impedir login, licencia o carga inicial.
+            startApplication();
         }
     }
 
@@ -384,12 +384,6 @@ public class MainActivity extends PBase {
 
     /** Devuelve true si ya hay datos; si no, lanza ComWS y devuelve false. */
     private boolean ensureSeededOrStartComWS() {
-        if (!haveAllInitialPermissions()) {
-            pendingLaunchComWS = true;
-            askInitialPermissions();
-            return false;
-        }
-
         SharedPreferences sp = getSharedPreferences(PREFS, MODE_PRIVATE);
         boolean seeded = sp.getBoolean(KEY_DB_SEEDED, false);
         boolean vacia  = dbVacia();
@@ -441,13 +435,7 @@ public class MainActivity extends PBase {
 
     private void startApplication() {
         try {
-            // A) Si faltan permisos, pedir y salir
-            if (!haveAllInitialPermissions()) {
-                askInitialPermissions();
-                return;
-            }
-
-            // B) Init base (PBase)
+            // A) Init base (PBase). Los permisos funcionales no bloquean ROAD.
             super.InitBase();
 
             setTitle("ROAD");
