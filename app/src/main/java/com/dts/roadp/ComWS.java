@@ -28,6 +28,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -141,6 +142,8 @@ public class ComWS extends PBase {
 	// Web Service -
 
 	public AsyncCallRec wsRtask;
+	private AsyncProcessTables processTablesTask;
+	private long processTablesStartedAt;
 	public AsyncCallSend wsStask;
 	public AsyncCallConfirm wsCtask;
 	public AsyncCallSendBitacora wsStaskBit;
@@ -3124,7 +3127,7 @@ public class ComWS extends PBase {
 		}
 	}
 
-	private boolean procesaDatos() {
+	private boolean procesaDatosEnSegundoPlano() {
 		Cursor DT;
 		BufferedWriter writer = null;
 		FileWriter wfile;
@@ -3133,7 +3136,7 @@ public class ComWS extends PBase {
 		String s, val = "";
 
     	ferr = "";
-		lblInfo.setText("Procesando tablas . . .");
+		publicaProgresoCarga("Procesando tablas...", 0, listItems.size());
 
 		try {
 
@@ -3150,7 +3153,7 @@ public class ComWS extends PBase {
 
 
             fprog = "Procesando ...";
-			wsRtask.onProgressUpdate();
+			publicaProgresoCarga(fprog, 0, rc);
 
 			ConT=new BaseDatos(this);
 			dbT=ConT.getWritableDatabase();
@@ -3200,9 +3203,9 @@ public class ComWS extends PBase {
 				}
 
 				try {
-					if (i % 10 == 0) {
+					if (i % 100 == 0) {
 						fprog = "Procesando: " + i + " de: " + (rc - 1);
-						wsRtask.onProgressUpdate();SystemClock.sleep(20);
+						publicaProgresoCarga(fprog, i, rc);
 					}
 				} catch (Exception e) {
 					ferr += " " +e.getMessage();
@@ -3217,7 +3220,7 @@ public class ComWS extends PBase {
             }
 
 			fprog = "Procesando: " + (rc - 1) + " de: " + (rc - 1);
-			wsRtask.onProgressUpdate();
+			publicaProgresoCarga(fprog, rc, rc);
 
 			/*
 			try {
@@ -3244,7 +3247,7 @@ public class ComWS extends PBase {
 
 			if (modo_recepcion!=3){
 				fprog = "Documento de inventario recibido en BOF...";
-				wsRtask.onProgressUpdate();
+				publicaProgresoCarga(fprog, rc, rc);
 
 				//fechaCarga();
 				//Actualiza_Documentos();
@@ -3254,7 +3257,8 @@ public class ComWS extends PBase {
 			dbT.setTransactionSuccessful();
 			dbT.endTransaction();
 
-			fprog = "Fin de actualización";wsRtask.onProgressUpdate();
+			fprog = "Fin de actualización";
+			publicaProgresoCarga(fprog, rc, rc);
 
 			scomp = 1;
 
@@ -3264,80 +3268,17 @@ public class ComWS extends PBase {
 				//addlog(new Object() {	}.getClass().getEnclosingMethod().getName(), e.getMessage(), sql);
 			}
 
-			lblInfo.setText(" ");
-			s = "Recepción completa.";
-
-			if (modo_recepcion!=3 ){
-				try {
-					Cursor dt1 = Con.OpenDT(sql);
-					sql = "SELECT VENTA FROM P_RUTA";
-					dt1 = Con.OpenDT(sql);
-					dt1.moveToFirst();
-					val = dt1.getString(0);
-
-					if (dt1 != null) dt1.close();
-
-				} catch (Exception e) {
-					val = "V";
-				}
-
-				gl.rutatipo = val;
-				rutatipo = gl.rutatipo;
-				pedidos=rutatipo.equals("P");
-
-				// if (stockflag == 1) s = s + "\nSe actualizó inventario.";
-
-				if (pedidos) {
-					sql = "SELECT Codigo FROM P_STOCK_PV ";
-				} else {
-					sql = "SELECT Codigo FROM P_STOCK UNION SELECT Codigo FROM P_STOCKB ";
-				}
-				Cursor dt = Con.OpenDT(sql);
-				if (dt.getCount() > 0){
-					stockflag = 1;
-					s = s + "\nSe actualizó inventario.";
-				}
-
-				clsAppM.estandartInventario();
-				clsAppM.estandartInventarioPedido();
-
-				if (!gl.ruta_recolectora){
-					if (stockflag == 1) {
-						sendConfirm();
-					}
-				}else{
-					if (stockflag == 1) {
-						eliminaInventario();
-					}
-				}
-
-			}
-
-			if (modo_recepcion==1 ){
-				validaDatos(true);
-				comparaCorrel();
-				otrosParametros();
-			}
-
-			isbusy = 0;
-
-			visibilidadBotones();
-
-			msgAskExit(s);
-
-			barInfo.setVisibility(View.INVISIBLE);
-			lblParam.setVisibility(View.INVISIBLE);
-
-			lblRec.setVisibility(View.VISIBLE);
-			imgRec.setVisibility(View.VISIBLE);
-
-			//#AT20250811 Guardar fecha carga, se crea el registro.
-			SetBitacora(1);
 			return true;
 
 		} catch (Exception e) {
 			fprog = "Actualización incompleta";
-			wsRtask.onProgressUpdate();
+			publicaProgresoCarga(fprog, 0, reccnt);
+
+			try {
+				if (dbT != null && dbT.inTransaction()) dbT.endTransaction();
+			} catch (Exception transactionError) {
+				Log.e("ROAD_LOAD", "PROCESS_TABLES_ROLLBACK_ERROR", transactionError);
+			}
 
 			try {
 				ConT.close();
@@ -3350,10 +3291,131 @@ public class ComWS extends PBase {
 
 			return false;
 
-		}finally {
-			visibilidadBotones();
 		}
 
+	}
+
+	private void iniciaProcesamientoTablas(boolean actualizarValoresRuta) {
+		if (processTablesTask != null) {
+			Log.w("ROAD_LOAD", "PROCESS_TABLES_ALREADY_RUNNING");
+			return;
+		}
+
+		processTablesTask = new AsyncProcessTables(actualizarValoresRuta);
+		processTablesTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+	}
+
+	private class AsyncProcessTables extends AsyncTask<Void, Void, Boolean> {
+		private final boolean actualizarValoresRuta;
+
+		AsyncProcessTables(boolean actualizarValoresRuta) {
+			this.actualizarValoresRuta = actualizarValoresRuta;
+		}
+
+		@Override
+		protected void onPreExecute() {
+			processTablesStartedAt = SystemClock.elapsedRealtime();
+			getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+			lblInfo.setText("Procesando tablas... No cierre ROAD.");
+			Log.i("ROAD_LOAD", "PROCESS_TABLES_STARTED rows=" + listItems.size() +
+					" mode=" + modo_recepcion);
+		}
+
+		@Override
+		protected Boolean doInBackground(Void... values) {
+			return procesaDatosEnSegundoPlano();
+		}
+
+		@Override
+		protected void onPostExecute(Boolean ok) {
+			long elapsed = SystemClock.elapsedRealtime() - processTablesStartedAt;
+			try {
+				if (Boolean.TRUE.equals(ok)) {
+					if (actualizarValoresRuta) setValoresRuta();
+					finalizaProcesamientoTablas();
+					Log.i("ROAD_LOAD", "PROCESS_TABLES_COMPLETED elapsedMs=" + elapsed);
+				} else {
+					isbusy = 0;
+					visibilidadBotones();
+					barInfo.setVisibility(View.INVISIBLE);
+					lblInfo.setText("Carga incompleta");
+					mu.msgbox("La carga no pudo finalizar. Intente recibir los datos nuevamente.");
+					Log.e("ROAD_LOAD", "PROCESS_TABLES_FAILED elapsedMs=" + elapsed);
+				}
+			} finally {
+				getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+				processTablesTask = null;
+			}
+		}
+	}
+
+	private void publicaProgresoCarga(final String mensaje, int procesados, int total) {
+		long elapsed = processTablesStartedAt == 0 ? 0 :
+				SystemClock.elapsedRealtime() - processTablesStartedAt;
+		Log.i("ROAD_LOAD", "PROCESS_TABLES_PROGRESS processed=" + procesados +
+				" total=" + total + " elapsedMs=" + elapsed);
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				if (lblInfo != null) lblInfo.setText(mensaje);
+			}
+		});
+	}
+
+	private void finalizaProcesamientoTablas() {
+		String mensaje = "Recepción completa.";
+		String venta = "V";
+
+		lblInfo.setText(" ");
+
+		if (modo_recepcion != 3) {
+			try {
+				sql = "SELECT VENTA FROM P_RUTA";
+				Cursor dt1 = Con.OpenDT(sql);
+				if (dt1 != null && dt1.moveToFirst()) venta = dt1.getString(0);
+				if (dt1 != null) dt1.close();
+			} catch (Exception e) {
+				venta = "V";
+			}
+
+			gl.rutatipo = venta;
+			rutatipo = gl.rutatipo;
+			pedidos = rutatipo.equals("P");
+
+			sql = pedidos
+					? "SELECT Codigo FROM P_STOCK_PV "
+					: "SELECT Codigo FROM P_STOCK UNION SELECT Codigo FROM P_STOCKB ";
+			Cursor dt = Con.OpenDT(sql);
+			if (dt != null && dt.getCount() > 0) {
+				stockflag = 1;
+				mensaje += "\nSe actualizó inventario.";
+			}
+			if (dt != null) dt.close();
+
+			clsAppM.estandartInventario();
+			clsAppM.estandartInventarioPedido();
+
+			if (!gl.ruta_recolectora) {
+				if (stockflag == 1) sendConfirm();
+			} else if (stockflag == 1) {
+				eliminaInventario();
+			}
+		}
+
+		if (modo_recepcion == 1) {
+			validaDatos(true);
+			comparaCorrel();
+			otrosParametros();
+		}
+
+		isbusy = 0;
+		visibilidadBotones();
+		msgAskExit(mensaje);
+		barInfo.setVisibility(View.INVISIBLE);
+		lblParam.setVisibility(View.INVISIBLE);
+		lblRec.setVisibility(View.VISIBLE);
+		imgRec.setVisibility(View.VISIBLE);
+		SetBitacora(1);
 	}
 
 	private void SetBitacora(int... fechas) {
@@ -5245,10 +5307,7 @@ public class ComWS extends PBase {
 					nombretabla="Procesando tablas ...";break;
 
 				case 82:
-					procesaDatos();
-					//#AT 20220322 Se cambia el valor de las variables
-					//gl.permitir_cantidad_mayor, gl.permitir_producto_nuevo, gl.validar_posicion_georef
-					setValoresRuta();
+					iniciaProcesamientoTablas(true);
 
 					ejecutar = false;
                     break;
@@ -5288,7 +5347,7 @@ public class ComWS extends PBase {
                 case 7:
                     nombretabla="P_FACTORCONV";break;
                 case 8:
-                    procesaDatos();
+					iniciaProcesamientoTablas(false);
                     ejecutar = false;
                     break;
             }
@@ -5318,7 +5377,7 @@ public class ComWS extends PBase {
 				case 3:
 					nombretabla = "P_FACTORCONV"; break;
 				case 4:
-					procesaDatos();
+					iniciaProcesamientoTablas(false);
 					ejecutar = false;
 					break;
 			}
@@ -5344,7 +5403,7 @@ public class ComWS extends PBase {
 				case 2:
 					nombretabla = "P_CLIRUTA"; break;
 				case 3:
-					procesaDatos();
+					iniciaProcesamientoTablas(false);
 					ejecutar = false;
 					break;
 			}
