@@ -635,7 +635,7 @@ public class printZebraZPL extends printBase {
 
         });
 
-        dialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+		dialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 final Handler cbhandler = new Handler();
                 cbhandler.postDelayed(new Runnable() {
@@ -646,9 +646,14 @@ public class printZebraZPL extends printBase {
                     }
                 }, 200);
             }
-        });
+		});
+		dialog.setNeutralButton("Ver/Guardar", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				showViewSaveDocument();
+			}
+		});
 
-        dialog.show();
+		dialog.show();
 
     }
 

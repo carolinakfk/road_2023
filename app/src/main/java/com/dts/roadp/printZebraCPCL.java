@@ -360,6 +360,11 @@ public class printZebraCPCL extends printBase {
 				}, 200);		    	
 			}
 		});
+		dialog.setNeutralButton("Ver/Guardar", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				showViewSaveDocument();
+			}
+		});
 
 		dialog.show();
 

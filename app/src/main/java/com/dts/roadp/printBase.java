@@ -1,9 +1,21 @@
 package com.dts.roadp;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Handler;
+import android.text.method.ScrollingMovementMethod;
+import android.view.ViewGroup;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 import datamaxoneil.connection.ConnectionBase;
 import datamaxoneil.printer.DocumentEZ;
@@ -82,6 +94,75 @@ public class printBase {
 			
 	public boolean print(String fileName) {
 		return true;
+	}
+
+	/** Muestra el documento generado y permite guardar una copia publica bajo demanda. */
+	protected void showViewSaveDocument() {
+		File document = resolveDocumentFile();
+		if (document == null || !document.exists()) {
+			Toast.makeText(cont, "No se encontro el documento generado.", Toast.LENGTH_LONG).show();
+			return;
+		}
+
+		String content = readDocument(document);
+		if (content == null) return;
+
+		TextView preview = new TextView(cont);
+		int padding = (int) (16 * cont.getResources().getDisplayMetrics().density);
+		preview.setPadding(padding, padding, padding, padding);
+		preview.setText(content);
+		preview.setTextIsSelectable(true);
+		preview.setHorizontallyScrolling(true);
+		preview.setMovementMethod(new ScrollingMovementMethod());
+		preview.setLayoutParams(new ViewGroup.LayoutParams(
+				ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT));
+
+		final File source = document;
+		new AlertDialog.Builder(cont)
+				.setTitle(document.getName())
+				.setView(preview)
+				.setPositiveButton("Guardar", (dialog, which) -> saveDocumentToDownloads(source))
+				.setNegativeButton("Cerrar", null)
+				.show();
+	}
+
+	private File resolveDocumentFile() {
+		String fileName = (fname == null || fname.trim().isEmpty()) ? "print.txt" : fname;
+		File file = new File(AppPaths.printDir(cont), fileName);
+		if (file.exists()) return file;
+
+		// Compatibilidad con impresiones legacy que quedaron directamente bajo ROAD.
+		file = new File(AppPaths.road(cont), fileName);
+		return file.exists() ? file : null;
+	}
+
+	private String readDocument(File document) {
+		StringBuilder content = new StringBuilder();
+		try (BufferedReader reader = new BufferedReader(
+				new InputStreamReader(new FileInputStream(document)))) {
+			String line;
+			while ((line = reader.readLine()) != null) {
+				content.append(line).append('\n');
+			}
+			return content.toString();
+		} catch (Exception e) {
+			Toast.makeText(cont, "No se pudo abrir el documento: " + e.getMessage(),
+					Toast.LENGTH_LONG).show();
+			return null;
+		}
+	}
+
+	private void saveDocumentToDownloads(File source) {
+		String originalName = source.getName();
+		int extensionAt = originalName.lastIndexOf('.');
+		String baseName = extensionAt > 0 ? originalName.substring(0, extensionAt) : originalName;
+		String extension = extensionAt > 0 ? originalName.substring(extensionAt) : ".txt";
+		String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+				.format(new Date());
+		String displayName = baseName + "_" + timestamp + extension;
+
+		Backups.exportFileToDownloads(cont, source, "ROAD/Documentos", displayName, "text/plain");
 	}
 
 }
