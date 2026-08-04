@@ -663,7 +663,7 @@
             android:id="@+id/relCamara"
             android:layout_width="match_parent"
             android:layout_height="62dp"
-            android:layout_below="@+id/relCanastas"
+            android:layout_below="@+id/relPromocionesCliente"
             android:layout_alignParentStart="true"
             android:layout_marginStart="0dp"
             android:layout_marginTop="5dp"
@@ -699,38 +699,37 @@
 
         </RelativeLayout>
 
-    </RelativeLayout>
 
     <RelativeLayout
-        android:id="@+id/relPromocionesCliente"
-        android:layout_width="64dp"
-        android:layout_height="70dp"
-        android:layout_below="@+id/relRoad"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="140dp"
-        android:clickable="true"
-        android:contentDescription="Consultar promociones del cliente"
-        android:focusable="true"
-        android:onClick="showPromocionesCliente">
-
-        <ImageView
-            android:id="@+id/imgPromocionesCliente"
+            android:id="@+id/relPromocionesCliente"
             android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:layout_alignParentTop="true"
-            android:contentDescription="Promociones"
-            android:padding="5dp"
-            android:src="@drawable/promocion" />
+            android:layout_height="70dp"
+            android:layout_below="@+id/relCanastas"
+            android:clickable="true"
+            android:contentDescription="Consultar promociones del cliente"
+            android:focusable="true"
+            android:onClick="showPromocionesCliente">
 
-        <TextView
-            android:id="@+id/lblPromocionesCliente"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/imgPromocionesCliente"
-            android:gravity="center"
-            android:text="PROMOCIONES"
-            android:textSize="8sp"
-            android:textStyle="bold" />
+            <ImageView
+                android:id="@+id/imgPromocionesCliente"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_alignParentTop="true"
+                android:contentDescription="Promociones"
+                android:padding="5dp"
+                android:src="@drawable/promocion" />
+
+            <TextView
+                android:id="@+id/lblPromocionesCliente"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/imgPromocionesCliente"
+                android:gravity="center"
+                android:text="PROMOCIONES"
+                android:textSize="8sp"
+                android:textStyle="bold" />
+
+        </RelativeLayout>
 
     </RelativeLayout>
 
