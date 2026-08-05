@@ -454,8 +454,9 @@ public class PedidoRes extends PBase {
 		listView.setAdapter(adapter);
 	}
 	
- 	private void finishOrder(){
+	private void finishOrder(){
 	    boolean autoenvio=false;
+		boolean impresionHabilitada=false;
 
         try {
             sql = "SELECT ENVIO_AUTO_PEDIDOS FROM P_RUTA";
@@ -493,10 +494,16 @@ public class PedidoRes extends PBase {
 
 			btnSave.setVisibility(View.INVISIBLE);
 
-			if (gl.impresora.equalsIgnoreCase("S")) {
+			impresionHabilitada=prn.isEnabled() && !prn.emptyparam();
+
+			if (impresionHabilitada) {
 				String vModo=(gl.peModal.equalsIgnoreCase("TOL")?"TOL":"*");
 				pdoc.buildPrint(corel,0, vModo);
 				prn.printask(printcallback);
+			} else {
+				Toast.makeText(this,
+						"Impresión de pedidos no habilitada. El pedido fue guardado sin imprimir.",
+						Toast.LENGTH_LONG).show();
 			}
 
             if (toledano && autoenvio) enviaPedido();
@@ -506,7 +513,7 @@ public class PedidoRes extends PBase {
 			gl.closeCliDet=true;
 			gl.closeVenta=true;
 
-			if (!gl.impresora.equalsIgnoreCase("S")) {
+			if (!impresionHabilitada) {
 				gl.tolpedsend=true;
 			}
 

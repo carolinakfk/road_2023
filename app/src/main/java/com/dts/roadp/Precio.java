@@ -71,7 +71,12 @@ public class Precio {
 		BeDescuento = clsDesc.getDescuentoRecargo(false);
 		BeRecargo = clsDesc.getDescuentoRecargo(true);
 
-		if (gll.promdesc != 0 && BeDescuento != null) {
+		//#EJC20260805 fix(hh-desc-range-edit): el valor temporal solo pertenece a la
+		//misma confirmacion de producto y cantidad; nunca debe sobrevivir una edicion.
+		boolean descuentoTemporalVigente = gll.promdesc != 0 &&
+				prodid.equalsIgnoreCase(gll.promprod) &&
+				Double.compare(cant, gll.promcant) == 0;
+		if (descuentoTemporalVigente && BeDescuento != null) {
 			if (gll.promdesc != BeDescuento.valor) {
 				BeDescuento.valor = gll.promdesc;
 			}

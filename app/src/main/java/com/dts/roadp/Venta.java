@@ -746,6 +746,7 @@ public class Venta extends PBase {
         }
 
 		try {
+			limpiarAjustePromocionalTemporal("QUANTITY_EDITED");
 			try {
 				sql = "SELECT CODIGO,DESCCORTA FROM P_PRODUCTO WHERE CODIGO='" + prodid + "'";
 				DT = Con.OpenDT(sql);
@@ -896,6 +897,25 @@ public class Venta extends PBase {
 
 	}
 
+	//#EJC20260805 fix(hh-desc-range-edit): un ajuste confirmado para una cantidad
+	//anterior no puede reemplazar la escala que el motor resuelve al recalcular.
+	private void limpiarAjustePromocionalTemporal(String motivo) {
+		double descuentoAnterior=gl.promdesc;
+		double recargoAnterior=gl.recargo;
+		String productoAnterior=gl.promprod;
+		gl.promdesc=0;
+		gl.prommdesc=0;
+		gl.recargo=0;
+		gl.promapl=false;
+		gl.promprod="";
+		gl.promcant=0;
+		PromotionTrace.write(this,"PROMO_TEMPORARY_STATE_CLEARED",
+				"motivo="+motivo+";productoActual="+prodid+
+				";productoAnterior="+productoAnterior+
+				";descuentoAnterior="+descuentoAnterior+
+				";recargoAnterior="+recargoAnterior);
+	}
+
 	private void prodPrecio() {
 		try{
 			double baseFacturacionConvertida=prodPorPeso(prodid)
@@ -924,6 +944,7 @@ public class Venta extends PBase {
 
 	private void getPrecio(){
 		try{
+			limpiarAjustePromocionalTemporal("DISPATCH_PRICE_RECALCULATION");
 			//prodPrecio();
 			prc=new Precio(this,mu,gl.peDec);
 			prcEsp=new Precio(this,mu,gl.peDec);
@@ -2696,6 +2717,7 @@ public class Venta extends PBase {
 			if(dt!=null) dt.close();
 
 			umventa=app.umVenta(prodid);
+			limpiarAjustePromocionalTemporal("WEIGHT_OR_BARCODE_EDITED");
 
 			if (contrans) {
 				if (prodPorPeso(prodid)) {
