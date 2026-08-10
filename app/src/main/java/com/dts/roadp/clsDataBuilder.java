@@ -280,11 +280,6 @@ public class clsDataBuilder {
 		}
 		if (tabla.equalsIgnoreCase("D_FACTURAD")) {
 			return columna.equalsIgnoreCase("RECARGO") ||
-					columna.equalsIgnoreCase("RECARGOMONTO") ||
-					columna.equalsIgnoreCase("PRECIO_BASE") ||
-					columna.equalsIgnoreCase("TOTAL_BASE") ||
-					columna.equalsIgnoreCase("CODDESC_APLICADO") ||
-					columna.equalsIgnoreCase("CODRECARGO_APLICADO") ||
 					columna.toUpperCase().startsWith("INDIVIDUAL_");
 		}
 		if (tabla.equalsIgnoreCase("D_PEDIDOD")) {

@@ -1773,6 +1773,15 @@ public class FacturaRes extends PBase {
 				ins.add("UMPESO",gl.umpeso); //#HS_20181120_1625 Se agrego el valor gl.umpeso anteriormente estaba ""
 				ins.add("RECARGO",dt.getDouble(14));
 				ins.add("RECARGOMONTO",dt.getDouble(15));
+				double baseFacturacionPromocion = porpeso ? peso : dt.getDouble(1);
+				double descuentoUnitario = baseFacturacionPromocion > 0 ? dt.getDouble(5) / baseFacturacionPromocion : 0;
+				double recargoUnitario = baseFacturacionPromocion > 0 ? dt.getDouble(15) / baseFacturacionPromocion : 0;
+				ins.add("PRECIO_BASE",dt.getDouble(16));
+				ins.add("TOTAL_BASE",dt.getDouble(17));
+				ins.add("DESCUENTOUNITARIO",descuentoUnitario);
+				ins.add("RECARGOUNITARIO",recargoUnitario);
+				ins.add("CODDESC_APLICADO",dt.getInt(18));
+				ins.add("CODRECARGO_APLICADO",dt.getInt(19));
 				PromotionTrace.write(this,"PROMO_LINE_PERSISTED","factura="+corel+";producto="+dt.getString(0)+
 						";precioBase="+dt.getDouble(16)+";totalBase="+dt.getDouble(17)+";descuento="+dt.getDouble(5)+
 						";recargo="+dt.getDouble(15)+";totalFinal="+dt.getDouble(6)+";codDesc="+dt.getInt(18)+";codRecargo="+dt.getInt(19));

@@ -319,7 +319,7 @@ public class clsDocFactura extends clsDocument {
 				corelF = "";
             }
 
-			sql="SELECT D_FACTURAD.PRODUCTO,P_PRODUCTO.DESCLARGA,D_FACTURAD.CANT,D_FACTURAD.PRECIODOC,D_FACTURAD.IMP, D_FACTURAD.DES,D_FACTURAD.DESMON, D_FACTURAD.TOTAL, D_FACTURAD.UMVENTA, D_FACTURAD.UMPESO, D_FACTURAD.PESO, D_FACTURAD.UMSTOCK, D_FACTURAD.FACTOR " +
+			sql="SELECT D_FACTURAD.PRODUCTO,P_PRODUCTO.DESCLARGA,D_FACTURAD.CANT,D_FACTURAD.PRECIODOC,D_FACTURAD.IMP, D_FACTURAD.DES,D_FACTURAD.DESMON, D_FACTURAD.TOTAL, D_FACTURAD.UMVENTA, D_FACTURAD.UMPESO, D_FACTURAD.PESO, D_FACTURAD.UMSTOCK, D_FACTURAD.FACTOR, IFNULL(D_FACTURAD.RECARGOMONTO,0), IFNULL(D_FACTURAD.PRECIO_BASE,D_FACTURAD.PRECIODOC), IFNULL(D_FACTURAD.DESCUENTOUNITARIO,0), IFNULL(D_FACTURAD.RECARGOUNITARIO,0) " +
 				"FROM D_FACTURAD INNER JOIN P_PRODUCTO ON D_FACTURAD.PRODUCTO = P_PRODUCTO.CODIGO " +
 				"WHERE (D_FACTURAD.COREL='"+corel+"')";	
 			
@@ -345,6 +345,10 @@ public class clsDocFactura extends clsDocument {
                 item.peso = DT.getDouble(10);
 				item.ums = DT.getString(11);
 				item.fact = DT.getDouble(12);
+				item.recargo = DT.getDouble(13);
+				item.precioBase = DT.getDouble(14);
+				item.descuentoUnitario = DT.getDouble(15);
+				item.recargoUnitario = DT.getDouble(16);
 				item.esbarra=prodBarra(item.cod);
 
                 if (sinimp) item.tot = item.tot - item.imp;
@@ -468,12 +472,26 @@ public class clsDocFactura extends clsDocument {
 			ss = rep.ltrim(ss, prw - 14);
 			ss = ss + " " + rep.rtrim(frmdecimal(item.tot, 2), 9);
 			rep.add(ss);
+			addPromotionPriceDetail(item);
 
 		}
 
 		rep.line();
 
 		return true;
+	}
+
+	//#EJC20260806 feat(hh-factura-promocion): el recargo se incorpora al precio
+	//base visible y nunca se identifica como concepto en la factura del cliente.
+	private void addPromotionPriceDetail(itemData item) {
+		if (item.desc <= 0) return;
+
+		double precioBaseVisible = item.precioBase + item.recargoUnitario;
+		double precioPromocional = precioBaseVisible - item.descuentoUnitario;
+
+		rep.add(rep.ltrim("PROMOCION " + item.nombre, prw));
+		rep.add(rep.ltrim("P.Base:" + frmdecimal(precioBaseVisible,2) +
+				" P.Promo: " + frmdecimal(precioPromocional,2), prw));
 	}
 
 	//#EJC20260721 fix(hh-print-precio): muestra hasta seis decimales sin alterar TOTAL.
@@ -788,7 +806,8 @@ public class clsDocFactura extends clsDocument {
 	
 	private class itemData {
 		public String cod,nombre,um,ump,ums;
-		public double cant,peso,prec,imp,descper,desc,tot,fact, auxcant;
+		public double cant,peso,prec,imp,descper,desc,recargo,precioBase,
+				descuentoUnitario,recargoUnitario,tot,fact, auxcant;
 		public boolean esbarra;
 	}
 

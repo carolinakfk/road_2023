@@ -8,6 +8,17 @@ public final class PromotionSchema {
 
     public static void ensure(SQLiteDatabase db) {
         if (db == null) return;
+
+        //#EJC20260809 feat(hh-factura-promo-persistencia): D_FACTURAD es el
+        //contrato durable que viaja a ROAD. BaseDatosScript cubre instalaciones
+        //nuevas y estas sentencias actualizan bases ya existentes.
+        add(db,"D_FACTURAD","PRECIO_BASE REAL DEFAULT 0 NOT NULL");
+        add(db,"D_FACTURAD","TOTAL_BASE REAL DEFAULT 0 NOT NULL");
+        add(db,"D_FACTURAD","DESCUENTOUNITARIO REAL DEFAULT 0 NOT NULL");
+        add(db,"D_FACTURAD","RECARGOUNITARIO REAL DEFAULT 0 NOT NULL");
+        add(db,"D_FACTURAD","CODDESC_APLICADO INTEGER DEFAULT 0 NOT NULL");
+        add(db,"D_FACTURAD","CODRECARGO_APLICADO INTEGER DEFAULT 0 NOT NULL");
+
         add(db,"T_VENTA","PRECIO_BASE REAL");
         add(db,"T_VENTA","TOTAL_BASE REAL");
         add(db,"T_VENTA","CODDESC_APLICADO INTEGER");
