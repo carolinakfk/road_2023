@@ -329,6 +329,23 @@
         android:onClick="sendCant"
         android:src="@drawable/next48" />
 
+    <ImageView
+        android:id="@+id/imgProductDiscounts"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_below="@+id/lblPNum"
+        android:layout_toStartOf="@+id/imgNext"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="5dp"
+        android:clickable="true"
+        android:contentDescription="Descuentos aplicados"
+        android:focusable="true"
+        android:onClick="showAppliedPromotions"
+        android:padding="5dp"
+        android:src="@drawable/promocion"
+        android:visibility="gone" />
+
         <RelativeLayout
             android:id="@+id/relbotpan"
             android:layout_width="wrap_content"

@@ -27,7 +27,7 @@ public class ProdCantPrev extends PBase {
     private EditText txtCant,txtPeso;
     private TextView lblDesc,lblCant,lblPrec,lblDisp,lblBU,lblTot,lblCodProd;
     private TextView lblDispLbl,lblPesoLbl,lblFactor,lblCantPeso,lblPesoUni;
-    private ImageView imgProd,imgDel;
+    private ImageView imgProd,imgDel,imgProductDiscounts;
     private RelativeLayout relcrit;
 
     private Precio prc;
@@ -100,6 +100,10 @@ public class ProdCantPrev extends PBase {
             addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
         }
 
+    }
+
+    public void showAppliedPromotions(View view) {
+        DiscountProductDialog.show(this,Con);
     }
 
     public void showPic(View view){
@@ -1082,6 +1086,8 @@ public class ProdCantPrev extends PBase {
             lblCodProd=(TextView) findViewById(R.id.txtRoadTit);
             imgProd=(ImageView) findViewById(R.id.imgPFoto);
             imgDel=(ImageView) findViewById(R.id.imageView2);
+            imgProductDiscounts=(ImageView) findViewById(R.id.imgProductDiscounts);
+            imgProductDiscounts.setVisibility(View.VISIBLE);
             relcrit=findViewById(R.id.relativeLayout1);
         } catch (Exception e){
             addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
