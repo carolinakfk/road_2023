@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -376,7 +377,7 @@ public class printDMax extends printBase {
 		if (!hasCallback) return;
 
         try {
-            final Handler cbhandler = new Handler();
+            final Handler cbhandler = new Handler(Looper.getMainLooper());
             cbhandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -565,7 +566,7 @@ public class printDMax extends printBase {
 
 		dialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
-				final Handler cbhandler = new Handler();
+				final Handler cbhandler = new Handler(Looper.getMainLooper());
 				cbhandler.postDelayed(new Runnable() {
 					@Override
 					public void run() {
@@ -582,7 +583,7 @@ public class printDMax extends printBase {
 		});
 		dialog.setNeutralButton("Ver/Guardar", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
-				showViewSaveDocument();
+				showViewSaveDocument(printDMax.this::msgAskPrint);
 			}
 		});
 
@@ -615,7 +616,7 @@ public class printDMax extends printBase {
 		//#EJC20181130:Se comentarió por solicitud de auditor de SAT.
 		dialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
 		    public void onClick(DialogInterface dialog, int which) {
-		    	final Handler cbhandler = new Handler();
+				final Handler cbhandler = new Handler(Looper.getMainLooper());
 				cbhandler.postDelayed(new Runnable() {
 					@Override
 					public void run() {
@@ -626,7 +627,7 @@ public class printDMax extends printBase {
 		});
 		dialog.setNeutralButton("Ver/Guardar", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
-				showViewSaveDocument();
+				showViewSaveDocument(printDMax.this::msgAskRePrint);
 			}
 		});
 

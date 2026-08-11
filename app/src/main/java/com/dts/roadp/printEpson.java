@@ -185,7 +185,7 @@ public class printEpson extends printBase{
 		
 		if (!hasCallback) return;
 		
-		final Handler cbhandler = new Handler();
+		final Handler cbhandler = new Handler(Looper.getMainLooper());
 		cbhandler.postDelayed(new Runnable() {
 			@Override
 			public void run() {
@@ -251,7 +251,7 @@ public class printEpson extends printBase{
 		
 		dialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
 		    public void onClick(DialogInterface dialog, int which) {
-		    	final Handler cbhandler = new Handler();
+				final Handler cbhandler = new Handler(Looper.getMainLooper());
 				cbhandler.postDelayed(new Runnable() {
 					@Override
 					public void run() {
@@ -262,7 +262,7 @@ public class printEpson extends printBase{
 		});
 		dialog.setNeutralButton("Ver/Guardar", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
-				showViewSaveDocument();
+				showViewSaveDocument(printEpson.this::msgAskPrint);
 			}
 		});
 		

@@ -3,6 +3,7 @@ package com.dts.roadp;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.method.ScrollingMovementMethod;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -98,14 +99,23 @@ public class printBase {
 
 	/** Muestra el documento generado y permite guardar una copia publica bajo demanda. */
 	protected void showViewSaveDocument() {
+		showViewSaveDocument(null);
+	}
+
+	/** Al cerrar la vista previa, reanuda la decision de impresion si fue solicitada. */
+	protected void showViewSaveDocument(Runnable onClose) {
 		File document = resolveDocumentFile();
 		if (document == null || !document.exists()) {
 			Toast.makeText(cont, "No se encontro el documento generado.", Toast.LENGTH_LONG).show();
+			runContinuation(onClose);
 			return;
 		}
 
 		String content = readDocument(document);
-		if (content == null) return;
+		if (content == null) {
+			runContinuation(onClose);
+			return;
+		}
 
 		TextView preview = new TextView(cont);
 		int padding = (int) (16 * cont.getResources().getDisplayMetrics().density);
@@ -122,9 +132,16 @@ public class printBase {
 		new AlertDialog.Builder(cont)
 				.setTitle(document.getName())
 				.setView(preview)
-				.setPositiveButton("Guardar", (dialog, which) -> saveDocumentToDownloads(source))
-				.setNegativeButton("Cerrar", null)
+				.setPositiveButton("Guardar", (dialog, which) -> {
+					saveDocumentToDownloads(source);
+					runContinuation(onClose);
+				})
+				.setNegativeButton("Cerrar", (dialog, which) -> runContinuation(onClose))
 				.show();
+	}
+
+	private void runContinuation(Runnable continuation) {
+		if (continuation != null) new Handler(Looper.getMainLooper()).post(continuation);
 	}
 
 	private File resolveDocumentFile() {
