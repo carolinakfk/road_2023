@@ -341,7 +341,7 @@
         android:clickable="true"
         android:contentDescription="Descuentos aplicados"
         android:focusable="true"
-        android:onClick="showAppliedPromotions"
+        android:onClick="showProductPromotions"
         android:padding="5dp"
         android:src="@drawable/promocion"
         android:visibility="gone" />

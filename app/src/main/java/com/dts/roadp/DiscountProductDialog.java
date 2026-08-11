@@ -69,7 +69,7 @@ final class DiscountProductDialog {
                     addRow(activity, table, new String[]{
                             safeText(cursor.getString(0)),
                             safeText(cursor.getString(1)),
-                            safeText(cursor.getString(2)),
+                            ConsPromociones.nombreConClasificacion(cursor.getString(2)),
                             formatBasePrice(cursor.getDouble(3)),
                             formatPromotionalPrice(cursor.getDouble(4))
                     }, false, rowIndex % 2 != 0);
@@ -143,14 +143,16 @@ final class DiscountProductDialog {
                     int surchargeCode=cursor.getInt(7);
                     if (discountCode != 0 && discountAmount != 0) {
                         addRow(activity,table,new String[]{productCode,productName,
-                                "Descuento $"+String.format(Locale.US,"%.2f",discountAmount)+
+                                nombreAjuste(connection,discountCode,false)+" $"+
+                                        String.format(Locale.US,"%.2f",discountAmount)+
                                         " - CODDESC "+discountCode,
                                 formatBasePrice(basePrice),formatPromotionalPrice(promotionalPrice)},
                                 false,rowIndex++ % 2 != 0);
                     }
                     if (surchargeCode != 0 && surchargeAmount != 0) {
                         addRow(activity,table,new String[]{productCode,productName,
-                                "Recargo $"+String.format(Locale.US,"%.2f",surchargeAmount)+
+                                nombreAjuste(connection,surchargeCode,true)+" $"+
+                                        String.format(Locale.US,"%.2f",surchargeAmount)+
                                         " - CODDESC "+surchargeCode,
                                 formatBasePrice(basePrice),formatPromotionalPrice(promotionalPrice)},
                                 false,rowIndex++ % 2 != 0);
@@ -219,7 +221,7 @@ final class DiscountProductDialog {
                     "IFNULL(CODDESC_APLICADO,0),IFNULL(CODRECARGO_APLICADO,0) "+
                     "FROM T_CxCD WHERE CODIGO='"+code+"' ORDER BY ITEM DESC LIMIT 1");
             if (cursor != null && cursor.moveToFirst()) {
-                showResolvedReturnProduct(activity,productCode,productName,
+                showResolvedReturnProduct(activity,connection,productCode,productName,
                         cursor.getDouble(0),cursor.getDouble(1),
                         cursor.getDouble(2),cursor.getDouble(3),
                         cursor.getInt(4),cursor.getInt(5));
@@ -233,7 +235,8 @@ final class DiscountProductDialog {
                 discount,surcharge);
     }
 
-    private static void showResolvedReturnProduct(Activity activity, String productCode,
+    private static void showResolvedReturnProduct(Activity activity, BaseDatos connection,
+                                                   String productCode,
                                                    String productName, double basePrice,
                                                    double promotionalPrice, double discountAmount,
                                                    double surchargeAmount, int discountCode,
@@ -247,7 +250,8 @@ final class DiscountProductDialog {
         int rowIndex=0;
         if (discountCode != 0 && discountAmount != 0) {
             addRow(activity,table,new String[]{safeText(productCode),safeText(productName),
-                    "Descuento $"+String.format(Locale.US,"%.2f",discountAmount)+
+                    nombreAjuste(connection,discountCode,false)+" $"+
+                            String.format(Locale.US,"%.2f",discountAmount)+
                             " - CODDESC "+discountCode,
                     formatBasePrice(basePrice),formatPromotionalPrice(promotionalPrice)},
                     false,false);
@@ -255,7 +259,8 @@ final class DiscountProductDialog {
         }
         if (surchargeCode != 0 && surchargeAmount != 0) {
             addRow(activity,table,new String[]{safeText(productCode),safeText(productName),
-                    "Recargo $"+String.format(Locale.US,"%.2f",surchargeAmount)+
+                    nombreAjuste(connection,surchargeCode,true)+" $"+
+                            String.format(Locale.US,"%.2f",surchargeAmount)+
                             " - CODDESC "+surchargeCode,
                     formatBasePrice(basePrice),formatPromotionalPrice(promotionalPrice)},
                     false,rowIndex % 2 != 0);
@@ -274,6 +279,23 @@ final class DiscountProductDialog {
         String value=String.format(Locale.US,"%.2f",adjustment.valor);
         if ("S".equalsIgnoreCase(adjustment.porPorcentaje)) value+="%";
         return type+" "+value+" · CODDESC "+adjustment.codDesc;
+    }
+
+    private static String nombreAjuste(BaseDatos connection, int codDesc, boolean recargo) {
+        Cursor cursor=null;
+        try {
+            cursor=connection.OpenDT("SELECT IFNULL(NOMBRE,'') FROM P_DESCUENTO "+
+                    "WHERE CODDESC="+codDesc+" AND ES_RECARGO="+(recargo ? 1 : 0)+
+                    " ORDER BY FECHAINI DESC LIMIT 1");
+            if (cursor != null && cursor.moveToFirst()) {
+                String nombre=ConsPromociones.nombreConClasificacion(cursor.getString(0));
+                if (!nombre.isEmpty()) return nombre;
+            }
+        } catch (Exception ignored) {
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        return recargo ? "Recargo" : "Descuento";
     }
 
     private static void showDialog(Activity activity, TableLayout table) {

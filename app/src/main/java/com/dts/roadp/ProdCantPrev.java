@@ -49,6 +49,7 @@ public class ProdCantPrev extends PBase {
         setControls();
 
         prodid=gl.prod;lblCodProd.setText(prodid);
+		actualizarVisibilidadPromocion();
         um=gl.um;
         nivel=gl.nivel;
         rutatipo=gl.rutatipo;
@@ -102,9 +103,32 @@ public class ProdCantPrev extends PBase {
 
     }
 
-    public void showAppliedPromotions(View view) {
-        DiscountProductDialog.show(this,Con);
+    public void showProductPromotions(View view) {
+		Intent intent = new Intent(this,ConsPromociones.class);
+		intent.putExtra(ConsPromociones.EXTRA_CLIENTE_FIJO,gl.cliente);
+		intent.putExtra(ConsPromociones.EXTRA_PRODUCTO_FIJO,prodid);
+		startActivity(intent);
     }
+
+	private void actualizarVisibilidadPromocion() {
+		Cursor dt=null;
+		try {
+			String producto=prodid.replace("'","''");
+			sql="SELECT 1 FROM T_DESC T INNER JOIN P_PRODUCTO P ON P.CODIGO='"+producto+"' WHERE "+
+					"IFNULL(P.DESCUENTO,'S')<>'N' AND ((T.PTIPO=0 AND (T.PRODUCTO=P.CODIGO OR T.PRODUCTO='*')) OR "+
+					"(T.PTIPO=1 AND T.PRODUCTO=IFNULL(P.SUBLINEA,'')) OR "+
+					"(T.PTIPO=2 AND T.PRODUCTO=IFNULL(P.LINEA,'')) OR "+
+					"(T.PTIPO=3 AND T.PRODUCTO=IFNULL(P.MARCA,'')) OR "+
+					"(T.PTIPO=6 AND EXISTS (SELECT 1 FROM P_DESCUENTO_COMBO_DET CD WHERE CD.CODDESC=T.CODDESC AND CD.PRODUCTO=P.CODIGO))) LIMIT 1";
+			dt=Con.OpenDT(sql);
+			imgProductDiscounts.setVisibility(dt!=null && dt.getCount()>0 ? View.VISIBLE : View.GONE);
+		} catch (Exception e) {
+			imgProductDiscounts.setVisibility(View.GONE);
+			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
+		} finally {
+			if(dt!=null) dt.close();
+		}
+	}
 
     public void showPic(View view){
         try{
@@ -1087,7 +1111,7 @@ public class ProdCantPrev extends PBase {
             imgProd=(ImageView) findViewById(R.id.imgPFoto);
             imgDel=(ImageView) findViewById(R.id.imageView2);
             imgProductDiscounts=(ImageView) findViewById(R.id.imgProductDiscounts);
-            imgProductDiscounts.setVisibility(View.VISIBLE);
+			imgProductDiscounts.setVisibility(View.GONE);
             relcrit=findViewById(R.id.relativeLayout1);
         } catch (Exception e){
             addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");

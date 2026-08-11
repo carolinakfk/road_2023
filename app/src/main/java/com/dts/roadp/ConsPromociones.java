@@ -22,6 +22,7 @@ import java.util.Map;
 public class ConsPromociones extends PBase {
 
     public static final String EXTRA_CLIENTE_FIJO="CLIENTE_FIJO";
+	public static final String EXTRA_PRODUCTO_FIJO="PRODUCTO_FIJO";
 
     private RecyclerView recyclerView;
     private EditText txtFiltro;
@@ -67,6 +68,10 @@ public class ConsPromociones extends PBase {
         } else {
             cargarPromociones();
         }
+		String productoFijo=getIntent().getStringExtra(EXTRA_PRODUCTO_FIJO);
+		if(productoFijo!=null && !productoFijo.trim().isEmpty()) {
+			txtFiltro.setText(productoFijo.trim());
+		}
     }
 
     // #EJC20260730 feat(hh-promotion-query): consulta local eficiente con detalle
@@ -309,9 +314,33 @@ public class ConsPromociones extends PBase {
 
         String textoBusqueda() {
             // #EJC20260730 fix(hh-promotion-search): incluye productos del detalle de combos
-            return (codigo+" "+producto+" "+nombre+" "+codDesc+" "+
+            return (codigo+" "+producto+" "+nombreMostrado()+" "+codDesc+" "+
                     texto(detalleCombo)).toLowerCase(Locale.US);
         }
+
+        String nombreMostrado() {
+            return nombreConClasificacion(nombre);
+        }
+    }
+
+    static String nombreConClasificacion(String nombre) {
+        String valor=texto(nombre).trim();
+        String clasificacion=clasificacionCondicion(valor);
+        if (clasificacion.isEmpty()) return valor;
+        return valor.isEmpty() ? clasificacion : valor+" - "+clasificacion;
+    }
+
+    static String clasificacionCondicion(String nombre) {
+        String valor=texto(nombre).toUpperCase(Locale.US);
+        if (valor.contains("ZK96")) return "Descuento Combo";
+        if (valor.contains("ZK95")) return "Descuento Porcentual";
+        if (valor.contains("ZK97")) return "Descuento Escalonado";
+        if (valor.contains("ZK94")) return "Descuento Fijo";
+        if (valor.contains("ZR96")) return "Recargo Combo";
+        if (valor.contains("ZR95")) return "Recargo Porcentual";
+        if (valor.contains("ZR97")) return "Recargo Escalonado";
+        if (valor.contains("ZR94")) return "Recargo Fijo";
+        return "";
     }
 
     static final class EscalaItem {

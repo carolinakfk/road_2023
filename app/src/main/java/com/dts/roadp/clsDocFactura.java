@@ -71,7 +71,9 @@ public class clsDocFactura extends clsDocument {
 				imp=DT.getDouble(7);
 				//#EJC20260724 fix(hh-print-total-autoritativo): Toledano imprime
 				//el precio efectivo y TOTAL; no reconstruye descuento ni recargo.
-				stot=modo.equalsIgnoreCase("TOL") ? tot : tot+desc;
+				//El subtotal comercial conserva el recargo incluido en TOTAL y
+				//reintegra solamente el descuento que se mostrara por separado.
+				stot=tot+desc;
 
 				empp=DT.getString(8);
 				//#CKFK20220413 Cambie la fecha por la fecha de entrega que tiene hora
@@ -686,6 +688,7 @@ public class clsDocFactura extends clsDocument {
 		totalNotaC =   tot - totNotaC;
 
 		rep.addtotsp("Subtotal", stot);
+		if (desc > 0) rep.addtotsp("Descuento", desc);
 
 		if (corelF.equals(asignacion)) {
 

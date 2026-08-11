@@ -3863,6 +3863,75 @@ public class ComWS extends PBase {
 		}
 	}
 
+	private String clientesAsignadosPromocionesSql() {
+		if (!cargasuper) {
+			return "SELECT CR.CLIENTE FROM P_CLIRUTA CR WHERE CR.RUTA='" + ActRuta + "'";
+		}
+		return "SELECT DISTINCT CR.CLIENTE FROM P_CLIRUTA CR WHERE CR.RUTA IN (" +
+				"SELECT DISTINCT V.RUTA FROM VENDEDORES V WHERE V.Codigo IN (" +
+				"SELECT R.VENDEDOR FROM P_RUTA R WHERE R.CODIGO='" + ActRuta + "'))";
+	}
+
+	private String rutasCargaPromocionesSql() {
+		if (!cargasuper) {
+			return "SELECT '" + ActRuta + "' AS RUTA";
+		}
+		return "SELECT DISTINCT V.RUTA FROM VENDEDORES V WHERE V.Codigo IN (" +
+				"SELECT R.VENDEDOR FROM P_RUTA R WHERE R.CODIGO='" + ActRuta + "')";
+	}
+
+	private String productosAsignadosPromocionesSql() {
+		String rutas = rutasCargaPromocionesSql();
+		return "SELECT DISTINCT P.CODIGO FROM P_PRODUCTO P INNER JOIN P_RUTA R ON R.CODIGO IN (" + rutas + ") WHERE " +
+				"(R.VENTA='P' AND EXISTS (SELECT 1 FROM P_STOCK_PV PV WHERE PV.RUTA=R.CODIGO AND PV.CODIGO=P.CODIGO AND PV.ANULADO=0 " +
+				"AND PV.FECHA>='" + fsqli + "' AND PV.FECHA<='" + fsqlf + "')) OR " +
+				"(R.VENTA='V' AND ISNULL(R.RUTA_RECOLECTORA,0)=1 AND EXISTS (SELECT 1 FROM P_LINEARUTA LR " +
+				"WHERE LR.RUTA=R.CODIGO AND LR.LINEA=P.LINEA)) OR " +
+				"(R.VENTA<>'P' AND NOT (R.VENTA='V' AND ISNULL(R.RUTA_RECOLECTORA,0)=1) AND (" +
+				"EXISTS (SELECT 1 FROM P_STOCK S WHERE S.RUTA=R.CODIGO AND S.CODIGO=P.CODIGO " +
+				"AND S.FECHA>='" + fsqli + "' AND S.FECHA<='" + fsqlf + "' " +
+				"AND (ISNULL(S.CANT,0)>0 OR ISNULL(S.PESO,0)>0)) OR " +
+				"EXISTS (SELECT 1 FROM P_STOCKB B WHERE B.RUTA=R.CODIGO AND B.CODIGO=P.CODIGO " +
+				"AND B.FECHA>='" + fsqli + "' AND B.FECHA<='" + fsqlf + "' " +
+				"AND (ISNULL(B.CANT,0)>0 OR ISNULL(B.PESO,0)>0))))";
+	}
+
+	private String filtroDescuentoClientesRuta(String alias) {
+		String clientes = clientesAsignadosPromocionesSql();
+		return " AND (" +
+				alias + ".CTIPO=0 " +
+				"OR (" + alias + ".CTIPO=1 AND " + alias + ".CLIENTE IN (" + clientes + ")) " +
+				"OR (" + alias + ".CTIPO=10 AND EXISTS (SELECT 1 FROM P_CLIGRUPO G " +
+				"WHERE G.CODIGO=" + alias + ".CLIENTE AND G.CLIENTE IN (" + clientes + "))) " +
+				"OR (" + alias + ".CTIPO=11 AND " + alias + ".CLIENTE IN (" + rutasCargaPromocionesSql() + ")) " +
+				"OR EXISTS (SELECT 1 FROM P_CLIENTE C WHERE C.CODIGO IN (" + clientes + ") AND (" +
+				"(" + alias + ".CTIPO=2 AND " + alias + ".CLIENTE=C.TIPONEG) OR " +
+				"(" + alias + ".CTIPO=3 AND " + alias + ".CLIENTE=C.TIPO) OR " +
+				"(" + alias + ".CTIPO=4 AND " + alias + ".CLIENTE=C.SUBTIPO) OR " +
+				"(" + alias + ".CTIPO=5 AND " + alias + ".CLIENTE=C.CANAL) OR " +
+				"(" + alias + ".CTIPO=6 AND " + alias + ".CLIENTE=C.SUBCANAL) OR " +
+				"(" + alias + ".CTIPO=8 AND " + alias + ".CLIENTE=C.SUCURSAL) OR " +
+				"(" + alias + ".CTIPO=9 AND " + alias + ".CLIENTE=CAST(C.NIVELPRECIO AS VARCHAR(50))) OR " +
+				"(" + alias + ".CTIPO=12 AND " + alias + ".CLIENTE=ISNULL(C.TIPOLOGIA,'')) OR " +
+				"(" + alias + ".CTIPO=13 AND " + alias + ".CLIENTE=ISNULL(C.PRIORIZACION,'') " +
+				"AND ISNULL(" + alias + ".TIPOLOGIA,'')=ISNULL(C.TIPOLOGIA,'') " +
+				"AND ISNULL(" + alias + ".SUCURSAL,'')=ISNULL(C.SUCURSAL,'')) OR " +
+				"(" + alias + ".CTIPO=14 AND " + alias + ".CLIENTE=ISNULL(C.SUBTIPOLOGIA,''))" +
+				")))";
+	}
+
+	private String filtroDescuentoProductosRuta(String alias) {
+		String productos = productosAsignadosPromocionesSql();
+		return " AND ((" + alias + ".GLOBDESC='S' AND " + alias + ".PTIPO<>6) OR " +
+				"(" + alias + ".PTIPO=0 AND (" + alias + ".PRODUCTO='*' OR " + alias + ".PRODUCTO IN (" + productos + "))) OR " +
+				"(" + alias + ".PTIPO=1 AND EXISTS (SELECT 1 FROM P_PRODUCTO P WHERE P.CODIGO IN (" + productos + ") AND P.SUBLINEA=" + alias + ".PRODUCTO)) OR " +
+				"(" + alias + ".PTIPO=2 AND EXISTS (SELECT 1 FROM P_PRODUCTO P WHERE P.CODIGO IN (" + productos + ") AND P.LINEA=" + alias + ".PRODUCTO)) OR " +
+				"(" + alias + ".PTIPO=3 AND EXISTS (SELECT 1 FROM P_PRODUCTO P WHERE P.CODIGO IN (" + productos + ") AND P.MARCA=" + alias + ".PRODUCTO)) OR " +
+				"(" + alias + ".PTIPO=6 AND EXISTS (SELECT 1 FROM P_DESCUENTO_COMBO_DET CD WHERE CD.ID_DESCUENTO=" + alias + ".ID_DESCUENTO " +
+				"AND CD.PRODUCTO IN (" + productos + ")) AND NOT EXISTS (SELECT 1 FROM P_DESCUENTO_COMBO_DET CO " +
+				"WHERE CO.ID_DESCUENTO=" + alias + ".ID_DESCUENTO AND ISNULL(CO.OBLIGATORIO,1)=1 AND CO.PRODUCTO NOT IN (" + productos + "))))";
+	}
+
 	private String getTableSQL(String TN) {
 		String SQL = "";
 		long fi, ff;
@@ -4117,6 +4186,8 @@ public class ComWS extends PBase {
 					"PORPORCENTAJE, PRIORIDAD, PRIORIDAD_DESCUENTO, UMVENTA, SUCURSAL, TIPOLOGIA, CODCOMBO  ";
 			SQL += "FROM P_DESCUENTO_I WHERE DATEDIFF(D, FECHAINI,GETDATE()) >=0 AND DATEDIFF(D,GETDATE(), FECHAFIN) >=0 ";
 			SQL += "AND EXISTS (SELECT 1 FROM P_RUTA WHERE CODIGO='" + ActRuta + "' AND HABILITA_PROMOCIONES_PILOTO=1)";
+			SQL += filtroDescuentoClientesRuta("P_DESCUENTO_I");
+			SQL += filtroDescuentoProductosRuta("P_DESCUENTO_I");
 			return SQL;
 		}
 
@@ -4125,8 +4196,11 @@ public class ComWS extends PBase {
 					" DET.EMP, DET.TIPO_PARTICIPACION_COMBO ";
 			SQL += "FROM P_DESCUENTO_COMBO_DET DET ";
 			SQL += "INNER JOIN P_DESCUENTO_I DES ON DET.ID_DESCUENTO = DES.ID_DESCUENTO ";
-			SQL += "WHERE DATEDIFF(D, DES.FECHAINI, GETDATE()) >= 0 AND DATEDIFF(D, GETDATE(), DES.FECHAFIN) >= 0 ";
+			SQL += "WHERE DES.PTIPO=6 AND DATEDIFF(D, DES.FECHAINI, GETDATE()) >= 0 AND DATEDIFF(D, GETDATE(), DES.FECHAFIN) >= 0 ";
 			SQL += "AND EXISTS (SELECT 1 FROM P_RUTA WHERE CODIGO='" + ActRuta + "' AND HABILITA_PROMOCIONES_PILOTO=1)";
+			SQL += filtroDescuentoClientesRuta("DES");
+			SQL += filtroDescuentoProductosRuta("DES");
+			SQL += " AND DET.PRODUCTO IN (" + productosAsignadosPromocionesSql() + ")";
 			return SQL;
 		}
 

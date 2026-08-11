@@ -58,7 +58,7 @@ final class PromocionesAdapter
                 " · CODDESC "+item.codDesc);
         holder.producto.setVisibility(item.esCombo() ? View.GONE : View.VISIBLE);
         holder.producto.setText(item.producto);
-        holder.nombre.setText(item.nombre);
+        holder.nombre.setText(item.nombreMostrado());
         holder.tipo.setText(item.esRecargo ? "RECARGO" : "DESCUENTO");
 
         ConsPromociones.EscalaItem primera=item.escalas.get(0);

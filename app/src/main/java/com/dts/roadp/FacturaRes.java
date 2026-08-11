@@ -40,12 +40,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import Entidades.Detalle;
 import Entidades.Receptor;
 import Entidades.Referencia;
 import Entidades.RespuestaEdoc;
+import Entidades.RespuestaEdocConsulta;
 import Entidades.gDFRefFE;
 import Entidades.gDFRefNum;
 import Entidades.gFormaPago;
@@ -121,6 +124,8 @@ public class FacturaRes extends PBase {
 	private String QR = "";
 	private boolean exito = true;
 	private double RecargoMontoTotal = 0;
+	private final AtomicBoolean certificacionEnProceso = new AtomicBoolean(false);
+	private final ExecutorService certificacionExecutor = Executors.newSingleThreadExecutor();
 
 	@SuppressLint("MissingPermission")
 	@Override
@@ -917,7 +922,11 @@ public class FacturaRes extends PBase {
 		listView.setAdapter(adapter);
 	}
 
- 	private void finishOrder(){
+	private void finishOrder(){
+		if (!certificacionEnProceso.compareAndSet(false, true)) {
+			toastlong("La factura ya se esta procesando. Espere el resultado antes de intentar nuevamente.");
+			return;
+		}
 
 		if (!gl.cobroPendiente) {
 			ProgressDialog("Certificando factura...");
@@ -926,10 +935,32 @@ public class FacturaRes extends PBase {
 		}
 
 		if (!saved) {
-			if (!saveOrder()) return;
+			certificacionExecutor.execute(() -> {
+				boolean guardada;
+				try {
+					guardada = saveOrder();
+				} catch (Throwable e) {
+					addlog("finishOrder", e.getMessage(), corel);
+					mostrarErrorCertificacion("No se logro guardar la factura: " + e.getMessage());
+					finalizarProcesamientoConError();
+					return;
+				}
+				if (!guardada) {
+					finalizarProcesamientoConError();
+					return;
+				}
+				if (gl.cobroPendiente) {
+					runOnUiThread(() -> {
+						certificacionEnProceso.set(false);
+						impressOrder();
+					});
+				}
+			});
+			return;
 		}
 
 		if (gl.cobroPendiente) {
+			certificacionEnProceso.set(false);
 			impressOrder();
 		}
 
@@ -1047,7 +1078,7 @@ public class FacturaRes extends PBase {
 				addlog(Objects.requireNonNull(new Object() {
 				}.getClass().getEnclosingMethod()).getName(),"Inconsistencia de lotes , producto : "+consprod+" / "+corel,"");
 				db.endTransaction();
-				mu.msgbox("Inconsistencia de lotes , producto : "+consprod+" / "+corel);
+				msgbox("Inconsistencia de lotes , producto : "+consprod+" / "+corel);
 				return false;
 			}
 
@@ -1055,7 +1086,7 @@ public class FacturaRes extends PBase {
 				addlog(Objects.requireNonNull(new Object() {
 				}.getClass().getEnclosingMethod()).getName(),"Inconsistencia de barras "+corel,"");
 				db.endTransaction();
-				mu.msgbox("Inconsistencia de barras , producto : "+consprod+" / "+corel);
+				msgbox("Inconsistencia de barras , producto : "+consprod+" / "+corel);
 				return false;
 			}
 
@@ -1200,7 +1231,7 @@ public class FacturaRes extends PBase {
 			Sucursal = Catalogo.getSucursal();
 
 			if (Sucursal == null) {
-				progress.cancel();
+				cancelarProgresoSeguro();
 				msgbox("Sucursal sin datos");
 				return false;
 			}
@@ -2027,7 +2058,7 @@ public class FacturaRes extends PBase {
 				}catch (Exception e){
 					addlog(Objects.requireNonNull(new Object() {
 					}.getClass().getEnclosingMethod()).getName(),e.getMessage(),sql);
-					mu.msgbox("PendientePago: "+e.getMessage());
+					msgbox("PendientePago: "+e.getMessage());
 				}
 
 			}
@@ -2275,11 +2306,11 @@ public class FacturaRes extends PBase {
 		} catch (Exception e) {
 			db.endTransaction();
 			if (progress != null) {
-				progress.cancel();
+				cancelarProgresoSeguro();
 			}
             addlog(Objects.requireNonNull(new Object() {
 			}.getClass().getEnclosingMethod()).getName(),e.getMessage(),sql);
-            mu.msgbox("Error (factura) " + e.getMessage());
+            msgbox("Error (factura) " + e.getMessage());
 			return false;
         }
 
@@ -2287,27 +2318,38 @@ public class FacturaRes extends PBase {
 
 			try {
 
-				Handler mtimer = new Handler();
+				Handler mtimer = new Handler(getMainLooper());
 				Runnable mrunner = () -> {
+					certificacionExecutor.execute(() -> {
+						try {
+							CertificarFactura();
+						} finally {
+							runOnUiThread(() -> {
+								try {
+									if (gl.dvbrowse != 0) {
+										gl.dvbrowse = 0;
+										gl.tiponcredito = 0;
+									}
 
-					CertificarFactura();
-
-					if (gl.dvbrowse != 0) {
-						gl.dvbrowse = 0;
-						gl.tiponcredito = 0;
-					}
-
-					saveAtten(tot);
-					progress.cancel();
-					impressOrder();
+									saveAtten(tot);
+									if (progress != null) progress.cancel();
+									impressOrder();
+								} finally {
+									certificacionEnProceso.set(false);
+								}
+							});
+						}
+					});
 				};
 				mtimer.postDelayed(mrunner, 3000);
 
 			} catch (Exception e) {
-				if (progress != null) progress.cancel();
+				certificacionEnProceso.set(false);
+				cancelarProgresoSeguro();
 				Log.e("respuestageneradaBTB", e.getMessage());
 			} catch (Throwable e) {
-				if (progress != null) progress.cancel();
+				certificacionEnProceso.set(false);
+				cancelarProgresoSeguro();
 				e.printStackTrace();
 			}
 		} else {
@@ -2318,9 +2360,126 @@ public class FacturaRes extends PBase {
 				}
 				saveAtten(tot);
 			}
+			certificacionEnProceso.set(false);
 		}
 
 		return true;
+	}
+
+	private RespuestaEdoc obtenerOCertificarDocumento(Fimador firmador, rFE documento, String urlEmision) {
+		RespuestaEdoc existente = consultarDocumentoExistente(firmador, documento);
+		if (existente != null) {
+			Log.i("ROAD_FEL_TRACE", "documento_existente;tipo=" + documento.gDGen.iDoc +
+					";sucursal=" + documento.gDGen.Emisor.dSucEm +
+					";caja=" + documento.gDGen.dPtoFacDF +
+					";numero=" + documento.gDGen.dNroDF);
+			return existente;
+		}
+
+		try {
+			Log.i("ROAD_FEL_TRACE", "emision_unica_inicio;tipo=" + documento.gDGen.iDoc +
+					";sucursal=" + documento.gDGen.Emisor.dSucEm +
+					";caja=" + documento.gDGen.dPtoFacDF +
+					";numero=" + documento.gDGen.dNroDF);
+			RespuestaEdoc respuesta = firmador.EmisionDocumentoBTBTimeOut(5000, documento,
+					urltoken, usuario, clave, urlEmision, gl.ambiente);
+			if (respuesta != null) return respuesta;
+		} catch (Exception e) {
+			Log.w("ROAD_FEL_TRACE", "emision_unica_sin_respuesta;tipo=" + documento.gDGen.iDoc +
+					";numero=" + documento.gDGen.dNroDF + ";error=" + e.getClass().getSimpleName());
+			addlog("obtenerOCertificarDocumento", e.getMessage(), documento.gDGen.dNroDF);
+		}
+
+		// Una respuesta perdida no autoriza un segundo POST. Se consulta el mismo documento.
+		existente = consultarDocumentoExistente(firmador, documento);
+		if (existente != null) return existente;
+
+		RespuestaEdoc pendiente = new RespuestaEdoc();
+		pendiente.Cufe = "";
+		pendiente.Estado = "";
+		pendiente.MensajeRespuesta = "Resultado de certificacion no confirmado; documento pendiente de consulta.";
+		pendiente.XML = "";
+		pendiente.UrlCodeQR = "";
+		pendiente.FechaAutorizacion = "";
+		pendiente.NumAutorizacion = "";
+		return pendiente;
+	}
+
+	private RespuestaEdoc consultarDocumentoExistente(Fimador firmador, rFE documento) {
+		if (gl.url_consultar_documento_por_ruta == null ||
+				gl.url_consultar_documento_por_ruta.trim().isEmpty()) return null;
+
+		try {
+			RespuestaEdocConsulta consulta = firmador.consultarDocumento(urltoken, usuario, clave,
+					gl.url_consultar_documento_por_ruta,
+					documento.gDGen.Emisor.gRucEmi.dRuc,
+					documento.gDGen.iDoc,
+					documento.gDGen.Emisor.dSucEm,
+					documento.gDGen.dPtoFacDF,
+					documento.gDGen.dNroDF);
+
+			if (consulta == null || consulta.cufe == null || consulta.cufe.trim().isEmpty()) return null;
+
+			RespuestaEdoc respuesta = new RespuestaEdoc();
+			respuesta.Cufe = consulta.cufe;
+			respuesta.Estado = consulta.estadoEdoc == null ? "" : consulta.estadoEdoc;
+			respuesta.MensajeRespuesta = consulta.errorEDOC == null ? "Documento recuperado por consulta." : consulta.errorEDOC;
+			respuesta.UrlCodeQR = consulta.urlCodeQR == null ? "" : consulta.urlCodeQR;
+			respuesta.FechaAutorizacion = consulta.fechaAutorizacion == null ? "" : consulta.fechaAutorizacion;
+			respuesta.NumAutorizacion = consulta.numAutorizacion == null ? "" : consulta.numAutorizacion;
+			respuesta.XML = "";
+			return respuesta;
+		} catch (Exception e) {
+			Log.w("ROAD_FEL_TRACE", "consulta_documento_fallo;tipo=" + documento.gDGen.iDoc +
+					";numero=" + documento.gDGen.dNroDF + ";error=" + e.getClass().getSimpleName());
+			addlog("consultarDocumentoExistente", e.getMessage(), documento.gDGen.dNroDF);
+			return null;
+		}
+	}
+
+	private void mostrarToastCertificacion(String mensaje) {
+		runOnUiThread(() -> {
+			if (!isFinishing()) toastlong(mensaje);
+		});
+	}
+
+	private void mostrarErrorCertificacion(String mensaje) {
+		runOnUiThread(() -> {
+			if (!isFinishing()) msgbox(mensaje);
+		});
+	}
+
+	private void finalizarProcesamientoConError() {
+		runOnUiThread(() -> {
+			if (progress != null) progress.cancel();
+			certificacionEnProceso.set(false);
+		});
+	}
+
+	private void cancelarProgresoSeguro() {
+		runOnUiThread(() -> {
+			if (progress != null) progress.cancel();
+		});
+	}
+
+	@Override
+	protected void msgbox(String mensaje) {
+		runOnUiThread(() -> FacturaRes.super.msgbox(mensaje));
+	}
+
+	@Override
+	protected void toast(String mensaje) {
+		runOnUiThread(() -> FacturaRes.super.toast(mensaje));
+	}
+
+	@Override
+	protected void toastlong(String mensaje) {
+		runOnUiThread(() -> FacturaRes.super.toastlong(mensaje));
+	}
+
+	@Override
+	protected void toastlongd(String mensaje) {
+		runOnUiThread(() -> FacturaRes.super.toastlongd(mensaje));
 	}
 
 	private void CertificarFactura() {
@@ -2336,27 +2495,10 @@ public class FacturaRes extends PBase {
 				}
 			}
 
-			if (ConexionValida()) {
-				//#AT20230309 Intenta certificar 3 veces
-				try {
-					RespuestaEdocFac = Firmador.EmisionDocumentoBTBTimeOut(5000,Factura, urltoken, usuario, clave, urlDoc, gl.ambiente);
-
-					if (RespuestaEdocFac.Cufe == null) {
-						for (int i = 0; i < 2; i++) {
-							if (RespuestaEdocFac.Cufe == null && (RespuestaEdocFac.Estado == null || !RespuestaEdocFac.Estado.equals("15"))) {
-								RespuestaEdocFac = Firmador.EmisionDocumentoBTBTimeOut(5000,Factura, urltoken, usuario, clave, urlDoc, gl.ambiente);
-
-								if (RespuestaEdocFac.Cufe != null) {
-									break;
-								}
-							} else {
-								break;
-							}
-						}
-					}
-				} catch (Exception e) {
-					msgbox(new Object() {} .getClass().getEnclosingMethod().getName() + " - " + e.getMessage());
-				}
+			boolean conexionDisponible = ConexionValida();
+			if (conexionDisponible) {
+				//#EJC20260811 fix(hh-fel-idempotencia): consulta primero y emite una sola vez.
+				RespuestaEdocFac = obtenerOCertificarDocumento(Firmador, Factura, urlDoc);
 
 			} else {
 				//#AT20230315 LLamdo BTC, cambiar valores en campos del encabezado
@@ -2407,24 +2549,24 @@ public class FacturaRes extends PBase {
 			ActualizaFacturaTmp(corel, ControlFEL);
 			Catalogo.UpdateEstadoFactura(RespuestaEdocFac.Cufe, RespuestaEdocFac.Estado, corel);
 
-			if (RespuestaEdocFac.Estado.equals("2")) {
+			if ("2".equals(RespuestaEdocFac.Estado)) {
 
-				toastlong("FACTURA CERTIFICADA CON EXITO -- " + " ESTADO: " + RespuestaEdocFac.Estado + " - " + RespuestaEdocFac.MensajeRespuesta);
+				mostrarToastCertificacion("FACTURA CERTIFICADA CON EXITO -- " + " ESTADO: " + RespuestaEdocFac.Estado + " - " + RespuestaEdocFac.MensajeRespuesta);
 
 				if (gl.dvbrowse!=0) {
 					GeneraNotaCredito(ControlFEL.Cufe, ControlFEL.FechaEnvio);
 				}
 
-			} else if(!ConexionValida() && ControlFEL.Estado.equals("1")) {
+			} else if(!conexionDisponible && "1".equals(ControlFEL.Estado)) {
 				if (gl.dvbrowse!=0) {
 					GeneraNotaCredito(ControlFEL.Cufe, ControlFEL.FechaEnvio);
 				}
-			} else if(ConexionValida() && !ControlFEL.Estado.equals("15")) {
+			} else if(conexionDisponible && !"15".equals(ControlFEL.Estado)) {
 				if (gl.dvbrowse!=0) {
 					GeneraNotaCredito(ControlFEL.Cufe, ControlFEL.FechaEnvio);
 				}
 			} else {
-				toastlong("ERR_233121237B: NO SE LOGRÓ CERTIFICAR LA FACTURA -- " + " ESTADO: " + RespuestaEdocFac.Estado + " - " + (RespuestaEdocFac.MensajeRespuesta == null ? "":RespuestaEdocFac.MensajeRespuesta));
+				mostrarToastCertificacion("ERR_233121237B: NO SE LOGRÓ CERTIFICAR LA FACTURA -- " + " ESTADO: " + RespuestaEdocFac.Estado + " - " + (RespuestaEdocFac.MensajeRespuesta == null ? "":RespuestaEdocFac.MensajeRespuesta));
 			}
 
 			//#AT20230313 Si no existe la factura en d control la intenta insertar de nuevo
@@ -2433,7 +2575,7 @@ public class FacturaRes extends PBase {
 			}
 
 		} catch (Exception e) {
-			msgbox(new Object() {} .getClass().getEnclosingMethod().getName() + " - " + e.getMessage());
+			mostrarErrorCertificacion(new Object() {} .getClass().getEnclosingMethod().getName() + " - " + e.getMessage());
 		} catch (Throwable e) {
 			throw new RuntimeException(e);
 		}
@@ -2540,26 +2682,8 @@ public class FacturaRes extends PBase {
 			NotaCredito.gDGen.Referencia.add(referencia);
 
 			if (ConexionValida()) {
-				//#AT20230309 Intenta certificar 3 veces
-				try {
-					RespuestaEdocNC = Firmador.EmisionDocumentoBTBTimeOut(5000,NotaCredito, urltoken, usuario, clave, urlDocNT, gl.ambiente);
-
-					if (RespuestaEdocNC.Cufe == null) {
-						for (int i = 0; i < 2; i++) {
-							if (RespuestaEdocNC.Cufe == null && !RespuestaEdocNC.Estado.equals("15")) {
-								RespuestaEdocNC = Firmador.EmisionDocumentoBTBTimeOut(5000,NotaCredito, urltoken, usuario, clave, urlDocNT, gl.ambiente);
-
-								if (RespuestaEdocNC.Cufe != null) {
-									break;
-								}
-							} else {
-								break;
-							}
-						}
-					}
-				} catch (Exception e) {
-					addlog(Objects.requireNonNull(new Object() { }.getClass().getEnclosingMethod()).getName(),e.getMessage(),sql);
-				}
+				//#EJC20260811 fix(hh-fel-idempotencia): la NC tambien emite una sola vez.
+				RespuestaEdocNC = obtenerOCertificarDocumento(Firmador, NotaCredito, urlDocNT);
 
 			} else {
 				//#AT20230315 LLamdo BTC, cambiar valores en campos del encabezado
@@ -2598,11 +2722,11 @@ public class FacturaRes extends PBase {
 			FacturaControlNC.Vendedor = gl.vend;
 			FacturaControlNC.Correlativo = String.valueOf(NotaCredito.gDGen.dNroDF);
 
-			if (RespuestaEdocNC.Estado.equals("2")) {
-				toastlong("NOTA DE CREDITO CERTIFICADA CON EXITO -- " + " ESTADO: " + RespuestaEdocNC.Estado + " - " + RespuestaEdocNC.MensajeRespuesta);
+			if ("2".equals(RespuestaEdocNC.Estado)) {
+				mostrarToastCertificacion("NOTA DE CREDITO CERTIFICADA CON EXITO -- " + " ESTADO: " + RespuestaEdocNC.Estado + " - " + RespuestaEdocNC.MensajeRespuesta);
 
 			} else {
-				toastlong("NO SE LOGRÓ CERTIFICAR LA NOTA DE CREDITO -- " + " ESTADO: " + RespuestaEdocNC.Estado + " - " + (RespuestaEdocNC.MensajeRespuesta == null ? "":RespuestaEdocNC.MensajeRespuesta));
+				mostrarToastCertificacion("NO SE LOGRÓ CERTIFICAR LA NOTA DE CREDITO -- " + " ESTADO: " + RespuestaEdocNC.Estado + " - " + (RespuestaEdocNC.MensajeRespuesta == null ? "":RespuestaEdocNC.MensajeRespuesta));
 			}
 
 			try{
@@ -2620,7 +2744,7 @@ public class FacturaRes extends PBase {
 			}
 
 		} catch (Exception e) {
-			mu.msgbox(Objects.requireNonNull(new Object() {
+			mostrarErrorCertificacion(Objects.requireNonNull(new Object() {
 			}.getClass().getEnclosingMethod()).getName() +" - "+ e.getMessage());
 		} catch (Throwable e) {
 			e.printStackTrace();
