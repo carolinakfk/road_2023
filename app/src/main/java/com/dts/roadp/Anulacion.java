@@ -463,7 +463,8 @@ public class Anulacion extends PBase {
 					}
 
 					if (tipo==6){
-						vItem.Cufe = (DT.getString(4).equals("null") ? "":DT.getString(4));
+						String cufeNotaCredito = DT.getString(4);
+						vItem.Cufe = (cufeNotaCredito == null || "null".equalsIgnoreCase(cufeNotaCredito) ? "" : cufeNotaCredito);
 						vItem.Certificada_DGI = (DT.getInt(6)==1?"Si":"No");
 						vItem.Estado = DT.getString(7);
 						vItem.CufeFactura = (DT.getString(8) == null ? "": DT.getString(8));
