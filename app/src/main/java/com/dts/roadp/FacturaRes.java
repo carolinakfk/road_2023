@@ -935,28 +935,13 @@ public class FacturaRes extends PBase {
 		}
 
 		if (!saved) {
-			certificacionExecutor.execute(() -> {
-				boolean guardada;
-				try {
-					guardada = saveOrder();
-				} catch (Throwable e) {
-					addlog("finishOrder", e.getMessage(), corel);
-					mostrarErrorCertificacion("No se logro guardar la factura: " + e.getMessage());
-					finalizarProcesamientoConError();
-					return;
-				}
-				if (!guardada) {
-					finalizarProcesamientoConError();
-					return;
-				}
-				if (gl.cobroPendiente) {
-					runOnUiThread(() -> {
-						certificacionEnProceso.set(false);
-						impressOrder();
-					});
-				}
-			});
-			return;
+			Log.i("ROAD_FEL_TRACE", "guardado_inicio;caja=" + fserie + ";numero=" + fcorel);
+			if (!saveOrder()) {
+				Log.e("ROAD_FEL_TRACE", "guardado_fallo;caja=" + fserie + ";numero=" + fcorel);
+				certificacionEnProceso.set(false);
+				return;
+			}
+			Log.i("ROAD_FEL_TRACE", "guardado_local_ok;caja=" + fserie + ";numero=" + fcorel + ";corel=" + corel);
 		}
 
 		if (gl.cobroPendiente) {
@@ -2465,6 +2450,11 @@ public class FacturaRes extends PBase {
 	@Override
 	protected void msgbox(String mensaje) {
 		runOnUiThread(() -> FacturaRes.super.msgbox(mensaje));
+	}
+
+	@Override
+	protected void addlog(String metodo, String mensaje, String info) {
+		runOnUiThread(() -> FacturaRes.super.addlog(metodo, mensaje, info));
 	}
 
 	@Override
