@@ -3953,7 +3953,7 @@ public class Anulacion extends PBase {
 		String vCorelDevol = "";
 		try {
 			sql = " SELECT FACTURA FROM D_NOTACRED WHERE COREL = '" +pNotaCD+ "' " +
-				  " AND TIPO_DOCUMENTO 'NC' ";
+				  " AND TIPO_DOCUMENTO = 'NC' ";
 			DT = Con.OpenDT(sql);
 
 			if (DT!=null){
