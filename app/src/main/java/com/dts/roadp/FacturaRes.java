@@ -301,6 +301,7 @@ public class FacturaRes extends PBase {
 		processFinalPromo();
 
 		printcallback= () -> {
+			Log.i("ROAD_PRINT_TRACE", "impresion_callback;corel=" + corel);
 
 			if (notaC==2){
 
@@ -3781,6 +3782,7 @@ public class FacturaRes extends PBase {
 			dialog.setMessage("Esta factura quedará PENDIENTE DE PAGO, deberá realizar el pago posteriormente. ¿Está seguro?");
 
 			dialog.setPositiveButton("Si", (dialog1, which) -> {
+				Log.i("ROAD_PRINT_TRACE", "impresion_correcta;corel=" + corel);
 				gl.cobroPendiente = true;
 				finishOrder();
 			});
@@ -3896,42 +3898,12 @@ public class FacturaRes extends PBase {
 					}.getClass().getEnclosingMethod()).getName(),e.getMessage(),"");
 				}
 
-				if (impres>1) {
-
-					try {
-						if (!gl.cobroPendiente){
-							sql="UPDATE D_FACTURA SET IMPRES=IMPRES+1 WHERE COREL='"+corel+"'";
-							db.execSQL(sql);
-						}
-					} catch (Exception e) {
-						msgbox(Objects.requireNonNull(new Object() {
-						}.getClass().getEnclosingMethod()).getName()+" . "+e.getMessage());
-					}
-
-					try {
-						sql="UPDATE D_NOTACRED SET IMPRES=IMPRES+1 WHERE COREL='"+corelNC+"'";
-						db.execSQL(sql);
-					} catch (Exception e) {
-						addlog(Objects.requireNonNull(new Object() {
-						}.getClass().getEnclosingMethod()).getName(),e.getMessage(),"");
-					}
-
-					gl.brw=0;
-					FacturaRes.super.finish();
-				} else {
-
-					if (!gl.cobroPendiente) {
-						fdoc.buildPrint(corel, 10,gl.peFormatoFactura);
-					}else{
-						fdoc.buildPrint(corel,4,gl.peFormatoFactura);
-					}
-
-					prn.printask(printcallback);
-
-				}
+				gl.brw=0;
+				FacturaRes.super.finish();
 			});
 
 			dialog.setNegativeButton("No", (dialog12, which) -> {
+				Log.i("ROAD_PRINT_TRACE", "reimpresion_solicitada;corel=" + corel);
 				//singlePrint();
 				prn.printask(printcallback);
 				//finish();
