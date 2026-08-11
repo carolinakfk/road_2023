@@ -319,7 +319,8 @@ public class FacturaRes extends PBase {
 		};
 
 		printclose= () -> {
-			//FacturaRes.super.finish();
+			Log.i("ROAD_PRINT_TRACE", "nota_credito_impresion_fin;corel=" + corelNC);
+			if (!isFinishing()) FacturaRes.super.finish();
 		};
 
 		Runnable printexit = FacturaRes.super::finish;

@@ -28,6 +28,7 @@ import datamaxoneil.printer.ParametersEZ;
 public class printDMax extends printBase {
 	
 	private String ss,ess;
+	private boolean printSucceeded;
 	private appGlobals appG;
 	private PBase clsPBase;
 	private boolean validprint;
@@ -312,6 +313,7 @@ public class printDMax extends printBase {
 
 		@Override
 	    protected Void doInBackground(String... params) {
+			printSucceeded=false;
 			try {
 				processPrint();
 			} catch (Exception e) {
@@ -325,7 +327,7 @@ public class printDMax extends printBase {
 	    @Override
 	    protected void onPostExecute(Void result) {
 	    	try {
-	    		doCallBack();
+				if (printSucceeded) doCallBack(); else doCloseCallback();
 			} catch (Exception e) {
 	    		ss=ss+e.getMessage();
 				clsPBase.addlog("onPostExecute", "" , ss);
@@ -393,6 +395,16 @@ public class printDMax extends printBase {
 
 	}
 
+	private void doCloseCallback() {
+		if (printclose == null) return;
+		new Handler(Looper.getMainLooper()).postDelayed(() -> {
+			try {
+				Log.i("ROAD_PRINT_TRACE", "impresora_no_conectada;driver=datamax");
+				printclose.run();
+			} catch (Exception ignored) {}
+		}, 200);
+	}
+
 	public void processPrintBarra() {
 
 		ss="p1..";
@@ -421,6 +433,7 @@ public class printDMax extends printBase {
 						intento+=1;
 
 					} catch (Exception e) {
+						intento+=1;
 						ss = ss + "Error : " + e.getMessage()+ ", intento " + intento;
 						Log.d("processPrint_ERR: ", ss);
 						clsPBase.addlog("processPrint", "" , ss);}
@@ -478,6 +491,7 @@ public class printDMax extends printBase {
 					intento+=1;
 
 				} catch (Exception e) {
+					intento+=1;
 					ss = ss + "Error : " + e.getMessage()+ ", intento " + intento;
 					Log.d("processPrint_ERR: ", ss);
 					clsPBase.addlog("processPrint", "" , ss);}
@@ -532,6 +546,7 @@ public class printDMax extends printBase {
 				prconn.clearWriteBuffer();
 				//printclose.run();
 				prconn.close();
+				printSucceeded=true;
 
 			}
 
