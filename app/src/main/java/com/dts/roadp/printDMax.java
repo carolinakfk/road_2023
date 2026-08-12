@@ -7,7 +7,6 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -27,8 +26,6 @@ import datamaxoneil.printer.ParametersEZ;
 // 00:17:AC:15:EC:C3
 
 public class printDMax extends printBase {
-	private static final int MAX_CONNECTION_ATTEMPTS = 10;
-	private static final long MAX_CONNECTION_RETRY_WINDOW_MS = 20000L;
 	
 	private String ss,ess;
 	private appGlobals appG;
@@ -328,7 +325,7 @@ public class printDMax extends printBase {
 	    @Override
 	    protected void onPostExecute(Void result) {
 	    	try {
-				doCallBack();
+	    		doCallBack();
 			} catch (Exception e) {
 	    		ss=ss+e.getMessage();
 				clsPBase.addlog("onPostExecute", "" , ss);
@@ -415,10 +412,8 @@ public class printDMax extends printBase {
 				printData = doc.getDocumentData();
 
 				int intento =0;
-				long inicioReintentos = SystemClock.elapsedRealtime();
 
-				while (!prconn.getIsOpen() && intento < MAX_CONNECTION_ATTEMPTS &&
-						SystemClock.elapsedRealtime() - inicioReintentos < MAX_CONNECTION_RETRY_WINDOW_MS) {
+				while (!prconn.getIsOpen() && intento <10) {
 					try{
 
 						prconn.open();
@@ -426,13 +421,12 @@ public class printDMax extends printBase {
 						intento+=1;
 
 					} catch (Exception e) {
-						intento+=1;
 						ss = ss + "Error : " + e.getMessage()+ ", intento " + intento;
 						Log.d("processPrint_ERR: ", ss);
 						clsPBase.addlog("processPrint", "" , ss);}
 				}
 
-				if(!prconn.getIsOpen()){
+				if(!prconn.getIsOpen() && intento ==10){
 					showmsg("No fue posible abrir la conexión con la impresora, se intentó: " + intento);
 				}else{
 					prconn.write(printData,0,printData.length);
@@ -475,10 +469,8 @@ public class printDMax extends printBase {
 			// y si no logra abrir la conexión de mensaje de que no pudo establecer conexión
 			//Además reduje el sleep a 500
 			int intento =0;
-			long inicioReintentos = SystemClock.elapsedRealtime();
 
-			while (!prconn.getIsOpen() && intento < MAX_CONNECTION_ATTEMPTS &&
-					SystemClock.elapsedRealtime() - inicioReintentos < MAX_CONNECTION_RETRY_WINDOW_MS) {
+			while (!prconn.getIsOpen() && intento <10) {
 				try{
 
 					prconn.open();
@@ -486,13 +478,12 @@ public class printDMax extends printBase {
 					intento+=1;
 
 				} catch (Exception e) {
-					intento+=1;
 					ss = ss + "Error : " + e.getMessage()+ ", intento " + intento;
 					Log.d("processPrint_ERR: ", ss);
 					clsPBase.addlog("processPrint", "" , ss);}
 			}
 
-			if(!prconn.getIsOpen()){
+			if(!prconn.getIsOpen() && intento ==10){
 				showmsg("No fue posible abrir la conexión con la impresora, se intentó: " + intento);
 				return;
 			}else{
@@ -541,6 +532,7 @@ public class printDMax extends printBase {
 				prconn.clearWriteBuffer();
 				//printclose.run();
 				prconn.close();
+
 			}
 
 			//	if (!prconn.getIsOpen()) prconn.open();
