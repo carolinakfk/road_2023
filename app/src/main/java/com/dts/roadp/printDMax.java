@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -26,9 +27,10 @@ import datamaxoneil.printer.ParametersEZ;
 // 00:17:AC:15:EC:C3
 
 public class printDMax extends printBase {
+	private static final int MAX_CONNECTION_ATTEMPTS = 10;
+	private static final long MAX_CONNECTION_RETRY_WINDOW_MS = 20000L;
 	
 	private String ss,ess;
-	private boolean printSucceeded;
 	private appGlobals appG;
 	private PBase clsPBase;
 	private boolean validprint;
@@ -313,7 +315,6 @@ public class printDMax extends printBase {
 
 		@Override
 	    protected Void doInBackground(String... params) {
-			printSucceeded=false;
 			try {
 				processPrint();
 			} catch (Exception e) {
@@ -327,7 +328,7 @@ public class printDMax extends printBase {
 	    @Override
 	    protected void onPostExecute(Void result) {
 	    	try {
-				if (printSucceeded) doCallBack(); else doCloseCallback();
+				doCallBack();
 			} catch (Exception e) {
 	    		ss=ss+e.getMessage();
 				clsPBase.addlog("onPostExecute", "" , ss);
@@ -395,16 +396,6 @@ public class printDMax extends printBase {
 
 	}
 
-	private void doCloseCallback() {
-		if (printclose == null) return;
-		new Handler(Looper.getMainLooper()).postDelayed(() -> {
-			try {
-				Log.i("ROAD_PRINT_TRACE", "impresora_no_conectada;driver=datamax");
-				printclose.run();
-			} catch (Exception ignored) {}
-		}, 200);
-	}
-
 	public void processPrintBarra() {
 
 		ss="p1..";
@@ -424,8 +415,10 @@ public class printDMax extends printBase {
 				printData = doc.getDocumentData();
 
 				int intento =0;
+				long inicioReintentos = SystemClock.elapsedRealtime();
 
-				while (!prconn.getIsOpen() && intento <10) {
+				while (!prconn.getIsOpen() && intento < MAX_CONNECTION_ATTEMPTS &&
+						SystemClock.elapsedRealtime() - inicioReintentos < MAX_CONNECTION_RETRY_WINDOW_MS) {
 					try{
 
 						prconn.open();
@@ -439,7 +432,7 @@ public class printDMax extends printBase {
 						clsPBase.addlog("processPrint", "" , ss);}
 				}
 
-				if(!prconn.getIsOpen() && intento ==10){
+				if(!prconn.getIsOpen()){
 					showmsg("No fue posible abrir la conexión con la impresora, se intentó: " + intento);
 				}else{
 					prconn.write(printData,0,printData.length);
@@ -482,8 +475,10 @@ public class printDMax extends printBase {
 			// y si no logra abrir la conexión de mensaje de que no pudo establecer conexión
 			//Además reduje el sleep a 500
 			int intento =0;
+			long inicioReintentos = SystemClock.elapsedRealtime();
 
-			while (!prconn.getIsOpen() && intento <10) {
+			while (!prconn.getIsOpen() && intento < MAX_CONNECTION_ATTEMPTS &&
+					SystemClock.elapsedRealtime() - inicioReintentos < MAX_CONNECTION_RETRY_WINDOW_MS) {
 				try{
 
 					prconn.open();
@@ -497,7 +492,7 @@ public class printDMax extends printBase {
 					clsPBase.addlog("processPrint", "" , ss);}
 			}
 
-			if(!prconn.getIsOpen() && intento ==10){
+			if(!prconn.getIsOpen()){
 				showmsg("No fue posible abrir la conexión con la impresora, se intentó: " + intento);
 				return;
 			}else{
@@ -546,8 +541,6 @@ public class printDMax extends printBase {
 				prconn.clearWriteBuffer();
 				//printclose.run();
 				prconn.close();
-				printSucceeded=true;
-
 			}
 
 			//	if (!prconn.getIsOpen()) prconn.open();
