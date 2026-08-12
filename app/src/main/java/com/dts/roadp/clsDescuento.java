@@ -73,7 +73,10 @@ public class clsDescuento {
 			if (validaPermisos()) {
 				//#EJC20260724 fix(TC0015-hh-escala-um): la base se resuelve por la UMVENTA de cada descuento.
 				String umPesoSql = sqlLiteral(gll.umpeso);
-				String umStockSql = gll.umstock;
+				// La UM de la linea que se esta recalculando es autoritativa. La UM global
+				// puede pertenecer al producto visitado anteriormente cuando se resuelve
+				// el pedido completo y provocaba conservar una escala vieja.
+				String umStockSql = sqlLiteral(umVenta);
 				String baseEvaluacionSql = "CASE WHEN UMVENTA='"+umPesoSql+"' THEN "+ppeso+
 						" WHEN UMVENTA='"+umStockSql+"' THEN "+cant+" ELSE "+cant+" END";
 				vSQL= "SELECT PRODUCTO,PTIPO,VALOR,PORCANT,PORPORCENTAJE,CODDESC,DESCTIPO,PRIORIDAD,IFNULL(PRIORIDAD_DESCUENTO,0),UMVENTA,RANGOINI,RANGOFIN "+
@@ -81,7 +84,8 @@ public class clsDescuento {
 						" AND PTIPO<4 AND GLOBDESC='N' AND ("+
 						" (DESCTIPO='M' AND "+baseEvaluacionSql+">=RANGOINI) OR "+
 						" (DESCTIPO='R' AND "+baseEvaluacionSql+">=RANGOINI AND "+baseEvaluacionSql+"<=RANGOFIN "+
-						")) ORDER BY CASE WHEN DESCTIPO='M' THEN 0 ELSE 1 END,PRIORIDAD_DESCUENTO ASC,PRIORIDAD ASC";
+						")) ORDER BY CASE WHEN DESCTIPO='M' THEN 0 ELSE 1 END,"+
+						"PRIORIDAD_DESCUENTO ASC,PRIORIDAD ASC,RANGOINI DESC";
 
 				DT=Con.OpenDT(vSQL);
 

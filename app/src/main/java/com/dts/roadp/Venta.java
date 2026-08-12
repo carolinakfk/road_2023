@@ -1424,6 +1424,9 @@ public class Venta extends PBase {
             db.setTransactionSuccessful();
             db.endTransaction();
 
+			// Un pedido cargado para modificacion debe partir de las promociones que
+			// corresponden a sus cantidades/pesos actuales y al conjunto completo.
+			reevaluarCombosDocumento("MODIFIED_ORDER_LOADED");
             listItems();
 
         } catch (Exception e) {

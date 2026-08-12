@@ -88,7 +88,9 @@ public class Catalogo extends PBase {
             DT.moveToFirst();
             while (!DT.isAfterLast()) {
                 clsClasses.clsBeP_DESCUENTO candidato = Cargar(DT);
-                if (candidato != null) candidatos.add(candidato);
+                if (candidato != null && !contieneCandidato(candidatos,candidato.codDesc)) {
+                    candidatos.add(candidato);
+                }
                 DT.moveToNext();
             }
             PromotionTrace.write(cont,"PROMO_COMBO_CANDIDATES","cliente="+cliente+";recargo="+
@@ -101,6 +103,14 @@ public class Catalogo extends PBase {
         }
 
         return candidatos;
+    }
+
+    private boolean contieneCandidato(List<clsClasses.clsBeP_DESCUENTO> candidatos,
+                                      int codDesc) {
+        for (clsClasses.clsBeP_DESCUENTO candidato : candidatos) {
+            if (candidato.codDesc == codDesc) return true;
+        }
+        return false;
     }
 
     private long normalizarFechaVigencia(long fechaDocumento) {
@@ -358,6 +368,10 @@ public class Catalogo extends PBase {
         }
 
         aplicarResolucionConjunta(lineas, descuento, recargo);
+        PromotionTrace.write(cont,"PROMO_DOCUMENT_REEVALUATED","cliente="+cliente+
+                ";filas="+lineas.size()+";descuentoCombo="+
+                (descuento.seleccion==null?0:descuento.seleccion.condicion.codDesc)+
+                ";recargoCombo="+(recargo.seleccion==null?0:recargo.seleccion.condicion.codDesc));
     }
 
     //#EJC20260724 fix(hh-combo-customer-return): las devoluciones de cliente tambien
@@ -472,7 +486,7 @@ public class Catalogo extends PBase {
                     "(DESCTIPO='M' AND "+baseSql+">=RANGOINI) OR "+
                     "(DESCTIPO='R' AND "+baseSql+">=RANGOINI AND "+baseSql+"<=RANGOFIN)) "+
                     "ORDER BY CASE WHEN DESCTIPO='M' THEN 0 ELSE 1 END,"+
-                    "PRIORIDAD_DESCUENTO ASC,PRIORIDAD ASC";
+                    "PRIORIDAD_DESCUENTO ASC,PRIORIDAD ASC,RANGOINI DESC";
             cursor=Con.OpenDT(sql);
             if (cursor == null || !cursor.moveToFirst()) return null;
             clsClasses.clsBeDescuento ajuste=clsCls.new clsBeDescuento();

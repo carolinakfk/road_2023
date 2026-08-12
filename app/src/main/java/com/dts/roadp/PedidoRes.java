@@ -481,6 +481,12 @@ public class PedidoRes extends PBase {
 				return;
 			}
 
+			// Ultima resolucion autoritativa antes de persistir. Cubre cambios de
+			// cantidad/peso y transiciones individual <-> combo ocurridas durante
+			// la edicion del pedido.
+			descCombos.ResolverCombosEnTVenta(cliid,du.getActDateTime(),true);
+			processFinalPromo();
+
 			if (!saveOrder()) return;
 
 			clsBonifSave bonsave=new clsBonifSave(this,corel,"P");
