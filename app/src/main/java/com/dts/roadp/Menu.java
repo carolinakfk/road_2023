@@ -1447,7 +1447,7 @@ public class Menu extends PBase {
 
 			dialog.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
-					DatosSupervisor("Devolución a bodega",true);
+					DatosSupervisor("Devolución a bodega",true, false);
 				}
 			});
 
@@ -1467,7 +1467,8 @@ public class Menu extends PBase {
 	}
 
     private void DatosSupervisor(String mensaje,
-                                 boolean esDevolucion) {
+                                 boolean esDevolucion,
+								 boolean esImpresion) {
 
 		try {
 
@@ -1544,8 +1545,10 @@ public class Menu extends PBase {
 					if (dtCorrectos) {
                         if (esDevolucion){
                             iniciaDevolucion();
-                        }else{
-                            menuConfImpres();
+                        }else if (esImpresion){
+							menuConfImpres();
+						}else{
+							confirmarBorradoDbConBackup();
                         }
 					} else {
 						layout.removeAllViews();
@@ -1722,7 +1725,7 @@ public class Menu extends PBase {
 						case 8:
 							Backups.exportCrashLogToDownloads(Menu.this);break;
 						case 9:
-							confirmarBorradoDbConBackup();break;
+							askBorrarBD() ;break;
 					}
 
 					dialog.cancel();
@@ -2609,7 +2612,7 @@ public class Menu extends PBase {
 
             dialog.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
-                    DatosSupervisor("Configuración impresora", false);
+                    DatosSupervisor("Configuración impresora", false, true);
                 }
             });
 
@@ -2627,6 +2630,37 @@ public class Menu extends PBase {
 
 
     }
+
+	public void askBorrarBD() {
+
+		try {
+
+			AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+
+			dialog.setTitle("Borrar BD");
+			dialog.setMessage("¿Va a borrar la BD, está seguro?");
+			dialog.setCancelable(false);
+
+			dialog.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					DatosSupervisor("Borrar BD", false, false);
+				}
+			});
+
+			dialog.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+				}
+			});
+
+			dialog.show();
+
+		} catch (Exception e) {
+			addlog(new Object() {
+			}.getClass().getEnclosingMethod().getName(), e.getMessage(), "");
+		}
+
+
+	}
 
     //endregion
 
