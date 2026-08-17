@@ -253,7 +253,11 @@ public class Catalogo extends PBase {
 				l.sinExistencia = DT.getInt(5);
 				l.lineKey = lineKey(l.producto,l.um,(int)l.sinExistencia);
 				if (!preciosBaseSesion.containsKey(l.lineKey)) preciosBaseSesion.put(l.lineKey,l.precioBase);
-				if (!l.individualSnapshot) guardarSnapshotIndividual(l);
+				if (!l.individualSnapshot) {
+					if (esAjusteCombo(l.codDescAplicado,false) || esAjusteCombo(l.codRecargoAplicado,true)) {
+						reconstruirSnapshotIndividual(l);
+					} else guardarSnapshotIndividual(l);
+				}
                 lista.add(l);
                 DT.moveToNext();
             }
@@ -642,6 +646,58 @@ public class Catalogo extends PBase {
         } catch (Exception e) {
             PromotionTrace.write(cont,"INDIVIDUAL_FALLBACK_ERROR","linea="+linea.lineKey+
                     ";error="+e.getClass().getSimpleName());
+        }
+    }
+
+    //#EJC20260817 fix(hh-combo-modified-order): un pedido guardado puede traer
+    //el precio y CODDESC finales del combo. Ese resultado no es un fallback
+    //individual valido y debe reconstruirse desde la base antes de reevaluar.
+    private void reconstruirSnapshotIndividual(clsClasses.VentaLinea linea) {
+        try {
+            clsDescuento selector = new clsDescuento(cont,linea.producto,linea.cant,linea.peso,
+                    linea.umStock,Con,db);
+            clsClasses.clsBeDescuento descuento = selector.getDescuentoRecargo(false);
+            clsClasses.clsBeDescuento recargo = selector.getDescuentoRecargo(true);
+            double baseFacturacion = ObtenerCantidadLinea(linea);
+            SapPromotionCalculator.Result calculo = SapPromotionCalculator.calculate(
+                    SapPromotionCalculator.decimal(linea.precioBase),
+                    SapPromotionCalculator.decimal(baseFacturacion),
+                    toAdjustment(descuento),toAdjustment(recargo));
+
+            linea.precio=calculo.derivedUnitPrice.doubleValue();
+            linea.total=calculo.authoritativeFinalTotal.doubleValue();
+            linea.totalBase=calculo.extendedBaseTotal.doubleValue();
+            linea.des=descuento==null?0:descuento.valor;
+            linea.desMon=calculo.discountTotal.doubleValue();
+            linea.recargo=recargo==null?0:recargo.valor;
+            linea.recargoMonto=calculo.surchargeTotal.doubleValue();
+            linea.codDescAplicado=descuento==null?0:descuento.codDesc;
+            linea.codRecargoAplicado=recargo==null?0:recargo.codDesc;
+            guardarSnapshotIndividual(linea);
+            PromotionTrace.write(cont,"INDIVIDUAL_FALLBACK_REBUILT",
+                    "linea="+linea.lineKey+";motivo=PEDIDO_CARGADO_CON_COMBO"+
+                    ";codDesc="+linea.codDescAplicado+
+                    ";codRecargo="+linea.codRecargoAplicado);
+        } catch (Exception e) {
+            PromotionTrace.write(cont,"INDIVIDUAL_FALLBACK_ERROR","linea="+linea.lineKey+
+                    ";motivo=REBUILD_MODIFIED_ORDER;error="+e.getClass().getSimpleName());
+            guardarSnapshotIndividual(linea);
+        }
+    }
+
+    private boolean esAjusteCombo(int codDesc, boolean esRecargo) {
+        if (codDesc == 0) return false;
+        Cursor cursor = null;
+        try {
+            cursor=Con.OpenDT("SELECT 1 FROM P_DESCUENTO WHERE CODDESC="+codDesc+
+                    " AND ES_RECARGO="+(esRecargo?1:0)+" AND PTIPO=6 LIMIT 1");
+            return cursor != null && cursor.moveToFirst();
+        } catch (Exception e) {
+            PromotionTrace.write(cont,"PROMO_COMBO_ID_ERROR","codDesc="+codDesc+
+                    ";recargo="+esRecargo+";error="+e.getClass().getSimpleName());
+            return false;
+        } finally {
+            if (cursor != null) cursor.close();
         }
     }
 

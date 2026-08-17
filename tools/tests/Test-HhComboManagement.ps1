@@ -87,6 +87,10 @@ $guards = [ordered]@{
     'LOCAL_FALLBACK_ONLY_IN_TVENTA' = $saleSchema.Contains('INDIVIDUAL_SNAPSHOT') -and
         $saleSchema.Contains('INDIVIDUAL_CODRECARGO') -and
         -not $factSchema.Contains('INDIVIDUAL_')
+    'MODIFIED_ORDER_REBUILDS_INDIVIDUAL_FALLBACK' =
+        $catalog.Contains('INDIVIDUAL_FALLBACK_REBUILT') -and
+        $catalog.Contains('PEDIDO_CARGADO_CON_COMBO') -and
+        $catalog.Contains('esAjusteCombo')
     'ORDER_GENEALOGY_NOT_IN_BACKEND_TABLE' = $schema.Contains('T_PEDIDO_PROMO_STATE') -and
         -not $schema.Contains('add(db,"D_PEDIDOD","PRECIO_BASE') -and
         -not $sync.Contains('dbld.insert("T_PEDIDO_PROMO_STATE"')
