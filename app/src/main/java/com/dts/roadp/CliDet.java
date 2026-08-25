@@ -1922,7 +1922,10 @@ public class CliDet extends PBase {
 		try{
 			super.onResume();
 
-			if (gl.closeCliDet) super.finish();
+			if (gl.closeCliDet) {
+				super.finish();
+				return;
+			}
 
 			calcCredit();
 			habilitaOpciones();

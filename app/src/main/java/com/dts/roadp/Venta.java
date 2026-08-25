@@ -1385,15 +1385,27 @@ public class Venta extends PBase {
             if (dt.getCount()>0) {
                 dt.moveToFirst();
                 while (!dt.isAfterLast()) {
+					String productoPedido=dt.getString(0);
+					String umVentaPedido=dt.getString(2);
+					//#EJC20260824 fix(hh-combo-modified-order-umstock): D_PEDIDOD conserva
+					//la UM de venta/precio, no la UM comercial usada para cumplir combos.
+					//Al reconstruir T_VENTA se recupera del catalogo igual que al agregar
+					//una linea nueva; copiar UMVENTA hacia UMSTOCK hacia que las otras
+					//lineas dejaran de participar al editar un pedido guardado.
+					String umStockPedido=rutatipo.equalsIgnoreCase("V")
+							?app.umStock(productoPedido):app.umStockPV(productoPedido);
+					if (umStockPedido==null || umStockPedido.trim().isEmpty()) {
+						umStockPedido=umVentaPedido;
+					}
 
                     ins.init("T_VENTA");
 
-                    ins.add("PRODUCTO",dt.getString(0));
+					ins.add("PRODUCTO",productoPedido);
                     ins.add("SIN_EXISTENCIA",dt.getInt(1));
                     ins.add("EMPRESA",emp);
-                    ins.add("UM",dt.getString(2));
+					ins.add("UM",umVentaPedido);
                     ins.add("CANT",dt.getDouble(3));
-                    ins.add("UMSTOCK",dt.getString(2));
+					ins.add("UMSTOCK",umStockPedido);
                     ins.add("FACTOR",dt.getDouble(4));
                     ins.add("PRECIO",dt.getDouble(5));
                     ins.add("IMP",dt.getDouble(6));
@@ -1416,6 +1428,9 @@ public class Venta extends PBase {
 					ins.add("CODRECARGO_APLICADO",dt.getInt(19));
 
                     db.execSQL(ins.sql());
+					PromotionTrace.write(this,"PROMO_MODIFIED_ORDER_LINE_REBUILT",
+							"producto="+productoPedido+";umVenta="+umVentaPedido+
+							";umStock="+umStockPedido+";factor="+dt.getDouble(4));
 
                     dt.moveToNext();
                 }
@@ -1424,9 +1439,12 @@ public class Venta extends PBase {
             db.setTransactionSuccessful();
             db.endTransaction();
 
-			// Un pedido cargado para modificacion debe partir de las promociones que
-			// corresponden a sus cantidades/pesos actuales y al conjunto completo.
-			reevaluarCombosDocumento("MODIFIED_ORDER_LOADED");
+			//#EJC20260821 fix(hh-combo-modified-order-preserve): D_PEDIDOD y el estado
+			//local ya contienen la promocion autoritativa guardada. Al abrir el pedido
+			//se conserva tal cual; las mutaciones y PedidoRes antes de guardar realizan
+			//la reevaluacion completa del documento.
+			PromotionTrace.write(this,"PROMO_MODIFIED_ORDER_PRESERVED",
+					"pedido="+gl.modpedid+";accion=conservar_promocion_persistida");
             listItems();
 
         } catch (Exception e) {

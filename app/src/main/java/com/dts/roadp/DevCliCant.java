@@ -175,6 +175,13 @@ public class DevCliCant extends PBase {
 				gl.dvumventa = umcambiar;
 			}
 
+			if (unidadVacia(gl.dvumstock) || unidadVacia(gl.dvumventa) || unidadVacia(gl.dvumpeso)) {
+				gl.dvError = true;
+				mu.msgbox("No se puede agregar el producto " + prodid +
+						" porque UMSTOCK, UMVENTA y UMPESO son obligatorias.");
+				return;
+			}
+
 			if(txtLote.getText().toString().trim().equalsIgnoreCase("")){
 				gl.dvError = true;
 				mu.msgbox("Lote no puede ser vacío, por favor ingrese un lote.");return;
@@ -231,6 +238,10 @@ public class DevCliCant extends PBase {
 		}
 
 
+	}
+
+	private boolean unidadVacia(String unidad) {
+		return unidad == null || unidad.trim().isEmpty();
 	}
 
 	// Main

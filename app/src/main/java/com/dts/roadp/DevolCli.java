@@ -523,6 +523,11 @@ public class DevolCli extends PBase {
 		Double pcant;
 		int ncItem = 0;
 
+		if (!unidadesDetalleValidas()) {
+			restaurarControlesAplicacion();
+			return;
+		}
+
 		gl.dvcorreld = obtienecorrel("D");gl.devcord=gl.dvcorreld;
 		gl.dvcorrelnc = obtienecorrel("NC");gl.devcornc=gl.dvcorrelnc;
 
@@ -1092,6 +1097,37 @@ public class DevolCli extends PBase {
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
+	}
+
+	private boolean unidadesDetalleValidas() {
+		Cursor dt = null;
+		try {
+			sql = "SELECT CODIGO FROM T_CxCD WHERE CANT>0 AND (" +
+					"TRIM(COALESCE(UMSTOCK,''))='' OR " +
+					"TRIM(COALESCE(UMVENTA,''))='' OR " +
+					"TRIM(COALESCE(UMPESO,''))='') LIMIT 1";
+			dt = Con.OpenDT(sql);
+			if (dt != null && dt.moveToFirst()) {
+				mu.msgbox("No se puede crear la nota de crédito. El producto " + dt.getString(0) +
+						" no tiene UMSTOCK, UMVENTA o UMPESO.");
+				return false;
+			}
+			return true;
+		} catch (Exception e) {
+			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
+			mu.msgbox("No se pudo validar las unidades de medida de la nota de crédito.");
+			return false;
+		} finally {
+			if (dt != null) dt.close();
+		}
+	}
+
+	private void restaurarControlesAplicacion() {
+		aplicandoDevol = false;
+		imgNext.setVisibility(View.VISIBLE);
+		imgNext.setEnabled(true);
+		imgImg.setVisibility(View.VISIBLE);
+		imgImg.setEnabled(true);
 	}
 
 	private void createDoc(){

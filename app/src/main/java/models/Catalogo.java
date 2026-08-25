@@ -366,16 +366,16 @@ public class Catalogo extends PBase {
                     (descuento.ambiguo && recargo.ambiguo ? " y " : "")+
                     (recargo.ambiguo ? "recargo" : "");
             if (notificarEmpate) {
-                mu.msgbox("Existen varios combos completos con la misma prioridad de "+
-                        lados+". No se aplicara ninguno; se conservaran los ajustes individuales.");
+                mu.msgbox("Existen combos completos de "+lados+
+                        " que comparten productos. No se aplicaran los combos en conflicto; "+
+                        "se conservaran los ajustes individuales de esas lineas.");
             }
         }
 
         aplicarResolucionConjunta(lineas, descuento, recargo);
         PromotionTrace.write(cont,"PROMO_DOCUMENT_REEVALUATED","cliente="+cliente+
-                ";filas="+lineas.size()+";descuentoCombo="+
-                (descuento.seleccion==null?0:descuento.seleccion.condicion.codDesc)+
-                ";recargoCombo="+(recargo.seleccion==null?0:recargo.seleccion.condicion.codDesc));
+                ";filas="+lineas.size()+";descuentoCombos="+
+                codigosSeleccionados(descuento)+";recargoCombos="+codigosSeleccionados(recargo));
     }
 
     //#EJC20260724 fix(hh-combo-customer-return): las devoluciones de cliente tambien
@@ -391,8 +391,8 @@ public class Catalogo extends PBase {
         ComboResolution recargo = resolverMejorCombo(
                 GetDescuentosCombo(cliente, true, fechaDocumento), lineas, true);
         if ((descuento.ambiguo || recargo.ambiguo) && notificarEmpate) {
-            mu.msgbox("Existen varios combos completos con la misma prioridad en la devolucion. "+
-                    "No se aplicara ninguno; se conservaran los ajustes individuales.");
+            mu.msgbox("Existen combos completos que comparten productos en la devolucion. "+
+                    "No se aplicaran los combos en conflicto; se conservaran los ajustes individuales.");
         }
         aplicarResolucionDevolucion(lineas, descuento, recargo);
     }
@@ -525,19 +525,17 @@ public class Catalogo extends PBase {
                                               ComboResolution descuento,
                                               ComboResolution recargo) {
         for (clsClasses.VentaLinea linea : lineas) {
-            boolean aplicaDescuento = descuento.seleccion != null &&
-                    descuento.seleccion.participantes.contains(linea.lineKey);
-            boolean aplicaRecargo = recargo.seleccion != null &&
-                    recargo.seleccion.participantes.contains(linea.lineKey);
-            if (aplicaDescuento) {
-                linea.desMon=calcularAjusteCombo(linea,descuento.seleccion.condicion).doubleValue();
-                linea.des=descuento.seleccion.condicion.valor;
-                linea.codDescAplicado=descuento.seleccion.condicion.codDesc;
+            ComboEvaluation comboDescuento=comboParaLinea(descuento,linea.lineKey);
+            ComboEvaluation comboRecargo=comboParaLinea(recargo,linea.lineKey);
+            if (comboDescuento != null) {
+                linea.desMon=calcularAjusteCombo(linea,comboDescuento.condicion).doubleValue();
+                linea.des=comboDescuento.condicion.valor;
+                linea.codDescAplicado=comboDescuento.condicion.codDesc;
             }
-            if (aplicaRecargo) {
-                linea.recargoMonto=calcularAjusteCombo(linea,recargo.seleccion.condicion).doubleValue();
-                linea.recargo=recargo.seleccion.condicion.valor;
-                linea.codRecargoAplicado=recargo.seleccion.condicion.codDesc;
+            if (comboRecargo != null) {
+                linea.recargoMonto=calcularAjusteCombo(linea,comboRecargo.condicion).doubleValue();
+                linea.recargo=comboRecargo.condicion.valor;
+                linea.codRecargoAplicado=comboRecargo.condicion.codDesc;
             }
             BigDecimal total=SapPromotionCalculator.decimal(linea.totalBase)
                     .subtract(SapPromotionCalculator.decimal(linea.desMon))
@@ -726,29 +724,65 @@ public class Catalogo extends PBase {
             return result;
         }
 
-        ComboEvaluation mejor = completos.get(0);
-        List<Integer> empatados = new ArrayList<>();
-        for (ComboEvaluation actual : completos) {
-            if (actual.condicion.prioridadDescuento == mejor.condicion.prioridadDescuento &&
-                    actual.condicion.prioridad == mejor.condicion.prioridad) {
-                empatados.add(actual.condicion.codDesc);
+        //#EJC20260822 rule(hh-multiple-disjoint-combos): pueden coexistir N combos
+        //completos cuando no comparten ninguna linea/producto participante. Un
+        //traslape invalida solamente los combos involucrados; los disjuntos siguen.
+        Set<Integer> conflictivos = new HashSet<>();
+        for (int i=0;i<completos.size();i++) {
+            for (int j=i+1;j<completos.size();j++) {
+                ComboEvaluation izquierda=completos.get(i);
+                ComboEvaluation derecha=completos.get(j);
+                if (compartenProductos(izquierda,derecha)) {
+                    conflictivos.add(izquierda.condicion.codDesc);
+                    conflictivos.add(derecha.condicion.codDesc);
+                    PromotionTrace.write(cont,"COMBO_SELECTION_OVERLAP",
+                            "recargo="+esRecargo+";coddesc="+
+                                    izquierda.condicion.codDesc+","+derecha.condicion.codDesc+
+                                    ";accion=individual_en_conflicto");
+                }
             }
         }
 
-        if (empatados.size() > 1) {
-            result.ambiguo = true;
-            PromotionTrace.write(cont,"COMBO_SELECTION_AMBIGUOUS","recargo="+esRecargo+
-                    ";prioridadDescuento="+mejor.condicion.prioridadDescuento+
-                    ";prioridad="+mejor.condicion.prioridad+";coddesc="+empatados+
-                    ";accion=individual");
-            return result;
+        for (ComboEvaluation actual : completos) {
+            if (!conflictivos.contains(actual.condicion.codDesc)) {
+                result.selecciones.add(actual);
+                PromotionTrace.write(cont,"PROMO_COMBO_SELECTED","codDesc="+
+                        actual.condicion.codDesc+";recargo="+esRecargo+
+                        ";prioridadDescuento="+actual.condicion.prioridadDescuento+
+                        ";prioridad="+actual.condicion.prioridad);
+            }
         }
 
-        result.seleccion = mejor;
-        PromotionTrace.write(cont,"PROMO_COMBO_SELECTED","codDesc="+mejor.condicion.codDesc+
-                ";recargo="+esRecargo+";prioridadDescuento="+mejor.condicion.prioridadDescuento+
-                ";prioridad="+mejor.condicion.prioridad);
+        if (!conflictivos.isEmpty()) {
+            result.ambiguo = true;
+            PromotionTrace.write(cont,"COMBO_SELECTION_AMBIGUOUS","recargo="+esRecargo+
+                    ";coddesc="+conflictivos+
+                    ";accion=individual_solo_en_combos_traslapados");
+        }
         return result;
+    }
+
+    private boolean compartenProductos(ComboEvaluation izquierda,
+                                       ComboEvaluation derecha) {
+        for (String producto : izquierda.productos) {
+            if (derecha.productos.contains(producto)) return true;
+        }
+        return false;
+    }
+
+    private ComboEvaluation comboParaLinea(ComboResolution resolucion,String lineKey) {
+        for (ComboEvaluation seleccion : resolucion.selecciones) {
+            if (seleccion.participantes.contains(lineKey)) return seleccion;
+        }
+        return null;
+    }
+
+    private String codigosSeleccionados(ComboResolution resolucion) {
+        List<Integer> codigos=new ArrayList<>();
+        for (ComboEvaluation seleccion : resolucion.selecciones) {
+            codigos.add(seleccion.condicion.codDesc);
+        }
+        return codigos.toString();
     }
 
     private ComboEvaluation evaluarCombo(clsClasses.clsBeP_DESCUENTO condicion,
@@ -759,6 +793,7 @@ public class Catalogo extends PBase {
         result.completo = !detalles.isEmpty();
 
         for (clsClasses.clsBeP_DESCUENTO_COMBO_DET detalle : detalles) {
+            result.productos.add(detalle.producto);
             double acumulado = 0;
             Set<String> participantes = new HashSet<>();
             for (clsClasses.VentaLinea linea : lineas) {
@@ -797,10 +832,10 @@ public class Catalogo extends PBase {
                                            ComboResolution descuento,
                                            ComboResolution recargo) {
         for (clsClasses.VentaLinea linea : lineas) {
-            boolean aplicaDescuento = descuento.seleccion != null &&
-                    descuento.seleccion.participantes.contains(linea.lineKey);
-            boolean aplicaRecargo = recargo.seleccion != null &&
-                    recargo.seleccion.participantes.contains(linea.lineKey);
+            ComboEvaluation comboDescuento=comboParaLinea(descuento,linea.lineKey);
+            ComboEvaluation comboRecargo=comboParaLinea(recargo,linea.lineKey);
+            boolean aplicaDescuento = comboDescuento != null;
+            boolean aplicaRecargo = comboRecargo != null;
             if (!aplicaDescuento && !aplicaRecargo) continue;
 
             double baseFacturacion = ObtenerCantidadLinea(linea);
@@ -811,23 +846,23 @@ public class Catalogo extends PBase {
                     .multiply(SapPromotionCalculator.decimal(baseFacturacion)));
 
             BigDecimal descuentoTotal = aplicaDescuento
-                    ? calcularAjusteCombo(linea, descuento.seleccion.condicion)
+                    ? calcularAjusteCombo(linea, comboDescuento.condicion)
                     : SapPromotionCalculator.decimal(linea.desMon);
             BigDecimal recargoTotal = aplicaRecargo
-                    ? calcularAjusteCombo(linea, recargo.seleccion.condicion)
+                    ? calcularAjusteCombo(linea, comboRecargo.condicion)
                     : SapPromotionCalculator.decimal(linea.recargoMonto);
             BigDecimal totalFinal = baseTotal.subtract(descuentoTotal).add(recargoTotal)
                     .setScale(SapPromotionCalculator.MONEY_SCALE, SapPromotionCalculator.SAP_ROUNDING);
 
             if (aplicaDescuento) {
-                linea.des = descuento.seleccion.condicion.valor;
+                linea.des = comboDescuento.condicion.valor;
                 linea.desMon = descuentoTotal.doubleValue();
-                linea.codDescAplicado = descuento.seleccion.condicion.codDesc;
+                linea.codDescAplicado = comboDescuento.condicion.codDesc;
             }
             if (aplicaRecargo) {
-                linea.recargo = recargo.seleccion.condicion.valor;
+                linea.recargo = comboRecargo.condicion.valor;
                 linea.recargoMonto = recargoTotal.doubleValue();
-                linea.codRecargoAplicado = recargo.seleccion.condicion.codDesc;
+                linea.codRecargoAplicado = comboRecargo.condicion.codDesc;
             }
             linea.total = totalFinal.doubleValue();
             linea.precio = totalFinal.divide(SapPromotionCalculator.decimal(baseFacturacion),
@@ -867,10 +902,11 @@ public class Catalogo extends PBase {
         clsClasses.clsBeP_DESCUENTO condicion;
         boolean completo;
         Set<String> participantes = new HashSet<>();
+        Set<String> productos = new HashSet<>();
     }
 
     private static class ComboResolution {
-        ComboEvaluation seleccion;
+        List<ComboEvaluation> selecciones = new ArrayList<>();
         boolean ambiguo;
     }
 
