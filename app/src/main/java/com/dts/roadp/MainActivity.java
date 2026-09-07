@@ -64,8 +64,8 @@ public class MainActivity extends PBase {
     //private String cs1, cs2, cs3, barcode;
 
     //Código con monto mínimo
-    private final String parNumVer = "10.0.23 / ";
-    private final String  parFechaVer = "24-08-2026";
+    private final String parNumVer = "10.0.26 / ";
+    private final String  parFechaVer = "31-08-2026";
     private final String parTipoVer = "ROAD QAS";
 
     //RUC Token00100833

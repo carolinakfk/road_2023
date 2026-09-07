@@ -3139,16 +3139,12 @@ public class Anulacion extends PBase {
 				}
 			}else if (tipo==6){
 
-				String corelFactura=tieneFacturaNC(itemid);
+				clsDocDevolucion fdev;
 
-				if (!corelFactura.isEmpty()){
-					clsDocFactura fdoc;
+				fdev=new clsDocDevolucion(this,prn_nc.prw,gl.peMon,gl.peDecImp, "printnc.txt");
+				fdev.deviceid =gl.numSerie;
 
-					fdoc=new clsDocFactura(this,prn.prw,gl.peMon,gl.peDecImp, "",app.esClienteNuevo(pclicod),gl.codCliNuevo,gl.peModal);
-					fdoc.deviceid =gl.numSerie;
-					fdoc.medidapeso=gl.umpeso;
-					fdoc.buildPrint(corelFactura, 3, "TOL"); prn.printnoask(printclose,"print.txt");
-				}
+				fdev.buildPrint(itemid, 3, "TOL"); prn_nc.printnoask(printclose, "printnc.txt");
 
 			}
 
