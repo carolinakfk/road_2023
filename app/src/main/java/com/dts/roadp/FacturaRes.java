@@ -1089,6 +1089,7 @@ public class FacturaRes extends PBase {
 			ins.add("COREL",corel);
 			ins.add("ANULADO","N");
 			ins.add("FECHA",fecha);
+			ins.add("FECHA_PRECIO",gl.fechaPrecio>0 ? gl.fechaPrecio : fecha);
 			ins.add("EMPRESA",gl.emp);
 			ins.add("RUTA",gl.ruta);
 			ins.add("VENDEDOR",gl.vend);

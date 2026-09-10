@@ -70,6 +70,7 @@ public class activity_despacho_list extends PBase {
                 adapter.setSelectedIndex(position);
 
                 gl.iddespacho=item.corel;
+				gl.fechaPrecio=item.fechaPrecio;
                 gl.cliente = item.cliente;
                 gl.pedCorel=item.add1;
                 gl.rutaPedido = item.add2;
@@ -85,6 +86,13 @@ public class activity_despacho_list extends PBase {
                     }
                     DT.close();
                 }
+
+				if (gl.seleccionPrefacturaNC) {
+					gl.seleccionPrefacturaNC=false;
+					startActivity(new Intent(activity_despacho_list.this,DevolCli.class));
+					finish();
+					return;
+				}
 
                 iniciaVenta();
 
@@ -122,6 +130,7 @@ public class activity_despacho_list extends PBase {
     private void listItems() {
 
         gl.iddespacho="";
+		gl.fechaPrecio=0;
         gl.pedCorel="";
         gl.rutaPedido = "";
 

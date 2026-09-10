@@ -590,6 +590,7 @@ public class DevolCli extends PBase {
 				ins.add("COREL",gl.dvcorrelnc);
 				ins.add("ANULADO","N");
 				ins.add("FECHA",fecha);
+				ins.add("FECHA_PRECIO",gl.fechaPrecio>0 ? gl.fechaPrecio : fecha);
 				ins.add("RUTA",gl.ruta);
 				ins.add("VENDEDOR",gl.vend);
 				ins.add("CLIENTE",gl.cliente);
@@ -1195,8 +1196,8 @@ public class DevolCli extends PBase {
 	// cargar T_DESC para el cliente activo igual que Venta antes de calcular.
 	private void cargarDescuentosClienteDevolucion() {
 		try {
-			long fechaDocumento=gl.peModal.equalsIgnoreCase("TOL")
-					? app.fechaFactTol(du.getActDate()) : du.getActDate();
+			long fechaDocumento=gl.fechaPrecio>0 ? gl.fechaPrecio :
+					(gl.peModal.equalsIgnoreCase("TOL") ? app.fechaFactTol(du.getActDate()) : du.getActDate());
 			fechaDocumento=du.convertirFecha(fechaDocumento);
 			new clsDescFiltro(this,gl.ruta,gl.cliente,fechaDocumento);
 			com.dts.roadp.promotions.PromotionTrace.write(this,
@@ -1213,8 +1214,11 @@ public class DevolCli extends PBase {
 	//de la devolucion usan las mismas reglas de combo que pedido y factura.
 	private void reevaluarCombosDevolucion(String motivo) {
 		try {
-			long fechaDocumento=du.getActDateTime();
-			if (gl.peModal.equalsIgnoreCase("TOL")) fechaDocumento=app.fechaFactTol(du.getActDate());
+			long fechaDocumento=gl.fechaPrecio;
+			if (fechaDocumento<=0) {
+				fechaDocumento=du.getActDateTime();
+				if (gl.peModal.equalsIgnoreCase("TOL")) fechaDocumento=app.fechaFactTol(du.getActDate());
+			}
 			models.Catalogo resolver=new models.Catalogo(this,Con,db);
 			resolver.ResolverCombosEnDevolucion(gl.cliente,fechaDocumento,true);
 			com.dts.roadp.promotions.PromotionTrace.write(this,"PROMO_RETURN_RESOLVED",

@@ -97,6 +97,7 @@ public class clsDs_pedidoObj {
         ins.add("ADD1",item.add1);
         ins.add("ADD2",item.add2);
         ins.add("ADD3",item.add3);
+		ins.add("FECHA_PRECIO",item.fechaPrecio);
 
         db.execSQL(ins.sql());
 
@@ -126,6 +127,7 @@ public class clsDs_pedidoObj {
         upd.add("ADD1",item.add1);
         upd.add("ADD2",item.add2);
         upd.add("ADD3",item.add3);
+		upd.add("FECHA_PRECIO",item.fechaPrecio);
 
         upd.Where("(COREL='"+item.corel+"')");
 
@@ -193,6 +195,9 @@ public class clsDs_pedidoObj {
             item.add1=dt.getString(18);
             item.add2=dt.getString(19);
             item.add3=dt.getString(20);
+			int fechaPrecioIndex=dt.getColumnIndex("FECHA_PRECIO");
+			item.fechaPrecio=fechaPrecioIndex>=0 && !dt.isNull(fechaPrecioIndex)
+					? dt.getLong(fechaPrecioIndex) : item.fecha;
 
             items.add(item);
 

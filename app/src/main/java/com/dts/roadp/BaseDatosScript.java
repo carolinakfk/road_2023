@@ -117,6 +117,7 @@ public class BaseDatosScript {
 					"[TIPO_PEDIDO] TEXT NOT NULL,"+
 					"[TOTAL_MONTO_MINIMO] REAL NOT NULL,"+
 					"[RECARGOMONTO] REAL NOT NULL,"+
+					"[FECHA_PRECIO] INTEGER DEFAULT 0 NOT NULL,"+
 					"PRIMARY KEY ([COREL])"+
 					");";
 			database.execSQL(vSQL);
@@ -629,6 +630,7 @@ public class BaseDatosScript {
 					"[CUFE] TEXT,"+
 					"[ORDEN_COMPRA] TEXT,"+
 					"[RECARGOMONTO] REAL NOT NULL,"+
+					"[FECHA_PRECIO] INTEGER DEFAULT 0 NOT NULL,"+
 					"PRIMARY KEY ([COREL])"+
 					");";
 			database.execSQL(vSQL);
@@ -1096,6 +1098,7 @@ public class BaseDatosScript {
 					"[ES_ANULACION] INTEGER,"+
 					"[CUFE_FACTURA] TEXT,"+
 					"[FECHA_SISTEMA] INTEGER,"+
+					"[FECHA_PRECIO] INTEGER DEFAULT 0 NOT NULL,"+
 					"PRIMARY KEY ([COREL], [TIPO_DOCUMENTO])"+
 					");";
 			database.execSQL(vSQL);
@@ -2377,6 +2380,7 @@ public class BaseDatosScript {
 					"[ADD2] TEXT," +
 					"[ADD3] TEXT,"+
 					"[ORDEN_COMPRA] TEXT,"+
+					"[FECHA_PRECIO] INTEGER DEFAULT 0 NOT NULL,"+
 					"PRIMARY KEY ([COREL])"+
 					");";
 			database.execSQL(vSQL);
@@ -2552,6 +2556,7 @@ public class BaseDatosScript {
 					"[INDIVIDUAL_RECARGOMONTO] REAL DEFAULT 0 NOT NULL,"+
 					"[INDIVIDUAL_CODDESC] INTEGER DEFAULT 0 NOT NULL,"+
 					"[INDIVIDUAL_CODRECARGO] INTEGER DEFAULT 0 NOT NULL,"+
+					"[FECHA_PRECIO] INTEGER DEFAULT 0 NOT NULL,"+
 					"PRIMARY KEY ([PRODUCTO],[UM],[SIN_EXISTENCIA])"+
 					");";
 			database.execSQL(vSQL);

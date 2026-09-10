@@ -1355,10 +1355,12 @@ public class CliDet extends PBase {
             String srutatipo = DT.getString(0);
 
             if (srutatipo.equalsIgnoreCase("D")) {
-
-                int ii=gl.tiponcredito;
-
                 gl.despdevflag=false;gl.closeCliDet=true;
+				if (gl.tiponcredito==2) {
+					gl.seleccionPrefacturaNC=true;
+					startActivity(new Intent(this,activity_despacho_list.class));
+					return;
+				}
             }
 			Intent intent = new Intent(this,DevolCli.class);
 			startActivity(intent);

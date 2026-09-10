@@ -45,6 +45,7 @@ public class appGlobals extends Application {
 	public String ref1,ref2,ref3,fnombre,fnit,fdir,escaneo,corel_d_mov,barra, parNumVer, parFechaVer;
 	public String parTipoVer,umprev,modpedid;
 	public int tiponcredito,validarCred,gpsdist;
+	public long fechaPrecio;
     public boolean vcredito,vcheque,vchequepost,validimp,tolsuper=false,tolpedsend,tolprodcrit;
 	public boolean closeCliDet,closeVenta,promapl,pagado,pagocobro,sinimp,rutapos,devol,modoadmin;
 	public boolean usarpeso,banderafindia,depparc,incNoLectura,cobroPendiente,findiaactivo,banderaCobro;
@@ -68,6 +69,7 @@ public class appGlobals extends Application {
 
 	public boolean gpsCliente = false;
 	public boolean repPrefactura = false;
+	public boolean seleccionPrefacturaNC = false;
 
 	//Devolución Cliente
 	public String devtipo,devrazon,dvumventa,dvumstock,dvumpeso,dvlote;
