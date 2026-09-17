@@ -279,14 +279,17 @@ public class Producto extends PBase {
 
                     if (modotol) { // La empresa es Toledano
 
-						sql="SELECT DISTINCT P_PRODUCTO.CODIGO, P_PRODUCTO.DESCCORTA, P_PRODPRECIO.UNIDADMEDIDA, P_STOCK_PV.ESTADO , P_STOCK_PV.CANT, P_STOCK_PV.PESO, " +
+						//#EJC20260917 fix(hh-productos): evita una fila por cada documento de P_STOCK_PV.
+						String filtroStockPv = "S.CODIGO=P_PRODUCTO.CODIGO";
+						if (gl.cliente_extraruta) filtroStockPv += " AND S.CANT=0";
+
+						sql="SELECT DISTINCT P_PRODUCTO.CODIGO, P_PRODUCTO.DESCCORTA, P_PRODPRECIO.UNIDADMEDIDA, " +
+								"CASE WHEN EXISTS (SELECT 1 FROM P_STOCK_PV S WHERE "+filtroStockPv+" AND S.ESTADO='C') THEN 'C' ELSE 'A' END AS ESTADO, " +
+								"0 AS CANT, 0 AS PESO, " +
 								"CASE WHEN "+existePromocionAplicable("P_PRODUCTO.CODIGO")+" THEN 1 ELSE 0 END AS PROMOCION  " +
-                                "FROM P_PRODUCTO INNER JOIN	P_STOCK_PV ON P_STOCK_PV.CODIGO=P_PRODUCTO.CODIGO INNER JOIN " +
-                                "P_PRODPRECIO ON (P_STOCK_PV.CODIGO=P_PRODPRECIO.CODIGO)  " +
-                                "WHERE (P_PRODPRECIO.NIVEL = " + gl.nivel +") AND (P_PRODUCTO.ES_VENDIBLE=1) AND (ES_CANASTA = 0) ";
-                    	if (gl.cliente_extraruta) {
-							 sql=sql+"AND (P_STOCK_PV.CANT=0) ";
-						}
+								"FROM P_PRODUCTO INNER JOIN P_PRODPRECIO ON (P_PRODUCTO.CODIGO=P_PRODPRECIO.CODIGO)  " +
+								"WHERE (P_PRODPRECIO.NIVEL = " + gl.nivel +") AND (P_PRODUCTO.ES_VENDIBLE=1) AND (ES_CANASTA = 0) " +
+								"AND EXISTS (SELECT 1 FROM P_STOCK_PV S WHERE "+filtroStockPv+") ";
 
                         if (!mu.emptystr(famid)){
                             if (!famid.equalsIgnoreCase("0")) sql=sql+"AND (P_PRODUCTO.LINEA='"+famid+"') ";
