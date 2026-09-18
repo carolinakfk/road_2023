@@ -530,7 +530,7 @@ public class clsDataBuilder {
 		int c=0;
 		
 		if (cn.equalsIgnoreCase("FECHA") || cn.equalsIgnoreCase("FECHAENTR")
-            || cn.equalsIgnoreCase("FECHANAC") || cn.equalsIgnoreCase("FECHA_SISTEMA") ) {
+            || cn.equalsIgnoreCase("FECHANAC") || cn.equalsIgnoreCase("FECHA_SISTEMA") || cn.equalsIgnoreCase("FECHA_PRECIO") ) {
 			c=2;
 			if (cn.equalsIgnoreCase("FECHANAC")) c=3;
 		} else if (cn.equalsIgnoreCase("Valor_XML")) {
