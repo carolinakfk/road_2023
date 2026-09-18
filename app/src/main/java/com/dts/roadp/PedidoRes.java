@@ -656,6 +656,7 @@ public class PedidoRes extends PBase {
 			ins.add("TIPO_PEDIDO",tipo_pedido);
 			ins.add("TOTAL_MONTO_MINIMO",monto_minimo);
 			ins.add("RECARGOMONTO", recargomonto);
+			ins.add("FECHA_PRECIO", du.getActDateTime());
 
 			db.execSQL(ins.sql());
           		
