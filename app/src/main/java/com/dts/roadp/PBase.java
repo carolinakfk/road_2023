@@ -6,6 +6,7 @@ import android.app.Application;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.WindowManager;
@@ -162,7 +163,7 @@ public class PBase extends Activity {
 		final String vmsg = msg;
 		final String vinfo = info;
 
-		final Handler handler = new Handler();
+		final Handler handler = new Handler(Looper.getMainLooper());
 		handler.postDelayed(new Runnable() {
 			@Override
 			public void run() {

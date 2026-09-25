@@ -4574,7 +4574,8 @@ public class ComWS extends PBase {
 
 		if (TN.equalsIgnoreCase("DS_PEDIDO")) {
 			SQL = " SELECT COREL, ANULADO, dbo.AndrDate(FECHA), EMPRESA, RUTA, VENDEDOR, CLIENTE, KILOMETRAJE, dbo.AndrDate(FECHAENTR), DIRENTREGA, " +
-					" TOTAL, DESMONTO, IMPMONTO, PESO, BANDERA, STATCOM, CALCOBJ, IMPRES, ADD1, ADD2, ADD3, ORDEN_COMPRA "+
+					" TOTAL, DESMONTO, IMPMONTO, PESO, BANDERA, STATCOM, CALCOBJ, IMPRES, ADD1, ADD2, ADD3, ORDEN_COMPRA, "+
+					" ISNULL(dbo.AndrDate(FECHA_PRECIO),0) "+
 					" FROM DS_PEDIDO " +
 					" WHERE RUTA='" + ActRuta + "' AND (ANULADO='N') AND (STATCOM = 'N') " +
 					"AND (FECHA>='" + fsqli + "') AND (FECHA<='" + fsqlf + "') ";
