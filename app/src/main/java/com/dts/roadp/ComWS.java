@@ -3932,6 +3932,17 @@ public class ComWS extends PBase {
 				"WHERE CO.ID_DESCUENTO=" + alias + ".ID_DESCUENTO AND ISNULL(CO.OBLIGATORIO,1)=1 AND CO.PRODUCTO NOT IN (" + productos + "))))";
 	}
 
+	private String vigenciaHistoricaPrefacturasSql(String alias) {
+		// Solo una ruta de despacho con prefacturas pendientes del dia puede cargar
+		// condiciones vencidas hoy si FECHAFIN alcanza la FECHA_PRECIO.
+		// FECHAINI se valida al aplicar la condicion, no al descargarla.
+		return "(EXISTS (SELECT 1 FROM P_RUTA R WHERE R.CODIGO='" + ActRuta + "' AND R.VENTA='D') " +
+				"AND EXISTS (SELECT 1 FROM DS_PEDIDO DP WHERE DP.RUTA='" + ActRuta + "' " +
+				"AND DP.ANULADO='N' AND DP.BANDERA='N' AND DP.STATCOM='N' " +
+				"AND DP.FECHA>='" + fsqli + "' AND DP.FECHA<='" + fsqlf + "' " +
+				"AND CAST(" + alias + ".FECHAFIN AS DATE)>=DP.FECHA_PRECIO))";
+	}
+
 	private String getTableSQL(String TN) {
 		String SQL = "";
 		long fi, ff;
@@ -4184,7 +4195,8 @@ public class ComWS extends PBase {
 		if (TN.equalsIgnoreCase("P_DESCUENTO")) {
 			SQL = "SELECT  CLIENTE,CTIPO,PRODUCTO,PTIPO,TIPORUTA,RANGOINI,RANGOFIN,DESCTIPO,VALOR,GLOBDESC,PORCANT,dbo.AndrDateIni(FECHAINI),dbo.AndrDateFin(FECHAFIN),CODDESC,NOMBRE, ES_RECARGO, " +
 					"PORPORCENTAJE, PRIORIDAD, PRIORIDAD_DESCUENTO, UMVENTA, SUCURSAL, TIPOLOGIA, CODCOMBO  ";
-			SQL += "FROM P_DESCUENTO_I WHERE DATEDIFF(D, FECHAINI,GETDATE()) >=0 AND DATEDIFF(D,GETDATE(), FECHAFIN) >=0 ";
+			SQL += "FROM P_DESCUENTO_I WHERE ((DATEDIFF(D, FECHAINI,GETDATE()) >=0 AND DATEDIFF(D,GETDATE(), FECHAFIN) >=0) " +
+					"OR " + vigenciaHistoricaPrefacturasSql("P_DESCUENTO_I") + ") ";
 			SQL += "AND EXISTS (SELECT 1 FROM P_RUTA WHERE CODIGO='" + ActRuta + "' AND HABILITA_PROMOCIONES_PILOTO=1)";
 			SQL += filtroDescuentoClientesRuta("P_DESCUENTO_I");
 			SQL += filtroDescuentoProductosRuta("P_DESCUENTO_I");
@@ -4196,7 +4208,8 @@ public class ComWS extends PBase {
 					" DET.EMP, DET.TIPO_PARTICIPACION_COMBO ";
 			SQL += "FROM P_DESCUENTO_COMBO_DET DET ";
 			SQL += "INNER JOIN P_DESCUENTO_I DES ON DET.ID_DESCUENTO = DES.ID_DESCUENTO ";
-			SQL += "WHERE DES.PTIPO=6 AND DATEDIFF(D, DES.FECHAINI, GETDATE()) >= 0 AND DATEDIFF(D, GETDATE(), DES.FECHAFIN) >= 0 ";
+			SQL += "WHERE DES.PTIPO=6 AND ((DATEDIFF(D, DES.FECHAINI, GETDATE()) >= 0 AND DATEDIFF(D, GETDATE(), DES.FECHAFIN) >= 0) " +
+					"OR " + vigenciaHistoricaPrefacturasSql("DES") + ") ";
 			SQL += "AND EXISTS (SELECT 1 FROM P_RUTA WHERE CODIGO='" + ActRuta + "' AND HABILITA_PROMOCIONES_PILOTO=1)";
 			SQL += filtroDescuentoClientesRuta("DES");
 			SQL += filtroDescuentoProductosRuta("DES");
@@ -4209,8 +4222,9 @@ public class ComWS extends PBase {
 			SQL = " SELECT E.CODCLIPRODEXC,E.CLIENTE,E.PRODUCTO,dbo.AndrDateIni(E.FECHAINI),dbo.AndrDateFin(E.FECHAFIN)," +
 					"E.ACTIVO,E.ID_TRAZA_INTEGRACION_SAP,E.FEC_AGR,E.USR_AGR,E.FEC_MOD,E.USR_MOD " +
 					"FROM P_CLIENTE_PROD_EXCLUIDOS E WHERE E.ACTIVO = 1 " +
-					" AND CAST(GETDATE() AS DATE) >= CAST(E.FECHAINI AS DATE) " +
-					" AND CAST(GETDATE() AS DATE) <= CAST(E.FECHAFIN AS DATE) " +
+					" AND ((CAST(GETDATE() AS DATE) >= CAST(E.FECHAINI AS DATE) " +
+					" AND CAST(GETDATE() AS DATE) <= CAST(E.FECHAFIN AS DATE)) " +
+					" OR " + vigenciaHistoricaPrefacturasSql("E") + ") " +
 					" AND EXISTS (SELECT 1 FROM P_CLIRUTA CR WHERE CR.CLIENTE = E.CLIENTE " +
 					" AND CR.RUTA = '" + ActRuta + "') " +
 					" ORDER BY E.CLIENTE, E.PRODUCTO";

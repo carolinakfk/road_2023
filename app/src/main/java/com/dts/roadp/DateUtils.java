@@ -507,6 +507,32 @@ public class DateUtils {
 		return strDate;
 	}
 
+	/**
+	 * Convierte las fechas numéricas usadas por ROAD al formato ISO que acepta BOF.
+	 * Admite yyMMddHHmmss y yyyyMMddHHmmss para conservar compatibilidad con datos
+	 * legacy y con FECHA_PRECIO descargada desde BOF.
+	 */
+	public String fechaPrecioIso(long fecha) {
+		String valor = String.valueOf(fecha);
+
+		if (valor.length() == 12) {
+			valor = "20" + valor;
+		}
+
+		if (valor.length() != 14) {
+			throw new IllegalArgumentException(
+					"FECHA_PRECIO debe tener formato yyMMddHHmmss o yyyyMMddHHmmss"
+			);
+		}
+
+		return valor.substring(0, 4) + "-" +
+				valor.substring(4, 6) + "-" +
+				valor.substring(6, 8) + "T" +
+				valor.substring(8, 10) + ":" +
+				valor.substring(10, 12) + ":" +
+				valor.substring(12, 14);
+	}
+
 	public long convertirFecha(long fecha) {
 		String valor = String.valueOf(fecha);
 

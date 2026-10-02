@@ -63,6 +63,15 @@
         android:text="Medium Text"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
+    <TextView
+        android:id="@+id/lblFechaPrecio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/lblV20"
+        android:layout_alignParentLeft="true"
+        android:text="Fecha precio: No informada"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
 
 </RelativeLayout>
 

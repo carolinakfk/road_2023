@@ -2803,6 +2803,7 @@ public class Venta extends PBase {
 		try {
 			long fechaDocumento=du.getActDateTime();
 			if (gl.peModal.equalsIgnoreCase("TOL")) fechaDocumento=app.fechaFactTol(du.getActDate());
+			fechaDocumento=gl.fechaPromocionPrefactura(fechaDocumento);
 			Catalogo resolver=new Catalogo(this,Con,db);
 			resolver.ResolverCombosEnTVenta(gl.cliente,fechaDocumento,true);
 			PromotionTrace.write(this,"PROMO_DOCUMENT_RESOLVED","motivo="+motivo+
@@ -3666,9 +3667,7 @@ public class Venta extends PBase {
 
 			dialog.setPositiveButton("Si", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
-					if(gl.dvbrowse!=0){
-						gl.dvbrowse =0;
-					}
+					cancelarNotaCreditoConVentaTemporal();
 					if (rutapos) doExit();else listAten();
 				}
 			});
@@ -3681,6 +3680,33 @@ public class Venta extends PBase {
 		}catch (Exception e){
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
 		}
+	}
+
+	private void cancelarNotaCreditoConVentaTemporal() {
+		if (gl.dvbrowse == 0 && gl.tiponcredito != 2 && gl.devtotal <= 0) return;
+
+		try {
+			//#EJC20260930 fix(hh-nc-con-venta-cancelacion): sin factura no se
+			//persiste la NC; elimina su captura temporal y libera la prefactura.
+			db.execSQL("DELETE FROM T_CxCD");
+		} catch (Exception e) {
+			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"DELETE FROM T_CxCD");
+		}
+
+		gl.dvbrowse = 0;
+		gl.tiponcredito = 0;
+		gl.dvdispventa = 0;
+		gl.devtotal = 0;
+		gl.dvcorreld = "";
+		gl.dvcorrelnc = "";
+		gl.devcord = "";
+		gl.devcornc = "";
+		gl.dvestado = "";
+		gl.iddespacho = null;
+		gl.coddespacho = "";
+		gl.pedCorel = "";
+		gl.rutaPedido = "";
+		gl.fechaPrecio = 0;
 	}
 
 	private void msgAskDel(String msg) {
@@ -3920,8 +3946,8 @@ public class Venta extends PBase {
 		gl.ref2="";
 		gl.ref3="";
 
-		//#EJC20260721 fix(hh-desc-selection): vigencia basada en fecha de factura ROAD.
 		long fechaDocumentoDescuento = gl.peModal.equalsIgnoreCase("TOL") ? app.fechaFactTol(du.getActDate()) : du.getActDate();
+		fechaDocumentoDescuento = gl.fechaPromocionPrefactura(fechaDocumentoDescuento);
 		fechaDocumentoDescuento = du.convertirFecha(fechaDocumentoDescuento);
 		clsDescFiltro clsDFilt=new clsDescFiltro(this,gl.ruta,gl.cliente,fechaDocumentoDescuento);
 

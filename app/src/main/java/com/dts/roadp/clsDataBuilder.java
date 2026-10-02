@@ -174,11 +174,11 @@ public class clsDataBuilder {
 
 
 			if (tn.equals("D_FACTURA")) SS="SELECT COREL, ANULADO, FECHA, EMPRESA, RUTA, VENDEDOR, " +
-					                       "CASE ADD1 WHEN 'NUEVO' THEN '" + codCliNuevo + "' ELSE CLIENTE END  CLIENTE, " +
-					                       "KILOMETRAJE, FECHAENTR, FACTLINK, TOTAL, DESMONTO, IMPMONTO, PESO, BANDERA, "+
-					                       "STATCOM, CALCOBJ, SERIE, CORELATIVO, IMPRES, ADD1, ADD2, ADD3, DEPOS, PEDCOREL," +
-					                       "REFERENCIA, ASIGNACION, SUPERVISOR, AYUDANTE, VEHICULO, CODIGOLIQUIDACION, " +
-					                       "RAZON_ANULACION, CODIGO_RUTA_PEDIDO, DESPCOREL, CERTIFICADA_DGI, CUFE, ORDEN_COMPRA";
+						                       "CASE ADD1 WHEN 'NUEVO' THEN '" + codCliNuevo + "' ELSE CLIENTE END  CLIENTE, " +
+						                       "KILOMETRAJE, FECHAENTR, FACTLINK, TOTAL, DESMONTO, IMPMONTO, PESO, BANDERA, "+
+						                       "STATCOM, CALCOBJ, SERIE, CORELATIVO, IMPRES, ADD1, ADD2, ADD3, DEPOS, PEDCOREL," +
+						                       "REFERENCIA, ASIGNACION, SUPERVISOR, AYUDANTE, VEHICULO, CODIGOLIQUIDACION, " +
+						                       "RAZON_ANULACION, CODIGO_RUTA_PEDIDO, DESPCOREL, CERTIFICADA_DGI, CUFE, ORDEN_COMPRA, FECHA_PRECIO";
 			if (tn.equals("D_CANASTA")) SS="SELECT RUTA,FECHA,CLIENTE,PRODUCTO,CANTREC,CANTENTR,STATCOM,CORELTRANS,PESOREC,PESOENTR," +
 											"ANULADO,UNIDBAS,CODIGOLIQUIDACION,VENDEDOR";
 
@@ -246,6 +246,7 @@ public class clsDataBuilder {
                         if (ct==1) s="'"+DT.getString(i)+"'";
                         if (ct==2) s="'"+DU.univfechaext(DT.getLong(i))+"'";
                         if (ct==3) s="'"+DU.univfechaext(DT.getLong(i))+"'";
+						if (ct==5) s="'"+DU.fechaPrecioIso(DT.getLong(i))+"'";
 
                         valstr=s;
                         ins.add(nombre,valstr);
@@ -529,8 +530,10 @@ public class clsDataBuilder {
 	private int getCType(String cn,String ct) {
 		int c=0;
 		
-		if (cn.equalsIgnoreCase("FECHA") || cn.equalsIgnoreCase("FECHAENTR")
-            || cn.equalsIgnoreCase("FECHANAC") || cn.equalsIgnoreCase("FECHA_SISTEMA") || cn.equalsIgnoreCase("FECHA_PRECIO") ) {
+		if (cn.equalsIgnoreCase("FECHA_PRECIO")) {
+			c=5;
+		} else if (cn.equalsIgnoreCase("FECHA") || cn.equalsIgnoreCase("FECHAENTR")
+				|| cn.equalsIgnoreCase("FECHANAC") || cn.equalsIgnoreCase("FECHA_SISTEMA") ) {
 			c=2;
 			if (cn.equalsIgnoreCase("FECHANAC")) c=3;
 		} else if (cn.equalsIgnoreCase("Valor_XML")) {

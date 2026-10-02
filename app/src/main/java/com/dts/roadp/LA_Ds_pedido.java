@@ -62,6 +62,7 @@ public class LA_Ds_pedido  extends BaseAdapter {
             holder.lbl11 = (TextView) convertView.findViewById(R.id.lblV11);
             holder.lbl19 = (TextView) convertView.findViewById(R.id.lblV19);
             holder.lbl20 = (TextView) convertView.findViewById(R.id.lblV20);
+            holder.lblFechaPrecio = (TextView) convertView.findViewById(R.id.lblFechaPrecio);
 
             convertView.setTag(holder);
         } else {
@@ -73,6 +74,9 @@ public class LA_Ds_pedido  extends BaseAdapter {
         holder.lbl11.setText(mu.frmcur(items.get(position).total));
         holder.lbl19.setText(""+items.get(position).fechaentr);
         holder.lbl20.setText(""+items.get(position).add2);
+        long fechaPrecio = items.get(position).fechaPrecio;
+        holder.lblFechaPrecio.setText("Fecha precio: " +
+                (fechaPrecio > 0 ? formatoFechaPrecio(fechaPrecio) : "No informada"));
 
         if(selectedIndex!= -1 && position == selectedIndex) {
             convertView.setBackgroundColor(Color.rgb(26,138,198));
@@ -83,8 +87,29 @@ public class LA_Ds_pedido  extends BaseAdapter {
         return convertView;
     }
 
+    private String formatoFechaPrecio(long fechaPrecio) {
+        String valor = String.valueOf(fechaPrecio);
+
+        // FECHA_PRECIO puede recibirse como yyyyMMdd, yyyyMMddHHmm o yyyyMMddHHmmss.
+        if (valor.length() >= 8) {
+            try {
+                int anio = Integer.parseInt(valor.substring(0, 4));
+                int mes = Integer.parseInt(valor.substring(4, 6));
+                int dia = Integer.parseInt(valor.substring(6, 8));
+
+                if (anio >= 1900 && anio <= 2999 && mes >= 1 && mes <= 12 && dia >= 1 && dia <= 31) {
+                    return String.format(java.util.Locale.US, "%02d/%02d/%04d", dia, mes, anio);
+                }
+            } catch (NumberFormatException ignored) {
+                // Mantener compatibilidad con la codificacion legacy yyMMddHHmmss.
+            }
+        }
+
+        return du.sfecha(fechaPrecio);
+    }
+
     static class ViewHolder {
-        TextView lbl1,lbl10,lbl11,lbl19,lbl20;
+        TextView lbl1,lbl10,lbl11,lbl19,lbl20,lblFechaPrecio;
     }
 
 }

@@ -139,16 +139,12 @@ public class Producto extends PBase {
 						gl.um = item.um;
 						gl.pprodname = prname;
 
-						if (gl.iddespacho != null){
-							if (!gl.iddespacho.isEmpty()){
-                                if (permitirProducto(itemid)){
-									appProd();
-								}else{
-                                	msgbox("El cliente no puede agregar productos nuevos");
-								}
-							}
-						}else{
+						//#EJC20260930 fix(hh-nc-prefactura-productos): la factura se limita a
+						//DS_PEDIDOD, pero la NC con referencia puede devolver cualquier producto.
+						if (gl.tiponcredito == 2 || permitirProducto(itemid)) {
 							appProd();
+						} else {
+							msgbox("El cliente no puede agregar productos nuevos");
 						}
 
 					} catch (Exception e) {

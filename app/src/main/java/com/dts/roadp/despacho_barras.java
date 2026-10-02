@@ -1660,7 +1660,8 @@ public class despacho_barras extends PBase {
             }
 
             Catalogo resolver=new Catalogo(this,Con,db);
-            resolver.ResolverCombosEnTVenta(gl.cliente,app.fechaFactTol(du.getActDate()),true);
+			resolver.ResolverCombosEnTVenta(gl.cliente,
+					gl.fechaPromocionPrefactura(app.fechaFactTol(du.getActDate())),true);
 
             PromotionTrace.write(this,"PROMO_BARCODE_TOTAL_RECALCULATED",
                     "producto="+prodid+"|cantidad="+ccant+"|peso="+ppeso+

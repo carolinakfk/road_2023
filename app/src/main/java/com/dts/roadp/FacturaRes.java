@@ -279,7 +279,7 @@ public class FacturaRes extends PBase {
 
 		//#AT20260709 Aca vamos a calcular los nuevos valores en T_VENTA
 		DescCombos = new Catalogo(this, Con, db);
-		AplicarDescuentosRecargosCombo(cliid,fecha);
+		AplicarDescuentosRecargosCombo(cliid,gl.fechaPromocionPrefactura(fecha));
 
 		clsDescGlob clsDesc = new clsDescGlob(this);
 
@@ -1041,6 +1041,13 @@ public class FacturaRes extends PBase {
 		String vprod,vumstock,vumventa,vbarra,vumentr;
 		double vcant,vpeso,vfactor,peso,factpres,vtot,vprec;
 		int mitem,bitem,ncItem=0;
+		// La factura y la NC con referencia forman un mismo documento comercial:
+		// ambas deben persistir exactamente la fecha precio de la prefactura.
+		final long fechaPrecioDocumento=resolverFechaPrecioDocumento();
+		if (tienePrefacturaSeleccionada() && fechaPrecioDocumento<=0) {
+			msgbox("La prefactura seleccionada no tiene una fecha precio válida.");
+			return false;
+		}
 
 		corel=gl.corelFac;
 
@@ -1089,7 +1096,7 @@ public class FacturaRes extends PBase {
 			ins.add("COREL",corel);
 			ins.add("ANULADO","N");
 			ins.add("FECHA",fecha);
-			ins.add("FECHA_PRECIO",gl.fechaPrecio>0 ? gl.fechaPrecio : fecha);
+			ins.add("FECHA_PRECIO",fechaPrecioDocumento);
 			ins.add("EMPRESA",gl.emp);
 			ins.add("RUTA",gl.ruta);
 			ins.add("VENDEDOR",gl.vend);
@@ -1409,6 +1416,7 @@ public class FacturaRes extends PBase {
 				ins.add("COREL",gl.dvcorrelnc);corelNC=gl.dvcorrelnc;
 				ins.add("ANULADO","N");
 				ins.add("FECHA",fecha);
+				ins.add("FECHA_PRECIO",fechaPrecioDocumento);
 				ins.add("RUTA",gl.ruta);
 				ins.add("VENDEDOR",gl.vend);
 				ins.add("CLIENTE",gl.cliente);
@@ -2352,6 +2360,32 @@ public class FacturaRes extends PBase {
 		}
 
 		return true;
+	}
+
+	private boolean tienePrefacturaSeleccionada() {
+		return gl.iddespacho!=null && !gl.iddespacho.trim().isEmpty();
+	}
+
+	private long resolverFechaPrecioDocumento() {
+		if (gl.fechaPrecio>0) return gl.fechaPrecio;
+		if (!tienePrefacturaSeleccionada()) return fecha;
+
+		Cursor fechaPrefactura=null;
+		try {
+			fechaPrefactura=Con.OpenDT("SELECT FECHA_PRECIO FROM DS_PEDIDO WHERE COREL='"+
+					gl.iddespacho.replace("'", "''")+"'");
+			if (fechaPrefactura!=null && fechaPrefactura.moveToFirst()) {
+				long fechaPrecio=fechaPrefactura.getLong(0);
+				if (fechaPrecio>0) gl.fechaPrecio=fechaPrecio;
+				return fechaPrecio;
+			}
+		} catch (Exception e) {
+			addlog("resolverFechaPrecioDocumento",e.getMessage(),gl.iddespacho);
+		} finally {
+			if (fechaPrefactura!=null) fechaPrefactura.close();
+		}
+
+		return 0;
 	}
 
 	private RespuestaEdoc obtenerOCertificarDocumento(Fimador firmador, rFE documento, String urlEmision) {

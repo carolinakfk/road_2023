@@ -1065,11 +1065,17 @@ public class DevolCli extends PBase {
 
 			} else {
 				try {
-					Intent i = new Intent(this, CliDet.class);
+					//#EJC20260930 fix(hh-nc-con-venta-continuidad): la prefactura ya fue
+					//seleccionada antes de capturar la NC. Conserva ese contexto y entra
+					//directamente a la venta; CliDet limpiaria gl.iddespacho.
 					gl.dvbrowse=3;
 					gl.dvdispventa = cntotl;gl.devtotal = cntotl;
 					gl.dvestado = estado;
-					startActivity(i);
+					gl.closeCliDet = false;
+					gl.closeVenta = false;
+					gl.rutatipo = "V";
+					gl.coddespacho = gl.iddespacho;
+					startActivity(new Intent(this, Venta.class));
 					finish();
 				} catch (Exception e){
 					aplicandoDevol = false;

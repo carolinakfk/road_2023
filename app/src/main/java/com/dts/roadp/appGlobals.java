@@ -46,6 +46,17 @@ public class appGlobals extends Application {
 	public String parTipoVer,umprev,modpedid;
 	public int tiponcredito,validarCred,gpsdist;
 	public long fechaPrecio;
+	// La prefactura de despacho conserva su fecha comercial para promociones;
+	// la fecha operativa/de facturacion no se modifica.
+	public long fechaPromocionPrefactura(long fechaOperativa) {
+		// La pantalla de prefacturas cambia rutatipo a V al abrir Venta;
+		// iddespacho identifica la prefactura y se limpia al entrar a CliDet.
+		if (!"P".equalsIgnoreCase(rutatipo) && iddespacho != null
+				&& !iddespacho.isEmpty() && fechaPrecio > 0) {
+			return fechaPrecio;
+		}
+		return fechaOperativa;
+	}
     public boolean vcredito,vcheque,vchequepost,validimp,tolsuper=false,tolpedsend,tolprodcrit;
 	public boolean closeCliDet,closeVenta,promapl,pagado,pagocobro,sinimp,rutapos,devol,modoadmin;
 	public boolean usarpeso,banderafindia,depparc,incNoLectura,cobroPendiente,findiaactivo,banderaCobro;
