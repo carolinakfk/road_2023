@@ -1060,7 +1060,16 @@ public class Venta extends PBase {
         if (rutatipo.equalsIgnoreCase("V")) {
             gl.umstock=app.umStock(prodid);
         }else {
-            gl.umstock=app.umStockPV(prodid);
+            //#CKFK20260929 fix(hh-preventa-umstock): aplica solo en Preventa;
+            //Venta conserva la UM proveniente de P_STOCK/P_STOCKB.
+            String umStockPV=app.umStockPV(prodid);
+            gl.umstock=app.umStockPVValidada(prodid);
+            if (umStockPV!=null && gl.umstock!=null &&
+                    !umStockPV.equalsIgnoreCase(gl.umstock)) {
+                PromotionTrace.write(this,"PREORDER_UMSTOCK_CORRECTED",
+                        "producto="+prodid+";umStockPV="+umStockPV+
+                                ";umSalida="+gl.umstock+";origen=LINEA_NUEVA");
+            }
         }
 
         //#CKFK 20211221 Agregué esta validación para que no se guarde la UMSTOCK incorrecta
@@ -1393,7 +1402,7 @@ public class Venta extends PBase {
 					//una linea nueva; copiar UMVENTA hacia UMSTOCK hacia que las otras
 					//lineas dejaran de participar al editar un pedido guardado.
 					String umStockPedido=rutatipo.equalsIgnoreCase("V")
-							?app.umStock(productoPedido):app.umStockPV(productoPedido);
+							?app.umStock(productoPedido):app.umStockPVValidada(productoPedido);
 					if (umStockPedido==null || umStockPedido.trim().isEmpty()) {
 						umStockPedido=umVentaPedido;
 					}

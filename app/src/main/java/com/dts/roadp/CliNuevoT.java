@@ -154,9 +154,19 @@ public class CliNuevoT extends PBase {
         Cursor DT;
         int codimagen = 0;
         String cliente = "";
+		String tipologia = gl.IdTipologia == null ? "" : gl.IdTipologia.trim();
 
 
         try {
+			// Defensa final: nunca persistir una tipología nula, vacía o compuesta
+			// únicamente por espacios aunque se invoque el guardado desde un diálogo.
+			if (tipologia.isEmpty()) {
+				mu.msgbox("Falta la tipología del cliente");
+				txtTipologia.requestFocus();
+				return;
+			}
+			gl.IdTipologia = tipologia;
+
             //Guardando Info en D_CLINUEVOT
             ins.init("D_CLINUEVOT");
 
@@ -206,7 +216,7 @@ public class CliNuevoT extends PBase {
             ins.add("CSCERDO", txtCerdo.getText().toString());
             ins.add("CSCONGELADOS", txtCongelados.getText().toString());
             ins.add("CSSALSAS", txtSalsas.getText().toString());
-            ins.add("TIPOLOGIA",gl.IdTipologia);
+            ins.add("TIPOLOGIA",tipologia);
             //JP 20240618
             ins.add("RUC_VALIDADO",ruc_validado);
 
@@ -270,7 +280,7 @@ public class CliNuevoT extends PBase {
             ins.add("MODIF_PRECIO", 0);
             ins.add("PRIORIZACION", "");
             ins.add("CONTACTO", txtCliContacto.getText().toString());
-            ins.add("TIPOLOGIA",gl.IdTipologia);
+            ins.add("TIPOLOGIA",tipologia);
 
             db.execSQL(ins.sql());
 
@@ -541,6 +551,14 @@ public class CliNuevoT extends PBase {
                 imgBuscarCanal.requestFocus();
                 return false;
             }
+
+			String vIdTipologia = gl.IdTipologia == null ? "" : gl.IdTipologia.trim();
+			if (vIdTipologia.isEmpty()) {
+				mu.msgbox("Falta la tipología del cliente");
+				txtTipologia.requestFocus();
+				return false;
+			}
+			gl.IdTipologia = vIdTipologia;
 
             s=txtCiudad.getText().toString();
             if (mu.emptystr(s)) {

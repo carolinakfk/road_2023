@@ -63,8 +63,8 @@ public class CanalSubcanal extends PBase {
         ListaCanales();
         setHandlers();
 
-        gl.IdTipologia = " ";
-        gl.EditarTipologia = " ";
+        gl.IdTipologia = "";
+        gl.EditarTipologia = "";
     }
 
     private void setHandlers(){

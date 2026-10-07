@@ -288,7 +288,7 @@ public class ComWS extends PBase {
 				txtEmp.setText("03");
 			}
 			//txtWS.setText("http://200.46.46.104:8001/RDC7_SAP_QAS_ANDR/wsAndr.asmx");
-			txtWS.setText("http://movil.toledano.com/RDC7_SAP_PRD_ANDR/wsAndr.asmx");
+			txtWS.setText("https://movil.toledano.com/RDC7_SAP_PRD_ANDR/wsAndr.asmx");
 		}
 
 		mac = getMac();
@@ -952,6 +952,8 @@ public class ComWS extends PBase {
 
 			envioClienteModificados();
 
+			envioDespachosNoEntregados();
+
 			envioPedidos();
 
 			envioNotasCredito();
@@ -1013,6 +1015,8 @@ public class ComWS extends PBase {
 			envioCanastas();
 
 			envioClienteModificados();
+
+			envioDespachosNoEntregados();
 
 			envioPedidos();
 
@@ -6236,13 +6240,20 @@ public class ComWS extends PBase {
 
 					if (envioparcial) dbld.clear();
 
-					dbld.insert("D_DESPACHOD_NO_ENTREGADO", "WHERE COREL= '" + Corel + "'" +
-							     " AND PRODUCTO = '" + Producto + "'");
+					//#CKFK20261006 El envío manual y el WebService deben ser idempotentes.
+					//La llave de D_DESPACHOD_NO_ENTREGADO es COREL+PRODUCTO.
+					String corelSql = Corel.replace("'", "''");
+					String productoSql = Producto.replace("'", "''");
+					dbld.add("IF NOT EXISTS(SELECT 1 FROM D_DESPACHOD_NO_ENTREGADO WHERE COREL='" +
+							corelSql + "' AND PRODUCTO='" + productoSql + "') BEGIN");
+					dbld.insert("D_DESPACHOD_NO_ENTREGADO", "WHERE COREL='" + corelSql + "'" +
+							     " AND PRODUCTO='" + productoSql + "'");
+					dbld.add("END");
 
 					if (envioparcial && !esEnvioManual) {
 						if (commitSQL() == 1) {
-							sql = "UPDATE D_DESPACHOD_NO_ENTREGADO SET STATCOM='S' WHERE COREL= '" + Corel + "'" +
-									" AND PRODUCTO = '" + Producto + "'";
+							sql = "UPDATE D_DESPACHOD_NO_ENTREGADO SET STATCOM='S' WHERE COREL='" + corelSql + "'" +
+									" AND PRODUCTO='" + productoSql + "'";
 							db.execSQL(sql);
 							pc += 1;
 						} else {
@@ -7349,7 +7360,14 @@ public class ComWS extends PBase {
 
 					if (envioparcial) dbld.clear();
 
-					dbld.insert("D_ATENCION", "WHERE (RUTA='" + cor + "') AND (FECHA=" + fecha + ") AND (HORALLEG='" + hora + "') ");
+					//#CKFK20261006 Evita duplicar la atención en BOF cuando se reintenta
+					//una comunicación. La llave de D_ATENCION es RUTA+FECHA+HORALLEG.
+					String rutaSql = cor.replace("'", "''");
+					String horaSql = hora.replace("'", "''");
+					dbld.add("IF NOT EXISTS(SELECT 1 FROM D_ATENCION WHERE RUTA='" + rutaSql +
+							"' AND FECHA=" + fecha + " AND HORALLEG='" + horaSql + "') BEGIN");
+					dbld.insert("D_ATENCION", "WHERE (RUTA='" + rutaSql + "') AND (FECHA=" + fecha + ") AND (HORALLEG='" + horaSql + "') ");
+					dbld.add("END");
 
 					if (envioparcial && !esEnvioManual) {
 						if (commitSQL() == 1) {

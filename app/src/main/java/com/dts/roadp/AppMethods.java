@@ -1255,6 +1255,20 @@ public class AppMethods {
         }
     }
 
+    //#CKFK20260929 fix(hh-preventa-umstock): en preventa la UM comercial debe
+    //corresponder con UM_SALIDA aunque P_STOCK_PV conserve una configuracion anterior.
+    public String umStockPVValidada(String cod) {
+        String umStock=umStockPV(cod);
+        String umSalida=umSalida(cod);
+
+        if (umSalida!=null && !umSalida.trim().isEmpty() &&
+                (umStock==null || !umSalida.equalsIgnoreCase(umStock.trim()))) {
+            return umSalida;
+        }
+
+        return umStock;
+    }
+
     public double factorPeso(String cod) {
 		Cursor DT;
 

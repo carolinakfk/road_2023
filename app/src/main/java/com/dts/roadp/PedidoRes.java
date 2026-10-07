@@ -58,7 +58,7 @@ public class PedidoRes extends PBase {
     private AppMethods app;
 	private Catalogo descCombos;
 	
-	private long fecha,fechae;
+	private long fecha,fechae,fechaPrecioPedido;
 	private String itemid,cliid,corel;
 	private int cyear, cmonth, cday,dweek,impres, presday,bandera_monto=0;
 	
@@ -90,6 +90,9 @@ public class PedidoRes extends PBase {
 		cliid=gl.cliente;
 		gl.tolpedsend=false;
         toledano=gl.peModal.equalsIgnoreCase("TOL");
+		// La fecha de entrega puede ser posterior al pedido, pero no debe cambiar
+		// la vigencia ni la prioridad de las promociones ya resueltas en Venta.
+		fechaPrecioPedido=du.getActDateTime();
 
 		setActDate();
 		dweek=mu.dayofweek();
@@ -106,7 +109,7 @@ public class PedidoRes extends PBase {
 		//#EJC20260724 fix(hh-combo-pedido-resumen): PedidoRes comparte T_VENTA con
 		//FacturaRes; resuelve los mismos combos antes de mostrar y guardar totales.
 		descCombos = new Catalogo(this, Con, db);
-		descCombos.ResolverCombosEnTVenta(cliid, fecha, true);
+		descCombos.ResolverCombosEnTVenta(cliid, fechaPrecioPedido, true);
 
 		adjustSpinner();
 		fillSpinner();
@@ -484,7 +487,7 @@ public class PedidoRes extends PBase {
 			// Ultima resolucion autoritativa antes de persistir. Cubre cambios de
 			// cantidad/peso y transiciones individual <-> combo ocurridas durante
 			// la edicion del pedido.
-			descCombos.ResolverCombosEnTVenta(cliid,du.getActDateTime(),true);
+			descCombos.ResolverCombosEnTVenta(cliid,fechaPrecioPedido,true);
 			processFinalPromo();
 
 			if (!saveOrder()) return;
@@ -656,7 +659,7 @@ public class PedidoRes extends PBase {
 			ins.add("TIPO_PEDIDO",tipo_pedido);
 			ins.add("TOTAL_MONTO_MINIMO",monto_minimo);
 			ins.add("RECARGOMONTO", recargomonto);
-			ins.add("FECHA_PRECIO", du.getActDateTime());
+			ins.add("FECHA_PRECIO", fechaPrecioPedido);
 
 			db.execSQL(ins.sql());
           		
