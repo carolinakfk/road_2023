@@ -7364,8 +7364,9 @@ public class ComWS extends PBase {
 					//una comunicación. La llave de D_ATENCION es RUTA+FECHA+HORALLEG.
 					String rutaSql = cor.replace("'", "''");
 					String horaSql = hora.replace("'", "''");
+					String fechaSql = DU.univfechaext(fecha).replace("'", "''");
 					dbld.add("IF NOT EXISTS(SELECT 1 FROM D_ATENCION WHERE RUTA='" + rutaSql +
-							"' AND FECHA=" + fecha + " AND HORALLEG='" + horaSql + "') BEGIN");
+							"' AND FECHA='" + fechaSql + "' AND HORALLEG='" + horaSql + "') BEGIN");
 					dbld.insert("D_ATENCION", "WHERE (RUTA='" + rutaSql + "') AND (FECHA=" + fecha + ") AND (HORALLEG='" + horaSql + "') ");
 					dbld.add("END");
 
