@@ -716,10 +716,12 @@ public class PedidoRes extends PBase {
                 ins.add("SIN_EXISTENCIA", DT.getInt(14)); //JP20210614
 				ins.add("RECARGO", DT.getDouble(16));
 				ins.add("RECARGOMONTO", DT.getDouble(17));
+				ins.add("CODDESC_APLICADO", DT.getInt(20));
+				ins.add("CODRECARGO_APLICADO", DT.getInt(21));
                 String ss=ins.sql();
                 db.execSQL(ins.sql());
-				//#EJC20260724 fix(hh-pedido-local-genealogy): persiste la base en una
-				//tabla local no sincronizada; D_PEDIDOD conserva el contrato backend.
+				//#EJC20260724 fix(hh-pedido-local-genealogy): conserva precio y total base
+				//en estado local; los codigos aplicados ya se sincronizan en D_PEDIDOD.
 				String productoPromo=DT.getString(0).replace("'","''");
 				db.execSQL("INSERT OR REPLACE INTO T_PEDIDO_PROMO_STATE "+
 						"(COREL,PRODUCTO,SIN_EXISTENCIA,PRECIO_BASE,TOTAL_BASE,"+

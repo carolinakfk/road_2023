@@ -284,10 +284,10 @@ public class clsDataBuilder {
 					columna.toUpperCase().startsWith("INDIVIDUAL_");
 		}
 		if (tabla.equalsIgnoreCase("D_PEDIDOD")) {
+			// Los codigos de descuento y recargo forman parte del contrato del WS.
+			// Solo precio/total base permanecen como genealogia local del HH.
 			return columna.equalsIgnoreCase("PRECIO_BASE") ||
-					columna.equalsIgnoreCase("TOTAL_BASE") ||
-					columna.equalsIgnoreCase("CODDESC_APLICADO") ||
-					columna.equalsIgnoreCase("CODRECARGO_APLICADO");
+					columna.equalsIgnoreCase("TOTAL_BASE");
 		}
 		return false;
 	}
