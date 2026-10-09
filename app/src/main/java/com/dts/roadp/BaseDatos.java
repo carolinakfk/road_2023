@@ -9,7 +9,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
-import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,7 +28,7 @@ public class BaseDatos extends SQLiteOpenHelper {
 	  private BaseDatosScript DBScript;
 
 	  public static final String DB_NAME = "road.db";
-	  private static final int DATABASE_VERSION = 1;
+	  private static final int DATABASE_VERSION = 2;
 
 	  // ☆ Utilidad: ruta del DB nuevo (solo informativa/log)
 	  public static File getNewDbFile(Context ctx) {
@@ -146,7 +145,7 @@ public class BaseDatos extends SQLiteOpenHelper {
 
 	  @Override
 	  public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		  Toast.makeText(vcontext,"UPDATE DB", Toast.LENGTH_SHORT).show();
+		  DBScript.upgradeDatabase(db, oldVersion, newVersion);
 	  }
 
 	  // ☆ Conveniencia: abre y guarda en vDatabase

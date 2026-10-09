@@ -3,6 +3,7 @@ package com.dts.roadp;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 
@@ -1634,7 +1635,7 @@ public class BaseDatosScript {
 					"[SUCURSAL] TEXT NOT NULL,"+
 					"[TIPOLOGIA] TEXT NOT NULL,"+
 					"[CODCOMBO] TEXT NOT NULL,"+
-					"PRIMARY KEY ([CLIENTE],[CTIPO],[PRODUCTO],[PTIPO],[TIPORUTA],[RANGOINI],[ES_RECARGO], [PORCANT], [PORPORCENTAJE], [CODCOMBO], [DESCTIPO])"+
+					"PRIMARY KEY ([CLIENTE],[CTIPO],[PRODUCTO],[PTIPO],[TIPORUTA],[RANGOINI],[ES_RECARGO],[FECHAINI],[PORCANT],[PORPORCENTAJE],[CODCOMBO],[DESCTIPO])"+
 					");";
 			database.execSQL(vSQL);
 
@@ -2839,6 +2840,102 @@ public class BaseDatosScript {
 
 		} catch (SQLiteException e) {
 			msgbox(e.getMessage());return 0;
+		}
+	}
+
+	public void upgradeDatabase(SQLiteDatabase database, int oldVersion, int newVersion) {
+		if (oldVersion < 2) {
+			ensurePDescuentoFechaInicialPrimaryKey(database);
+		}
+	}
+
+	private void ensurePDescuentoFechaInicialPrimaryKey(SQLiteDatabase database) {
+		Cursor cursor = null;
+		boolean tableExists = false;
+		boolean fechaInicialInPrimaryKey = false;
+
+		try {
+			cursor = database.rawQuery("PRAGMA table_info([P_DESCUENTO])", null);
+			int nameIndex = cursor.getColumnIndexOrThrow("name");
+			int primaryKeyIndex = cursor.getColumnIndexOrThrow("pk");
+			while (cursor.moveToNext()) {
+				tableExists = true;
+				if ("FECHAINI".equalsIgnoreCase(cursor.getString(nameIndex)) &&
+						cursor.getInt(primaryKeyIndex) > 0) {
+					fechaInicialInPrimaryKey = true;
+				}
+			}
+		} finally {
+			if (cursor != null) cursor.close();
+		}
+
+		if (!tableExists) {
+			throw new SQLiteException("No existe P_DESCUENTO para migrar su llave primaria");
+		}
+		if (fechaInicialInPrimaryKey) return;
+
+		final String migrationTable = "P_DESCUENTO_MIG_FECHAINI";
+		final String columns = "CLIENTE,CTIPO,PRODUCTO,PTIPO,TIPORUTA,RANGOINI,RANGOFIN,"+
+				"DESCTIPO,VALOR,GLOBDESC,PORCANT,FECHAINI,FECHAFIN,CODDESC,NOMBRE,"+
+				"ES_RECARGO,PORPORCENTAJE,PRIORIDAD,PRIORIDAD_DESCUENTO,UMVENTA,"+
+				"SUCURSAL,TIPOLOGIA,CODCOMBO";
+
+		long originalRows = countRows(database, "P_DESCUENTO");
+		database.execSQL("DROP TABLE IF EXISTS [" + migrationTable + "]");
+		database.execSQL("CREATE TABLE [" + migrationTable + "] ("+
+				"[CLIENTE] TEXT NOT NULL,"+
+				"[CTIPO] INTEGER NOT NULL,"+
+				"[PRODUCTO] TEXT NOT NULL,"+
+				"[PTIPO] INTEGER NOT NULL,"+
+				"[TIPORUTA] INTEGER NOT NULL,"+
+				"[RANGOINI] REAL NOT NULL,"+
+				"[RANGOFIN] REAL NOT NULL,"+
+				"[DESCTIPO] TEXT NOT NULL,"+
+				"[VALOR] REAL NOT NULL,"+
+				"[GLOBDESC] TEXT NOT NULL,"+
+				"[PORCANT] TEXT NOT NULL,"+
+				"[FECHAINI] INTEGER NOT NULL,"+
+				"[FECHAFIN] INTEGER NOT NULL,"+
+				"[CODDESC] INTEGER NOT NULL,"+
+				"[NOMBRE] TEXT NOT NULL,"+
+				"[ES_RECARGO] INT NOT NULL,"+
+				"[PORPORCENTAJE] TEXT NOT NULL,"+
+				"[PRIORIDAD] INT NOT NULL,"+
+				"[PRIORIDAD_DESCUENTO] INT,"+
+				"[UMVENTA] TEXT NOT NULL,"+
+				"[SUCURSAL] TEXT NOT NULL,"+
+				"[TIPOLOGIA] TEXT NOT NULL,"+
+				"[CODCOMBO] TEXT NOT NULL,"+
+				"PRIMARY KEY ([CLIENTE],[CTIPO],[PRODUCTO],[PTIPO],[TIPORUTA],"+
+				"[RANGOINI],[ES_RECARGO],[FECHAINI],[PORCANT],[PORPORCENTAJE],"+
+				"[CODCOMBO],[DESCTIPO]))");
+		database.execSQL("INSERT INTO [" + migrationTable + "] (" + columns + ") "+
+				"SELECT " + columns + " FROM [P_DESCUENTO]");
+
+		long migratedRows = countRows(database, migrationTable);
+		if (migratedRows != originalRows) {
+			throw new SQLiteException("Migracion P_DESCUENTO incompleta: "+
+					originalRows + " filas originales y " + migratedRows + " migradas");
+		}
+
+		database.execSQL("DROP TABLE [P_DESCUENTO]");
+		database.execSQL("ALTER TABLE [" + migrationTable + "] RENAME TO [P_DESCUENTO]");
+		database.execSQL("CREATE INDEX P_DESCUENTO_idx1 ON P_DESCUENTO(CLIENTE)");
+		database.execSQL("CREATE INDEX P_DESCUENTO_idx2 ON P_DESCUENTO(CTIPO)");
+		database.execSQL("CREATE INDEX P_DESCUENTO_idx3 ON P_DESCUENTO(FECHAINI)");
+		database.execSQL("CREATE INDEX P_DESCUENTO_idx4 ON P_DESCUENTO(FECHAFIN)");
+	}
+
+	private long countRows(SQLiteDatabase database, String table) {
+		Cursor cursor = null;
+		try {
+			cursor = database.rawQuery("SELECT COUNT(*) FROM [" + table + "]", null);
+			if (!cursor.moveToFirst()) {
+				throw new SQLiteException("No se pudo contar filas de " + table);
+			}
+			return cursor.getLong(0);
+		} finally {
+			if (cursor != null) cursor.close();
 		}
 	}
 
