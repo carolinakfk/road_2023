@@ -73,7 +73,9 @@ public class activity_despacho_list extends PBase {
 				gl.fechaPrecio=item.fechaPrecio;
                 gl.cliente = item.cliente;
                 gl.pedCorel=item.add1;
-                gl.rutaPedido = item.add2;
+				// ADD1 conserva el correlativo del pedido original: RUTA_YYMMDDHHMMSS.
+				// ADD2 corresponde a la ruta de despacho y no debe gobernar CTIPO=11.
+				gl.rutaPedido = rutaOrigenPedido(item);
                 gl.ordenCompra = "";
 
                 sql = "SELECT COALESCE(ORDEN_COMPRA,'') ORDEN_COMPRA FROM DS_PEDIDO WHERE COREL = '" + item.corel + "'";
@@ -122,6 +124,15 @@ public class activity_despacho_list extends PBase {
         });
 
     }
+
+	private String rutaOrigenPedido(clsClasses.clsDs_pedido item) {
+		if (item != null && item.add1 != null) {
+			int separador=item.add1.indexOf('_');
+			if (separador>0) return item.add1.substring(0,separador);
+		}
+		return item != null && item.add2 != null && !item.add2.trim().isEmpty()
+				? item.add2 : gl.ruta;
+	}
 
 //endregion
 

@@ -970,6 +970,7 @@ public class Venta extends PBase {
 			imp = prc.imp;
 			impval = prc.impval;
 			descmon = prc.descmon;
+			desc = prc.BeDescuento == null ? 0 : prc.BeDescuento.valor;
 
 			tot = prc.tot;
 			prodtot = tot;
@@ -3958,7 +3959,12 @@ public class Venta extends PBase {
 		long fechaDocumentoDescuento = gl.peModal.equalsIgnoreCase("TOL") ? app.fechaFactTol(du.getActDate()) : du.getActDate();
 		fechaDocumentoDescuento = gl.fechaPromocionPrefactura(fechaDocumentoDescuento);
 		fechaDocumentoDescuento = du.convertirFecha(fechaDocumentoDescuento);
-		clsDescFiltro clsDFilt=new clsDescFiltro(this,gl.ruta,gl.cliente,fechaDocumentoDescuento);
+		// La ruta activa sigue siendo la de prefactura/despacho. La ruta registrada
+		// en el pedido solo incorpora las promociones adicionales que se descargaron.
+		String rutaPromocionPedido=gl.iddespacho != null && !gl.iddespacho.trim().isEmpty()
+				? gl.rutaPedido : "";
+		clsDescFiltro clsDFilt=new clsDescFiltro(this,gl.ruta,gl.cliente,
+				fechaDocumentoDescuento,rutaPromocionPedido);
 
 		clsBonFiltro  clsBFilt=new clsBonFiltro(this,gl.ruta,gl.cliente);
 

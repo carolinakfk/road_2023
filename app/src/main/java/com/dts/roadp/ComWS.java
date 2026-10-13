@@ -3868,15 +3868,23 @@ public class ComWS extends PBase {
 	}
 
 	private String clientesAsignadosPromocionesSql() {
+		String clientesPrefactura = clientesPrefacturasPendientesSql();
 		if (!cargasuper) {
-			return "SELECT CR.CLIENTE FROM P_CLIRUTA CR WHERE CR.RUTA='" + ActRuta + "'";
+			return "SELECT CR.CLIENTE FROM P_CLIRUTA CR WHERE CR.RUTA='" + ActRuta + "' " +
+					"UNION " + clientesPrefactura;
 		}
 		return "SELECT DISTINCT CR.CLIENTE FROM P_CLIRUTA CR WHERE CR.RUTA IN (" +
 				"SELECT DISTINCT V.RUTA FROM VENDEDORES V WHERE V.Codigo IN (" +
-				"SELECT R.VENDEDOR FROM P_RUTA R WHERE R.CODIGO='" + ActRuta + "'))";
+				"SELECT R.VENDEDOR FROM P_RUTA R WHERE R.CODIGO='" + ActRuta + "')) " +
+				"UNION " + clientesPrefactura;
 	}
 
 	private String rutasCargaPromocionesSql() {
+		String rutasPrefactura = rutasOrigenPrefacturasPendientesSql();
+		return rutasBaseCargaPromocionesSql() + " UNION " + rutasPrefactura;
+	}
+
+	private String rutasBaseCargaPromocionesSql() {
 		if (!cargasuper) {
 			return "SELECT '" + ActRuta + "' AS RUTA";
 		}
@@ -3884,8 +3892,34 @@ public class ComWS extends PBase {
 				"SELECT R.VENDEDOR FROM P_RUTA R WHERE R.CODIGO='" + ActRuta + "')";
 	}
 
+	private String prefacturasPendientesSql() {
+		return "SELECT DP.COREL FROM DS_PEDIDO DP " +
+				"WHERE EXISTS (SELECT 1 FROM P_RUTA R WHERE R.CODIGO='" + ActRuta + "' AND R.VENTA='D') " +
+				"AND DP.RUTA='" + ActRuta + "' AND DP.ANULADO='N' AND DP.BANDERA='N' AND DP.STATCOM='N' " +
+				"AND DP.FECHA>='" + fsqli + "' AND DP.FECHA<='" + fsqlf + "'";
+	}
+
+	private String clientesPrefacturasPendientesSql() {
+		return "SELECT DISTINCT DP.CLIENTE FROM DS_PEDIDO DP WHERE DP.COREL IN (" +
+				prefacturasPendientesSql() + ")";
+	}
+
+	private String rutasOrigenPrefacturasPendientesSql() {
+		String pendientes = prefacturasPendientesSql();
+		// ADD1 conserva el correlativo original (RUTA_YYMMDDHHMMSS). ADD2 y
+		// DS_PEDIDOD.RUTA contienen la ruta de despacho y no identifican la preventa.
+		return "SELECT DISTINCT LEFT(DP.ADD1,CHARINDEX('_',DP.ADD1)-1) AS RUTA " +
+				"FROM DS_PEDIDO DP WHERE DP.COREL IN (" + pendientes + ") " +
+				"AND CHARINDEX('_',ISNULL(DP.ADD1,''))>1";
+	}
+
+	private String productosPrefacturasPendientesSql() {
+		return "SELECT DISTINCT DD.PRODUCTO FROM DS_PEDIDOD DD WHERE DD.COREL IN (" +
+				prefacturasPendientesSql() + ") AND ISNULL(DD.ANULADO,'N')='N'";
+	}
+
 	private String productosAsignadosPromocionesSql() {
-		String rutas = rutasCargaPromocionesSql();
+		String rutas = rutasBaseCargaPromocionesSql();
 		return "SELECT DISTINCT P.CODIGO FROM P_PRODUCTO P INNER JOIN P_RUTA R ON R.CODIGO IN (" + rutas + ") WHERE " +
 				"(R.VENTA='P' AND EXISTS (SELECT 1 FROM P_STOCK_PV PV WHERE PV.RUTA=R.CODIGO AND PV.CODIGO=P.CODIGO AND PV.ANULADO=0 " +
 				"AND PV.FECHA>='" + fsqli + "' AND PV.FECHA<='" + fsqlf + "')) OR " +
@@ -3897,7 +3931,8 @@ public class ComWS extends PBase {
 				"AND (ISNULL(S.CANT,0)>0 OR ISNULL(S.PESO,0)>0)) OR " +
 				"EXISTS (SELECT 1 FROM P_STOCKB B WHERE B.RUTA=R.CODIGO AND B.CODIGO=P.CODIGO " +
 				"AND B.FECHA>='" + fsqli + "' AND B.FECHA<='" + fsqlf + "' " +
-				"AND (ISNULL(B.CANT,0)>0 OR ISNULL(B.PESO,0)>0))))";
+				"AND (ISNULL(B.CANT,0)>0 OR ISNULL(B.PESO,0)>0)))) " +
+				"UNION " + productosPrefacturasPendientesSql();
 	}
 
 	private String filtroDescuentoClientesRuta(String alias) {

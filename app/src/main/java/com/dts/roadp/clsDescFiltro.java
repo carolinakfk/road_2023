@@ -26,6 +26,7 @@ public class clsDescFiltro {
 	private String cliid,rutaid;
 	private Context context;
 	private long fecha;
+	private String rutaPromocionPedido;
 	
 	public clsDescFiltro(Context context,String ruta,String cliente) {
 		this(context, ruta, cliente, new DateUtils().getActDate());
@@ -33,9 +34,15 @@ public class clsDescFiltro {
 
 	//#EJC20260721 fix(hh-desc-selection): permite filtrar con fecha del documento.
 	public clsDescFiltro(Context context,String ruta,String cliente,long fechaDocumento) {
+		this(context,ruta,cliente,fechaDocumento,"");
+	}
+
+	public clsDescFiltro(Context context,String ruta,String cliente,long fechaDocumento,
+			String rutaPromocionPedido) {
 		this.context=context;
 		
 		cliid=cliente;rutaid=ruta;
+		this.rutaPromocionPedido=rutaPromocionPedido == null ? "" : rutaPromocionPedido.trim();
 		
 		active=0;
 		Con = new BaseDatos(context);
@@ -106,6 +113,14 @@ public class clsDescFiltro {
 		i=0;
 		
 		try {
+			String filtroRuta="((CTIPO=11) AND (CLIENTE='" + rutaid + "') AND EXISTS ("+
+					" SELECT 1 FROM P_CLIRUTA CR WHERE CR.CLIENTE='" + cliid + "'"+
+					" AND CR.RUTA=D.CLIENTE AND CR.DIA=" + diaVisita + ")) OR ";
+			if (!rutaPromocionPedido.isEmpty() && !rutaPromocionPedido.equalsIgnoreCase(rutaid)) {
+				// La ruta de prefactura/despacho no cambia. Solo se agregan las
+				// promociones descargadas por estar aplicadas en el pedido seleccionado.
+				filtroRuta += "((CTIPO=11) AND (CLIENTE='" + rutaPromocionPedido + "')) OR ";
+			}
 
 			//#AT20260719 Filtrar descuento validando que  el cliente no este excluido
 			vSQL="SELECT D.CLIENTE,D.CTIPO,D.PRODUCTO,D.PTIPO,D.TIPORUTA,D.RANGOINI,D.RANGOFIN,D.DESCTIPO,D.VALOR,D.GLOBDESC,D.PORCANT,D.FECHAINI,D.FECHAFIN,D.CODDESC, " +
@@ -119,10 +134,9 @@ public class clsDescFiltro {
 				  "((CTIPO=6) AND (CLIENTE='" + CSubCanal + "')) OR "+
 				  "((CTIPO=8) AND (CLIENTE='" + CSucursal + "')) OR "+
 				  "((CTIPO=9) AND (CLIENTE='" + NivelPrec + "')) OR "+
-				  //#EJC20260728 fix(hh-combo-a912): valida ruta y dia de visita con la fecha del documento.
-				  "((CTIPO=11) AND (CLIENTE='" + rutaid + "') AND EXISTS ("+
-				  " SELECT 1 FROM P_CLIRUTA CR WHERE CR.CLIENTE='" + cliid + "'"+
-				  " AND CR.RUTA=D.CLIENTE AND CR.DIA=" + diaVisita + ")) OR "+
+				  //#EJC20260728 fix(hh-combo-a912): conserva la validacion normal de ruta
+				  // y agrega, solo en prefactura, las promociones asociadas al pedido.
+				  filtroRuta+
 				  //A910: Ramo 3 se representa en ROAD como tipologia.
 				  "((CTIPO=12) AND (CLIENTE='" + CTipologia + "')) OR "+
 				  //A909: Clasificacion AB + Ramo 3 + Centro.

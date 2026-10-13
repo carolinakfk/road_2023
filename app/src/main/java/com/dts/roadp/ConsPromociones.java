@@ -152,6 +152,23 @@ public class ConsPromociones extends PBase {
         dia=dia==Calendar.SUNDAY ? 7 : dia-1;
         long fecha=fechaActualSap();
         String ruta=gl.ruta == null ? "" : gl.ruta.replace("'","''");
+		String fechaPrefactura="(CASE WHEN DP.FECHA_PRECIO BETWEEN 100000000000 AND 999999999999 "+
+				"THEN DP.FECHA_PRECIO+20000000000000 ELSE DP.FECHA_PRECIO END)";
+		String prefacturasCliente="EXISTS (SELECT 1 FROM P_RUTA PR WHERE PR.VENTA='D') "+
+				"AND DP.CLIENTE=C.CODIGO AND DP.ANULADO='N' AND DP.BANDERA='N' "+
+				"AND DP.STATCOM='N'";
+		String rutaPrefactura="EXISTS (SELECT 1 FROM DS_PEDIDO DP WHERE "+prefacturasCliente+" "+
+				"AND INSTR(IFNULL(DP.ADD1,''),'_')>1 "+
+				"AND D.CLIENTE=SUBSTR(DP.ADD1,1,INSTR(DP.ADD1,'_')-1))";
+		String vigenciaPrefactura="EXISTS (SELECT 1 FROM DS_PEDIDO DP WHERE "+prefacturasCliente+
+				" AND D.FECHAINI<="+fechaPrefactura+" AND D.FECHAFIN>="+fechaPrefactura+
+				" AND NOT EXISTS (SELECT 1 FROM P_CLIENTE_PROD_EXCLUIDOS E "+
+				"WHERE E.CLIENTE=C.CODIGO AND E.PRODUCTO=D.PRODUCTO AND E.ACTIVO=1 "+
+				"AND E.FECHAINI<="+fechaPrefactura+" AND E.FECHAFIN>="+fechaPrefactura+"))";
+		String vigenciaActual="(D.FECHAINI<="+fecha+" AND D.FECHAFIN>="+fecha+" "+
+				"AND NOT EXISTS (SELECT 1 FROM P_CLIENTE_PROD_EXCLUIDOS E "+
+				"WHERE E.CLIENTE=C.CODIGO AND E.PRODUCTO=D.PRODUCTO AND E.ACTIVO=1 "+
+				"AND E.FECHAINI<="+fecha+" AND E.FECHAFIN>="+fecha+"))";
         return "INNER JOIN P_CLIENTE C ON C.CODIGO='"+cliente+"' WHERE ("+
                 "D.CTIPO=0 OR "+
                 "(D.CTIPO=1 AND D.CLIENTE=C.CODIGO) OR "+
@@ -164,18 +181,15 @@ public class ConsPromociones extends PBase {
                 "(D.CTIPO=9 AND D.CLIENTE=CAST(C.NIVELPRECIO AS TEXT)) OR "+
                 "(D.CTIPO=10 AND D.CLIENTE IN (SELECT G.CODIGO FROM P_CLIGRUPO G "+
                 "WHERE G.CLIENTE=C.CODIGO)) OR "+
-                "(D.CTIPO=11 AND EXISTS (SELECT 1 FROM P_CLIRUTA R "+
+                "(D.CTIPO=11 AND ((EXISTS (SELECT 1 FROM P_CLIRUTA R "+
                 "WHERE R.CLIENTE=C.CODIGO AND R.RUTA=D.CLIENTE AND R.DIA="+dia+") "+
-                "AND D.CLIENTE='"+ruta+"') OR "+
+                "AND D.CLIENTE='"+ruta+"') OR "+rutaPrefactura+")) OR "+
                 "(D.CTIPO=12 AND D.CLIENTE=IFNULL(C.TIPOLOGIA,'')) OR "+
                 "(D.CTIPO=13 AND D.CLIENTE=IFNULL(C.PRIORIZACION,'') "+
                 "AND IFNULL(D.TIPOLOGIA,'')=IFNULL(C.TIPOLOGIA,'') "+
                 "AND IFNULL(D.SUCURSAL,'')=IFNULL(C.SUCURSAL,'')) OR "+
                 "(D.CTIPO=14 AND D.CLIENTE=IFNULL(C.SUBTIPOLOGIA,''))) "+
-                "AND D.FECHAINI<="+fecha+" AND D.FECHAFIN>="+fecha+" "+
-                "AND NOT EXISTS (SELECT 1 FROM P_CLIENTE_PROD_EXCLUIDOS E "+
-                "WHERE E.CLIENTE=C.CODIGO AND E.PRODUCTO=D.PRODUCTO AND E.ACTIVO=1 "+
-                "AND E.FECHAINI<="+fecha+" AND E.FECHAFIN>="+fecha+") ";
+				"AND ("+vigenciaActual+" OR "+vigenciaPrefactura+") ";
     }
 
     // #EJC20260730 fix(hh-promotion-query-date): P_DESCUENTO guarda vigencia
