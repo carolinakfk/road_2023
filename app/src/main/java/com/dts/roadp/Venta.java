@@ -3475,6 +3475,12 @@ public class Venta extends PBase {
 				}
 			}
 
+			//#EJC20261014 fix(hh-prefactura-promociones-carga): getPrecio resuelve
+			//cada linea de forma aislada. Una vez cargada toda la prefactura se debe
+			//resolver el documento completo, igual que al editar una cantidad, para
+			//aplicar combos y restaurar correctamente los ajustes individuales.
+			reevaluarCombosDocumento("PREINVOICE_LOADED");
+
 			if (cantProdBarra>0){
 				cmdBarrasDespacho.setVisibility(View.VISIBLE);
 				browse=6;
