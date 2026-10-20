@@ -1,13 +1,20 @@
 package com.dts.roadp;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Gravity;
 import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.zebra.sdk.comm.BluetoothConnection;
 import com.zebra.sdk.comm.Connection;
@@ -28,6 +35,7 @@ import java.util.ArrayList;
 public class printZebraZPL extends printBase {
 
     private static final long PRINT_TIMEOUT_MS=15000;
+    private static final int REQUEST_BLUETOOTH_PERMISSIONS=4104;
 
     private Connection connection;
 
@@ -600,6 +608,8 @@ public class printZebraZPL extends printBase {
 
         connection = null;
 
+        if (!ensureBluetoothPermissions()) return null;
+
         try {
             connection = new BluetoothConnection(printerAddress);
             connection.open();
@@ -631,6 +641,42 @@ public class printZebraZPL extends printBase {
         }
 
         return printer;
+    }
+
+    private boolean ensureBluetoothPermissions() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true;
+
+        final ArrayList<String> missingPermissions = new ArrayList<>();
+        if (ContextCompat.checkSelfPermission(cont, Manifest.permission.BLUETOOTH_SCAN)
+                != PackageManager.PERMISSION_GRANTED) {
+            missingPermissions.add(Manifest.permission.BLUETOOTH_SCAN);
+        }
+        if (ContextCompat.checkSelfPermission(cont, Manifest.permission.BLUETOOTH_CONNECT)
+                != PackageManager.PERMISSION_GRANTED) {
+            missingPermissions.add(Manifest.permission.BLUETOOTH_CONNECT);
+        }
+
+        if (missingPermissions.isEmpty()) return true;
+
+        setStatus("Falta permiso de Dispositivos cercanos para imprimir por Bluetooth.");
+        showDiagnosticProgress("Conceda el permiso Dispositivos cercanos y vuelva a intentar la impresión.");
+
+        if (cont instanceof Activity) {
+            final Activity activity = (Activity) cont;
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ActivityCompat.requestPermissions(activity,
+                            missingPermissions.toArray(new String[0]),
+                            REQUEST_BLUETOOTH_PERMISSIONS);
+                }
+            });
+        } else {
+            showDiagnosticError("Validar permisos Bluetooth ZPL",
+                    new SecurityException("No fue posible solicitar el permiso Dispositivos cercanos desde esta pantalla."));
+        }
+
+        return false;
     }
 
     private void closeTimedOutConnection(final int timedOutAttempt) {

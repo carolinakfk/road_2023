@@ -64,8 +64,8 @@ public class MainActivity extends PBase {
     //private String cs1, cs2, cs3, barcode;
 
     //Código con monto mínimo
-    private final String parNumVer = "10.0.33 / ";
-    private final String  parFechaVer = "19-10-2026";
+    private final String parNumVer = "10.0.34 / ";
+    private final String  parFechaVer = "20-10-2026";
     private final String parTipoVer = "ROAD PROMO";
 
     //RUC Token00100833
@@ -80,7 +80,6 @@ public class MainActivity extends PBase {
     private static final String PREFS           = "ROAD_PREFS";
     private static final String KEY_MIGRATED_V1 = "db_migrated_v1";
     private static final String KEY_DB_SEEDED   = "db_seeded_v1";
-    private static final String KEY_INITIAL_PERMISSIONS_ASKED = "initial_permissions_asked_v1";
 
     private static final int REQ_COMWS     = 1001;
     private static final int REQ_PERMS     = 100;   // único requestCode
@@ -102,10 +101,9 @@ public class MainActivity extends PBase {
         setContentView(R.layout.activity_main);
         installCrashHandler(this);
 
-        // Los permisos funcionales se solicitan una vez, pero no bloquean el arranque.
-        boolean permissionsAsked = getSharedPreferences(PREFS, MODE_PRIVATE)
-                .getBoolean(KEY_INITIAL_PERMISSIONS_ASKED, false);
-        if (!permissionsAsked && !haveAllInitialPermissions()) {
+        // Volver a solicitar los permisos que sigan faltando. No guardar una marca de
+        // "ya solicitado": el usuario o la politica MDM pueden denegarlos o revocarlos.
+        if (!haveAllInitialPermissions()) {
             askInitialPermissions();
             return; // esperar onRequestPermissionsResult
         }
@@ -312,9 +310,6 @@ public class MainActivity extends PBase {
 
         if (requestCode == REQ_PERMS) {
             permissionRequestInProgress = false;
-            getSharedPreferences(PREFS, MODE_PRIVATE).edit()
-                    .putBoolean(KEY_INITIAL_PERMISSIONS_ASKED, true).apply();
-
             // Log global del estado real tras el callback
             logPerms("onRequestPermissionsResult");
 
