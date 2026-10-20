@@ -27,6 +27,8 @@ import java.util.ArrayList;
 
 public class printZebraZPL extends printBase {
 
+    private static final long PRINT_TIMEOUT_MS=15000;
+
     private Connection connection;
 
     private ZebraPrinter printer;
@@ -38,6 +40,9 @@ public class printZebraZPL extends printBase {
 
     private String ss,statstr,dbg;
     private boolean status,validprint;
+    private volatile boolean diagnosticErrorShown=false;
+    private volatile boolean printInProgress=false;
+    private volatile int printAttemptId=0;
 
     // ZQ320 AC:3F:A4:C8:5F:D9
 
@@ -143,7 +148,7 @@ public class printZebraZPL extends printBase {
             dfile = new BufferedReader(new InputStreamReader(fIn));
 
         } catch (Exception e) {
-            showmsg("Error: " + e.getMessage());
+            showDiagnosticError("Abrir archivo de impresión", e);
             return false;
         }
 
@@ -172,7 +177,7 @@ public class printZebraZPL extends printBase {
 
             dfile.close();
 
-            showmsg("Lines : "+lines.size());
+            showDiagnosticProgress("Documento preparado: "+lines.size()+" líneas. Conectando...");
 
             //printData = docLP.getDocumentData();
 
@@ -182,7 +187,7 @@ public class printZebraZPL extends printBase {
                 dfile.close();
             } catch (Exception e1) {}
 
-            showmsg("Error: " + e.getMessage());
+            showDiagnosticError("Leer archivo de impresión", e);
 
             return false;
         }
@@ -302,6 +307,7 @@ public class printZebraZPL extends printBase {
 
         } catch (Exception e) {
             setStatus(e.getMessage());
+            showDiagnosticError("Generar documento ZPL", e);
         }
 
         return prdata;
@@ -361,15 +367,29 @@ public class printZebraZPL extends printBase {
 
         showmsg("Imprimiendo ..." );
         status=true;
+        printInProgress=true;
+        final int currentAttempt=++printAttemptId;
+
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (printInProgress && printAttemptId==currentAttempt) {
+                    showDiagnosticError("Tiempo de espera de impresión ZPL",
+                            new Exception("La impresora no respondió en 15 segundos. Verifique Bluetooth y vuelva a intentar."));
+                    closeTimedOutConnection(currentAttempt);
+                }
+            }
+        }, PRINT_TIMEOUT_MS);
 
         new Thread(new Runnable() {
             public void run() {
-                Looper.prepare();
-
-                doPrint();
-
-                Looper.loop();
-                Looper.myLooper().quit();
+                try {
+                    doPrint();
+                } catch (Throwable error) {
+                    showDiagnosticError("Ejecutar impresión ZPL", error);
+                } finally {
+                    if (printAttemptId==currentAttempt) printInProgress=false;
+                }
             }
         }).start();
 
@@ -398,6 +418,7 @@ public class printZebraZPL extends printBase {
 
     private void doPrint() {
 
+        showDiagnosticProgress("Abriendo conexión Bluetooth con la impresora ZPL...");
         printer = connect();
 
         if (printer != null) {
@@ -468,6 +489,16 @@ public class printZebraZPL extends printBase {
 
             if (printerStatus.isReadyToPrint) {
                 byte[] configLabel = printData();
+                if (configLabel==null || configLabel.length==0) {
+                    showDiagnosticError("Generar documento ZPL",
+                            new IllegalStateException("El documento de impresión está vacío."));
+                    return;
+                }
+                if (connection==null || !connection.isConnected()) {
+                    showDiagnosticError("Enviar documento ZPL",
+                            new IllegalStateException("La conexión Bluetooth no está disponible."));
+                    return;
+                }
                 connection.write(configLabel);
             } else if (printerStatus.isHeadOpen) {
                 setStatus("Impresora abierta");
@@ -476,8 +507,9 @@ public class printZebraZPL extends printBase {
             } else if (printerStatus.isPaperOut) {
                 setStatus("Papel afuera");
             }
-        } catch (ConnectionException e) {
+        } catch (Exception e) {
             setStatus(e.getMessage());
+            showDiagnosticError("Consultar o enviar datos a la impresora ZPL", e);
         } finally {
           disconnect();
         }
@@ -571,14 +603,15 @@ public class printZebraZPL extends printBase {
         try {
             connection = new BluetoothConnection(printerAddress);
             connection.open();
-        } catch (ConnectionException e) {
+        } catch (Exception e) {
             setStatus("Comm Error : "+e.getMessage());
+            showDiagnosticError("Abrir conexión Bluetooth ZPL", e);
             disconnect();
         }
 
         ZebraPrinter printer = null;
 
-        if (connection.isConnected()) {
+        if (connection != null && connection.isConnected()) {
             try {
                 printer = ZebraPrinterFactory.getInstance(connection);
                 PrinterLanguage pcLanguage = printer.getPrinterControlLanguage();
@@ -586,16 +619,32 @@ public class printZebraZPL extends printBase {
                 SGD.SET("device.languages", "hybrid_xml_zpl", connection);
             } catch (ConnectionException e) {
                 setStatus("Unknown Printer Language");
+                showDiagnosticError("Detectar lenguaje de la impresora ZPL", e);
                 printer = null;
                 disconnect();
             } catch (ZebraPrinterLanguageUnknownException e) {
                 setStatus("Unknown Printer Language");
+                showDiagnosticError("Detectar lenguaje de la impresora ZPL", e);
                 printer = null;
                 disconnect();
             }
         }
 
         return printer;
+    }
+
+    private void closeTimedOutConnection(final int timedOutAttempt) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (printAttemptId==timedOutAttempt && connection!=null) connection.close();
+                } catch (Exception ignored) {
+                } finally {
+                    if (printAttemptId==timedOutAttempt) printInProgress=false;
+                }
+            }
+        }).start();
     }
 
     public void disconnect() {
@@ -627,9 +676,11 @@ public class printZebraZPL extends printBase {
         dialog.setPositiveButton("Si", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 try {
+					diagnosticErrorShown=false;
+					showDiagnosticProgress("Preparando documento para imprimir en ZPL...");
                     if (loadFile())	doStartPrint();
                 } catch (Exception e) {
-                    showmsg("Error: " + e.getMessage());
+					showDiagnosticError("Iniciar impresión ZPL", e);
                 }
             }
 
@@ -702,6 +753,44 @@ public class printZebraZPL extends printBase {
             }
         });
 
+    }
+
+    private void showDiagnosticProgress(final String message) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                Toast toast=Toast.makeText(cont, message, Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+            }
+        });
+    }
+
+    private synchronized void showDiagnosticError(final String stage, final Throwable error) {
+        if (diagnosticErrorShown) return;
+        diagnosticErrorShown=true;
+
+        final String type=error==null?"Desconocido":error.getClass().getSimpleName();
+        final String message=error==null || error.getMessage()==null || error.getMessage().trim().isEmpty()
+                ?"Sin detalle proporcionado":error.getMessage();
+        final String detail="Etapa: "+stage+"\nTipo: "+type+"\nMensaje: "+message;
+
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    new AlertDialog.Builder(cont)
+                            .setTitle("Diagnóstico de impresión ZPL")
+                            .setMessage(detail)
+                            .setPositiveButton("Aceptar", null)
+                            .show();
+                } catch (Exception ignored) {
+                    Toast toast=Toast.makeText(cont, detail, Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.CENTER, 0, 0);
+                    toast.show();
+                }
+            }
+        });
     }
 
     private void setStatus(final String statusMessage) {
