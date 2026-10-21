@@ -3934,8 +3934,39 @@ public class FacturaRes extends PBase {
 					}.getClass().getEnclosingMethod()).getName(),e.getMessage(),"");
 				}
 
-				gl.brw=0;
-				FacturaRes.super.finish();
+				if (impres>1) {
+
+					try {
+						if (!gl.cobroPendiente){
+							sql="UPDATE D_FACTURA SET IMPRES=IMPRES+1 WHERE COREL='"+corel+"'";
+							db.execSQL(sql);
+						}
+					} catch (Exception e) {
+						msgbox(Objects.requireNonNull(new Object() {
+						}.getClass().getEnclosingMethod()).getName()+" . "+e.getMessage());
+					}
+
+					try {
+						sql="UPDATE D_NOTACRED SET IMPRES=IMPRES+1 WHERE COREL='"+corelNC+"'";
+						db.execSQL(sql);
+					} catch (Exception e) {
+						addlog(Objects.requireNonNull(new Object() {
+						}.getClass().getEnclosingMethod()).getName(),e.getMessage(),"");
+					}
+
+					gl.brw=0;
+					FacturaRes.super.finish();
+				} else {
+
+					if (!gl.cobroPendiente) {
+						fdoc.buildPrint(corel, 10,gl.peFormatoFactura);
+					}else{
+						fdoc.buildPrint(corel,4,gl.peFormatoFactura);
+					}
+
+					prn.printask(printcallback);
+
+				}
 			});
 
 			dialog.setNegativeButton("No", (dialog12, which) -> {
