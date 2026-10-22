@@ -6531,11 +6531,24 @@ public class ComWS extends PBase {
 
 			DT.moveToFirst();
 			while (!DT.isAfterLast()) {
+				int documentStart = dbld.size();
+				int documentLogStart = dbld.logSize();
 
 				cor = DT.getString(0);
 				fruta = DT.getString(1);
 				ccorel = DT.getInt(2);
 				tipodocumento = DT.getString(3);
+
+				// Las ND de anulacion creadas por versiones anteriores no persistian
+				// FECHA_PRECIO. Recuperarla de la NC referenciada antes de serializar.
+				if (tipodocumento.equals("ND")) {
+					db.execSQL("UPDATE D_NOTACRED SET FECHA_PRECIO=COALESCE(" +
+							"NULLIF((SELECT NC.FECHA_PRECIO FROM D_NOTACRED NC " +
+							"WHERE NC.COREL=D_NOTACRED.COREL_REFERENCIA " +
+							"AND NC.TIPO_DOCUMENTO='NC'),0),FECHA) " +
+							"WHERE COREL='" + cor + "' AND TIPO_DOCUMENTO='ND' " +
+							"AND FECHA_PRECIO=0");
+				}
 
 				//Tipo de documento (04:Nota de Crédito  referente a facturas, 06:Nota de crédito genérica)
 				//(05:Nota de debito  referente a facturas, 07:Nota de debito genérica )
@@ -6589,6 +6602,7 @@ public class ComWS extends PBase {
 
 				} catch (Exception e) {
 					errflag = true;
+					dbld.rollbackTo(documentStart,documentLogStart);
 
 					dbld.savelog("notascredito.txt");
 

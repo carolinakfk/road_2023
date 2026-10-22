@@ -340,6 +340,15 @@ public class clsDataBuilder {
 		return items.size();
 	}
 
+	public int logSize(){
+		return sendlog.size();
+	}
+
+	public void rollbackTo(int itemCount,int logCount){
+		while (items.size() > itemCount) items.remove(items.size()-1);
+		while (sendlog.size() > logCount) sendlog.remove(sendlog.size()-1);
+	}
+
 	public int save(){
 		String s;
 		

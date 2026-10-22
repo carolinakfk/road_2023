@@ -392,6 +392,10 @@ public class CatalogoFactura extends PBase {
                 NotaCreditoEnc.CorelRef = dt.getString(19);
                 NotaCreditoEnc.EsAnulacion = dt.getInt(20);
                 NotaCreditoEnc.CufeFactura = dt.getString(21);
+                int fechaPrecioIndex = dt.getColumnIndex("FECHA_PRECIO");
+                NotaCreditoEnc.FechaPrecio = fechaPrecioIndex >= 0
+                        ? dt.getLong(fechaPrecioIndex)
+                        : NotaCreditoEnc.Fecha;
             }
 
             if (dt != null) dt.close();

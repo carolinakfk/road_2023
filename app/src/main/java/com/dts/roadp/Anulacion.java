@@ -2241,6 +2241,9 @@ public class Anulacion extends PBase {
 				ins.add("ES_ANULACION", NotaDebitoEnc.EsAnulacion);
 				ins.add("CUFE_FACTURA", NotaDebitoEnc.CufeFactura);
 				ins.add("FECHA_SISTEMA", du.getActDateTime());
+				ins.add("FECHA_PRECIO", NotaDebitoEnc.FechaPrecio > 0
+						? NotaDebitoEnc.FechaPrecio
+						: NotaDebitoEnc.Fecha);
 
 				db.execSQL(ins.sql());
 
