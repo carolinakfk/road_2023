@@ -557,7 +557,9 @@ public class Venta extends PBase {
 
 			sql=" SELECT T_VENTA.PRODUCTO, P_PRODUCTO.DESCCORTA, T_VENTA.TOTAL, T_VENTA.CANT, "+
 				" T_VENTA.PRECIODOC, T_VENTA.DES, T_VENTA.IMP, T_VENTA.PERCEP, T_VENTA.UM, " +
-				" T_VENTA.PESO, T_VENTA.UMSTOCK, T_VENTA.PRECIO, T_VENTA.FACTOR, T_VENTA.SIN_EXISTENCIA " +
+				" T_VENTA.PESO, T_VENTA.UMSTOCK, T_VENTA.PRECIO, T_VENTA.FACTOR, T_VENTA.SIN_EXISTENCIA, " +
+				" COALESCE((SELECT D.PORPORCENTAJE FROM P_DESCUENTO D " +
+				" WHERE D.CODDESC=T_VENTA.CODDESC_APLICADO AND IFNULL(D.ES_RECARGO,0)=0 LIMIT 1),'S') " +
 				" FROM T_VENTA INNER JOIN P_PRODUCTO ON P_PRODUCTO.CODIGO=T_VENTA.PRODUCTO "+
 				" ORDER BY P_PRODUCTO.DESCCORTA ";
             /*
@@ -594,7 +596,11 @@ public class Venta extends PBase {
 					item.Cant=DT.getDouble(3);
 					item.Prec=DT.getDouble(4);
 					item.Desc=DT.getDouble(5);
-					item.sdesc=mu.frmdec(item.Desc)+" %";
+					//#EJC20261021 fix(hh-descuento-visual): muestra moneda o porcentaje segun la condicion.
+					String simboloDescuento="S".equalsIgnoreCase(DT.getString(14)) ? " %" : "$";
+					item.sdesc="S".equalsIgnoreCase(DT.getString(14))
+							? mu.frmdec(item.Desc)+simboloDescuento
+							: simboloDescuento+mu.frmdec(item.Desc);
 					item.imp=DT.getDouble(6);
 					item.percep=DT.getDouble(7);
 					item.ums=DT.getString(10);
