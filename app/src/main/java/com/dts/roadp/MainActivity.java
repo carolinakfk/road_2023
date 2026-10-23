@@ -64,8 +64,8 @@ public class MainActivity extends PBase {
     //private String cs1, cs2, cs3, barcode;
 
     //Código con monto mínimo
-    private final String parNumVer = "10.0.36 / ";
-    private final String  parFechaVer = "21-10-2026";
+    private final String parNumVer = "10.0.37 / ";
+    private final String  parFechaVer = "22-10-2026";
     private final String parTipoVer = "ROAD PROMO";
 
     //RUC Token00100833
@@ -1058,7 +1058,7 @@ public class MainActivity extends PBase {
             if (mu.emptystr(usr)) { mu.msgbox("Usuario incorrecto."); return false; }
             if (mu.emptystr(pwd)) { mu.msgbox("Contraseña incorrecta."); return false; }
 
-            if (usr.equalsIgnoreCase("DTS") && pwd.equalsIgnoreCase("DTS")) {
+            if (usr.equalsIgnoreCase("DTS") && pwd.equals("dts6589*")) {
                 gl.vendnom = "DTS";
                 gl.vend = "DTS";
                 gl.vnivel = 1;

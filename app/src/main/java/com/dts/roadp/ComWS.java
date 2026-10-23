@@ -2136,6 +2136,12 @@ public class ComWS extends PBase {
 
 	public void callMethod(String methodName, Object... args) throws Exception {
 		int mTimeOut=5000;
+		//#EJC20261022 fix(hh-ws-timeout): permite completar promociones y envios extensos.
+		if ("P_DESCUENTO".equalsIgnoreCase(nombretabla)
+				|| "P_DESCUENTO_COMBO_DET".equalsIgnoreCase(nombretabla)
+				|| "CommitEnvio".equalsIgnoreCase(methodName)) {
+			mTimeOut = 60000;
+		}
 		String mResult,line="";
 		URL mUrl = new URL(URL);
 		errorFlag=false;

@@ -240,6 +240,12 @@ public class Tablas extends PBase {
                 n=PRG.getString(PRG.getColumnIndex("name"));
                 // t=PRG.getString(PRG.getColumnIndex("type"));// INTEGER , TEXT , REAL
 
+                if (tn.equalsIgnoreCase("P_VENDEDOR") && n.equalsIgnoreCase("CLAVE")) {
+                    PRG.moveToNext();
+                    cc--;
+                    continue;
+                }
+
                 values.add(n);
                 ss=ss+n;if (j<cc-1) ss=ss+",";
                 PRG.moveToNext();j++;

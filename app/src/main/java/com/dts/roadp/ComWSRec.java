@@ -1279,6 +1279,11 @@ public class ComWSRec extends PBase {
 
     public void callMethod(String methodName, Object... args) throws Exception {
         int mTimeOut=5000;
+		//#EJC20261022 fix(hh-sync-descuentos): permite completar la respuesta SOAP de promociones.
+		if ("P_DESCUENTO".equalsIgnoreCase(nombretabla)
+				|| "P_DESCUENTO_COMBO_DET".equalsIgnoreCase(nombretabla)) {
+			mTimeOut = 60000;
+		}
         String mResult,line="";
         java.net.URL mUrl = new URL(URL);
 
