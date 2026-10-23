@@ -26,12 +26,15 @@ import com.dts.roadp.clsClasses.clsMenu;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Menu extends PBase {
 
 	private GridView gridView;
 	private RelativeLayout relbotpan;
-	private TextView lblVendedor,lblRuta;
+	private TextView lblVendedor,lblRuta,lblPromocionesActivas;
+	private View btnPromocionesActivas;
 	
 	private ArrayList<clsMenu> items= new ArrayList<clsMenu>();
 
@@ -72,6 +75,14 @@ public class Menu extends PBase {
 			//#HS_20181206_0945 Agregue lblVendedor que se muestra en el menú.
 			lblVendedor = (TextView) findViewById(R.id.lblVendedor);
 			lblRuta = (TextView) findViewById(R.id.textView9);
+			lblPromocionesActivas = (TextView) findViewById(R.id.lblPromocionesActivas);
+			btnPromocionesActivas = findViewById(R.id.btnPromocionesActivas);
+			btnPromocionesActivas.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					menuPromociones();
+				}
+			});
 
 			Ayudante = new Spinner(this);
 			Vehiculo = new Spinner(this);
@@ -1063,6 +1074,46 @@ public class Menu extends PBase {
 			startActivity(intent);
 		}catch (Exception e){
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
+		}
+	}
+
+	private void actualizarContadorPromociones() {
+		Cursor cursor = null;
+		try {
+			Set<String> promociones = new HashSet<>();
+			sql = "SELECT IFNULL(CODDESC,0),IFNULL(PRODUCTO,''),IFNULL(ES_RECARGO,0)," +
+					"IFNULL(PTIPO,0),IFNULL(DESCTIPO,''),IFNULL(CODCOMBO,'')," +
+					"IFNULL(RANGOINI,0),IFNULL(VALOR,0) FROM P_DESCUENTO";
+			cursor = Con.OpenDT(sql);
+			if (cursor != null && cursor.moveToFirst()) {
+				do {
+					int codDesc = cursor.getInt(0);
+					String producto = cursor.getString(1);
+					boolean esRecargo = cursor.getInt(2) == 1;
+					int pTipo = cursor.getInt(3);
+					String descTipo = cursor.getString(4);
+					String codigo = pTipo == 6 && !cursor.getString(5).isEmpty()
+							? cursor.getString(5) : producto;
+					String clave = codDesc + "|" + codigo + "|" + esRecargo + "|" +
+							pTipo + "|" + descTipo;
+					if (pTipo != 6 && !"R".equalsIgnoreCase(descTipo)) {
+						clave += "|" + cursor.getDouble(6) + "|" + cursor.getDouble(7);
+					}
+					promociones.add(clave);
+				} while (cursor.moveToNext());
+			}
+			int cantidad = promociones.size();
+			lblPromocionesActivas.setText(cantidad > 99 ? "99+" : String.valueOf(cantidad));
+			lblPromocionesActivas.setVisibility(View.VISIBLE);
+			btnPromocionesActivas.setContentDescription(
+					"Consultar promociones activas: " + cantidad);
+		} catch (Exception e) {
+			lblPromocionesActivas.setText("0");
+			lblPromocionesActivas.setVisibility(View.VISIBLE);
+			btnPromocionesActivas.setContentDescription("Consultar promociones activas: 0");
+			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),sql);
+		} finally {
+			if (cursor != null) cursor.close();
 		}
 	}
 
@@ -2671,6 +2722,7 @@ public class Menu extends PBase {
 		try{
 			super.onResume();
 			setPrintWidth();
+			actualizarContadorPromociones();
 		}catch (Exception e){
 			addlog(new Object(){}.getClass().getEnclosingMethod().getName(),e.getMessage(),"");
 		}
