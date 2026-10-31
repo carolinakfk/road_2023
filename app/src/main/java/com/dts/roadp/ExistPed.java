@@ -243,11 +243,11 @@ public class ExistPed extends PBase {
         vF = txtFilter.getText().toString().replace("'", "");
 
         try {
+            String visibles=PromotionVisibility.visibleSql(Con,"D");
 
             sql ="SELECT P_STOCK_PV.CODIGO,P_PRODUCTO.DESCLARGA, " +
-                    " CASE WHEN P_DESCUENTO.PRODUCTO IS NOT NULL OR "+existeComboGeneral("P_STOCK_PV.CODIGO")+" THEN 1 ELSE 0 END AS PROMOCION " +
+                    " CASE WHEN "+PromotionVisibility.productExistsSql("P_STOCK_PV.CODIGO",visibles)+" THEN 1 ELSE 0 END AS PROMOCION " +
                  "FROM P_STOCK_PV INNER JOIN P_PRODUCTO ON P_PRODUCTO.CODIGO=P_STOCK_PV.CODIGO " +
-                    " LEFT JOIN P_DESCUENTO ON P_DESCUENTO.PRODUCTO = P_STOCK_PV.CODIGO" +
                     " WHERE 1=1 ";
             if (vF.length() > 0) sql = sql + "AND ((P_PRODUCTO.DESCLARGA LIKE '%" + vF + "%') OR (P_PRODUCTO.CODIGO LIKE '%" + vF + "%')) ";
             sql+="GROUP BY P_STOCK_PV.CODIGO,P_PRODUCTO.DESCLARGA ";
@@ -382,13 +382,6 @@ public class ExistPed extends PBase {
 
     }
 
-	//#EJC20260731 feat(hh-existencias-pedido-indicador-combo): sin contexto de
-	//cliente, marca participantes de cualquier combo vigente descargado.
-	private String existeComboGeneral(String productoSql) {
-		return "EXISTS (SELECT 1 FROM P_DESCUENTO_COMBO_DET CD " +
-				"INNER JOIN P_DESCUENTO D ON D.CODDESC=CD.CODDESC " +
-				"WHERE CD.PRODUCTO="+productoSql+" AND D.PTIPO=6)";
-	}
 
     private void listItemsOld() {
         Cursor DT;

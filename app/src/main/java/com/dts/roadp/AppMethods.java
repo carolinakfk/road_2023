@@ -1255,10 +1255,23 @@ public class AppMethods {
         }
     }
 
-    //#CKFK20260929 fix(hh-preventa-umstock): en preventa la UM comercial debe
-    //corresponder con UM_SALIDA aunque P_STOCK_PV conserve una configuracion anterior.
+    //#CKFK20261030 fix(hh-preventa-umstock): normalizar solo Rosti configurado
+    //por barra/paquete y no por peso. Los demas conservan la UM del inventario.
     public String umStockPVValidada(String cod) {
         String umStock=umStockPV(cod);
+        Cursor dt=null;
+        try {
+            //No usar esRosty(): depende de la UM de stock que se intenta corregir.
+            dt=Con.OpenDT("SELECT ES_PROD_BARRA,VENTA_POR_PAQUETE,VENTA_POR_PESO " +
+                    "FROM P_PRODUCTO WHERE CODIGO='"+cod+"'");
+            if (dt.getCount()==0) return umStock;
+            dt.moveToFirst();
+            if (dt.getInt(0)!=1 || dt.getInt(1)!=1 || dt.getInt(2)!=0) return umStock;
+        } catch (Exception e) {
+            return umStock;
+        } finally {
+            if (dt!=null) dt.close();
+        }
         String umSalida=umSalida(cod);
 
         if (umSalida!=null && !umSalida.trim().isEmpty() &&

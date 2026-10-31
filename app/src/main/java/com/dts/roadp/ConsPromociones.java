@@ -93,6 +93,8 @@ public class ConsPromociones extends PBase {
                     "IFNULL(D.DESCTIPO,''),D.FECHAINI,D.FECHAFIN "+
                     "FROM P_DESCUENTO D LEFT JOIN P_PRODUCTO P ON P.CODIGO=D.PRODUCTO ";
             if (!cliente.isEmpty()) sql+=filtroAplicabilidadCliente(cliente);
+            else sql+=" WHERE 1=1 ";
+            sql+=" AND "+PromotionVisibility.visibleSql(Con,"D")+" ";
             sql+=
                     "ORDER BY D.PRODUCTO,D.ES_RECARGO,D.PRIORIDAD_DESCUENTO,D.PRIORIDAD";
             cursor=Con.OpenDT(sql);

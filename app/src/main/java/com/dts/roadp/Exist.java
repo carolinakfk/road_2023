@@ -229,21 +229,21 @@ public class Exist extends PBase {
         vF = txtFilter.getText().toString().replace("'", "");
 
         try {
+            String visibles=PromotionVisibility.visibleSql(Con,"D");
 
             sql = "SELECT P_STOCK.CODIGO,P_PRODUCTO.DESCLARGA, " +
-                    " CASE WHEN P_DESCUENTO.PRODUCTO IS NOT NULL OR "+existeComboGeneral("P_STOCK.CODIGO")+" THEN 1 ELSE 0 END AS PROMOCION " +
+                    " CASE WHEN "+PromotionVisibility.productExistsSql("P_STOCK.CODIGO",visibles)+" THEN 1 ELSE 0 END AS PROMOCION " +
                     " FROM P_STOCK " +
                     " INNER JOIN P_PRODUCTO ON P_PRODUCTO.CODIGO=P_STOCK.CODIGO " +
-                    " LEFT JOIN P_DESCUENTO ON P_DESCUENTO.PRODUCTO = P_STOCK.CODIGO " +
                     " WHERE 1=1 ";
             if (vF.length() > 0) sql = sql + "AND ((P_PRODUCTO.DESCLARGA LIKE '%" + vF + "%') OR (P_PRODUCTO.CODIGO LIKE '%" + vF + "%')) ";
             sql += "GROUP BY P_STOCK.CODIGO,P_PRODUCTO.DESCLARGA, PROMOCION  ";
             sql += "UNION ";
             sql += "SELECT P_STOCKB.CODIGO,P_PRODUCTO.DESCLARGA, " +
-                    " CASE WHEN P_DESCUENTO.PRODUCTO IS NOT NULL OR "+existeComboGeneral("P_STOCKB.CODIGO")+" THEN 1 ELSE 0 END AS PROMOCION" +
+                    " CASE WHEN "+PromotionVisibility.productExistsSql("P_STOCKB.CODIGO",visibles)+" THEN 1 ELSE 0 END AS PROMOCION" +
                     " FROM P_STOCKB " +
                     " INNER JOIN P_PRODUCTO ON P_STOCKB.CODIGO=P_PRODUCTO.CODIGO " +
-                    " LEFT JOIN P_DESCUENTO ON P_DESCUENTO.PRODUCTO = P_STOCKB.CODIGO ";
+                    " WHERE 1=1 ";
             if (vF.length() > 0) sql = sql + "AND ((P_PRODUCTO.DESCLARGA LIKE '%" + vF + "%') OR (P_PRODUCTO.CODIGO LIKE '%" + vF + "%')) ";
             sql += "GROUP BY P_STOCKB.CODIGO, P_PRODUCTO.DESCLARGA, PROMOCION  ";
             sql += "ORDER BY P_STOCK.CODIGO";
@@ -380,13 +380,6 @@ public class Exist extends PBase {
 
     }
 
-	//#EJC20260731 feat(hh-existencias-indicador-combo): Existencias no tiene
-	//cliente activo; muestra cualquier combo vigente descargado en la HH.
-	private String existeComboGeneral(String productoSql) {
-		return "EXISTS (SELECT 1 FROM P_DESCUENTO_COMBO_DET CD " +
-				"INNER JOIN P_DESCUENTO D ON D.CODDESC=CD.CODDESC " +
-				"WHERE CD.PRODUCTO="+productoSql+" AND D.PTIPO=6)";
-	}
 
     private void listItemsOld() {
         Cursor DT;

@@ -1067,10 +1067,10 @@ public class Venta extends PBase {
         if (rutatipo.equalsIgnoreCase("V")) {
             gl.umstock=app.umStock(prodid);
         }else {
-            //#CKFK20260929 fix(hh-preventa-umstock): aplica solo en Preventa;
+            //#CKFK20261030 fix(hh-preventa-umstock): normaliza solo Rosti en Preventa;
             //Venta conserva la UM proveniente de P_STOCK/P_STOCKB.
             String umStockPV=app.umStockPV(prodid);
-            gl.umstock=app.umStockPVValidada(prodid);
+            gl.umstock=rutatipo.equalsIgnoreCase("P") ?app.umStockPVValidada(prodid):umStockPV;
             if (umStockPV!=null && gl.umstock!=null &&
                     !umStockPV.equalsIgnoreCase(gl.umstock)) {
                 PromotionTrace.write(this,"PREORDER_UMSTOCK_CORRECTED",
@@ -1408,8 +1408,10 @@ public class Venta extends PBase {
 					//Al reconstruir T_VENTA se recupera del catalogo igual que al agregar
 					//una linea nueva; copiar UMVENTA hacia UMSTOCK hacia que las otras
 					//lineas dejaran de participar al editar un pedido guardado.
+					//#CKFK20261030 Solo Preventa normaliza la UM de Rosti.
 					String umStockPedido=rutatipo.equalsIgnoreCase("V")
-							?app.umStock(productoPedido):app.umStockPVValidada(productoPedido);
+							?app.umStock(productoPedido):rutatipo.equalsIgnoreCase("P")
+							?app.umStockPVValidada(productoPedido):app.umStockPV(productoPedido);
 					if (umStockPedido==null || umStockPedido.trim().isEmpty()) {
 						umStockPedido=umVentaPedido;
 					}
@@ -4615,7 +4617,7 @@ public class Venta extends PBase {
 			}
 
 			if (browse==6) {
-				browse=4;listItems();return;
+				browse=0;listItems();return;
 			}
 
 		}catch (Exception e)
